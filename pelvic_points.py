@@ -7,14 +7,18 @@ NO_DEBUG=0
 BASIC_DEBUG=1
 DETAILED_DEBUG=2
 
-# debug_level=NO_DEBUG
+debug_level=NO_DEBUG
 # debug_level=BASIC_DEBUG
-debug_level=DETAILED_DEBUG
+# debug_level=DETAILED_DEBUG
+
+def debugprint(info, level=1):
+	if(level <= debug_level): 
+		print(info)
 
 # Create a dictionary to contain our fidicual points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
 fiducial_points={}
 
-fiducial_extensions=['.acsv']
+FIDUCIAL_EXTENSIONS=['.acsv']
 
 class fiducial:
 	''' Represents a Slicer fiducial point, with name, x, y, and z values. '''
@@ -32,9 +36,7 @@ class fiducial:
 		debugprint("String _x:" + str(self.x), DETAILED_DEBUG)
 		debugprint("float(_x):" + str(float(self.x)), DETAILED_DEBUG)
 
-def debugprint(info, level=1):
-	if(level <= debug_level): 
-		print(info)
+
 
 def load_fiducial_from_dir(dirname = os.curdir):
 
@@ -50,7 +52,7 @@ def load_fiducial_from_dir(dirname = os.curdir):
 		for name in files:
 			is_fiducial_file=False
 			
-			for pattern in fiducial_extensions:
+			for pattern in FIDUCIAL_EXTENSIONS:
 				if (pattern in name):
 					is_fiducial_file=True
 					debugprint("Found file " + name + " with pattern " + pattern, BASIC_DEBUG)
@@ -115,8 +117,8 @@ if __name__ == '__main__':
 	load_fiducial_from_dir()
 	for key in fiducial_points.iterkeys():
 		fid = fiducial_points[key]
-		debugprint("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
-		debugprint(fid.vec)
+		print("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
+		debugprint(fid.vec, DETAILED_DEBUG)
 				
 	debugprint('Now leaving pelvic points program',BASIC_DEBUG)
 
