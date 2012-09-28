@@ -3,6 +3,8 @@ from numpy import *
 import scipy as sci
 import os
 
+from collections import OrderedDict
+
 NO_DEBUG=0
 BASIC_DEBUG=1
 DETAILED_DEBUG=2
@@ -16,7 +18,7 @@ def debugprint(info, level=1):
 		print(info)
 
 # Create a dictionary to contain our fidicual points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
-fiducial_points={}
+fiducial_points=OrderedDict()
 
 FIDUCIAL_EXTENSIONS=['.acsv']
 
@@ -115,6 +117,7 @@ def load_fiducial_from_file(filename):
 if __name__ == '__main__':
 	debugprint('Now starting pelvic points program',BASIC_DEBUG)
 	load_fiducial_from_dir()
+
 	for key in fiducial_points.iterkeys():
 		fid = fiducial_points[key]
 		print("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
