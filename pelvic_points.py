@@ -1,4 +1,7 @@
-# This code is designed to load in a set of 
+#! /usr/bin/env python
+
+# This code is designed to load in a set of fiducials and provide for some basic math on them
+
 from numpy import *
 import scipy as sci
 import os
@@ -29,18 +32,22 @@ class fiducial:
 		self.x = _x
 		self.y = _y
 		self.z = _z 
-		self.vec = zeros((3))
+		self.coords = zeros((3))
 
-		self.vec[0] = float(_x)
-		self.vec[1] = float(_y)
-		self.vec[2] = float(_z)
+		self.coords[0] = float(_x)
+		self.coords[1] = float(_y)
+		self.coords[2] = float(_z)
 
 		debugprint("String _x:" + str(self.x), DETAILED_DEBUG)
 		debugprint("float(_x):" + str(float(self.x)), DETAILED_DEBUG)
+		
+def distance_vector(startfiducial, endfiducial):
+	startarray = startfiducial.coords
+	endarray = endfiducial.coords
+	result = endarray - startarray
+	return result
 
-
-
-def load_fiducial_from_dir(dirname = os.curdir):
+def load_fiducials_from_dir(dirname = os.curdir):
 
 
 	if not(os.path.isdir(dirname)):
@@ -86,6 +93,7 @@ def load_fiducial_from_file(filename):
 		for line in openfile:
 			if ('# Name = ' in line):
 				name=line.rstrip()[8:]
+				name=name.lstrip()
 				name_set=True
 			if ('point|' in line):
 				split_line=line.split('|')
@@ -116,12 +124,12 @@ def load_fiducial_from_file(filename):
 
 if __name__ == '__main__':
 	debugprint('Now starting pelvic points program',BASIC_DEBUG)
-	load_fiducial_from_dir()
+	load_fiducials_from_dir()
 
 	for key in fiducial_points.iterkeys():
 		fid = fiducial_points[key]
 		print("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
-		debugprint(fid.vec, DETAILED_DEBUG)
+		debugprint(fid.coords, DETAILED_DEBUG)		
 				
 	debugprint('Now leaving pelvic points program',BASIC_DEBUG)
 
