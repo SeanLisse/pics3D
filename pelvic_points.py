@@ -5,20 +5,12 @@
 from numpy import *
 import scipy as sci
 import os
+from Utilities import debugprint
+from Utilities import setdebuglevel 
+from Utilities import NO_DEBUG, BASIC_DEBUG, DETAILED_DEBUG
+import VectorMath
 
 from collections import OrderedDict
-
-NO_DEBUG=0
-BASIC_DEBUG=1
-DETAILED_DEBUG=2
-
-debug_level=NO_DEBUG
-# debug_level=BASIC_DEBUG
-# debug_level=DETAILED_DEBUG
-
-def debugprint(info, level=1):
-	if(level <= debug_level): 
-		print(info)
 
 # Create a dictionary to contain our fidicual points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
 fiducial_points=OrderedDict()
@@ -41,12 +33,6 @@ class fiducial:
 		debugprint("String _x:" + str(self.x), DETAILED_DEBUG)
 		debugprint("float(_x):" + str(float(self.x)), DETAILED_DEBUG)
 		
-def distance_vector(startfiducial, endfiducial):
-	startarray = startfiducial.coords
-	endarray = endfiducial.coords
-	result = endarray - startarray
-	return result
-
 def load_fiducials_from_dir(dirname = os.curdir):
 
 
@@ -123,6 +109,7 @@ def load_fiducial_from_file(filename):
 			return fiducial(name,x,y,z)			
 
 if __name__ == '__main__':
+	setdebuglevel(BASIC_DEBUG)
 	debugprint('Now starting pelvic points program',BASIC_DEBUG)
 	load_fiducials_from_dir()
 
