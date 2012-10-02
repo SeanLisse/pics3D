@@ -1,75 +1,58 @@
 #! /usr/bin/env python
-
+# Author: Sean Lisse
 # This code is designed to load in a set of fiducials and provide for some basic math on them
 
-from numpy import *
-import scipy as sci
-import os
+import numpy
 from Utilities import debugprint
 from Utilities import setdebuglevel 
-from Utilities import NO_DEBUG, BASIC_DEBUG, DETAILED_DEBUG
-import VectorMath
+from Utilities import debug_levels
+# import VectorMath
 
-from collections import OrderedDict
+from Fiducials import fiducial_points
+from Fiducials import fiducial
 
-# Create a dictionary to contain our fidicual points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
-fiducial_points=OrderedDict()
+from os import path
+from os import walk
+from os import curdir
 
 FIDUCIAL_EXTENSIONS=['.acsv']
-
-class fiducial:
-	''' Represents a Slicer fiducial point, with name, x, y, and z values. '''
-	def __init__(self,_name,_x,_y,_z): 
-		self.name = _name
-		self.x = _x
-		self.y = _y
-		self.z = _z 
-		self.coords = zeros((3))
-
-		self.coords[0] = float(_x)
-		self.coords[1] = float(_y)
-		self.coords[2] = float(_z)
-
-		debugprint("String _x:" + str(self.x), DETAILED_DEBUG)
-		debugprint("float(_x):" + str(float(self.x)), DETAILED_DEBUG)
 		
-def load_fiducials_from_dir(dirname = os.curdir):
-
-
-	if not(os.path.isdir(dirname)):
-		if os.path.isfile(dirname):
+def load_fiducials_from_dir(dirname = curdir):
+	if not(path.isdir(dirname)):
+		if path.isfile(dirname):
 			return load_fiducial_from_file(dirname)
 		else:
 			raise ValueError("Error at line " + __line__ + ": " + dirname + " is not a valid directory or file.")
 	
 	# Walk the directory tree starting at dirname.  Find all the files with '.ascv' in their name.
-	for root, dirs, files in os.walk(dirname):
+	for root, dirs, files in walk(dirname):
 		for name in files:
 			is_fiducial_file=False
 			
 			for pattern in FIDUCIAL_EXTENSIONS:
 				if (pattern in name):
 					is_fiducial_file=True
-					debugprint("Found file " + name + " with pattern " + pattern, BASIC_DEBUG)
+					debugprint("Found file " + name + " with pattern " + pattern, debug_levels.BASIC_DEBUG)
 
 			if (is_fiducial_file):					
-				new_fid = load_fiducial_from_file(os.path.join(root,name))
+				new_fid = load_fiducial_from_file(path.join(root,name))
 				if (new_fid != None):
 					fiducial_points[new_fid.name] = new_fid
 				else: 
-					debugprint("Invalid return from attempting to load from file " + os.path.join(root,name), BASIC_DEBUG)
+					debugprint("Invalid return from attempting to load from file " + path.join(root,name), debug_levels.BASIC_DEBUG)
 			else: 
-				debugprint("Ignoring file " + name + " as it does not fit any of our patterns.", BASIC_DEBUG)
+				debugprint("Ignoring file " + name + " as it does not fit any of our patterns.", debug_levels.BASIC_DEBUG)
 				
 
 def load_fiducial_from_file(filename):
-	if not(os.path.isfile(filename)): 
+	
+	if not(path.isfile(filename)): 
 		raise ValueError("Error at line " + __line__ + ": " + filename + " is not a valid file name.")
 
-	debugprint("Loading file " + filename, DETAILED_DEBUG)	
+	debugprint("Loading file " + filename, debug_levels.DETAILED_DEBUG)	
 
 	with open(filename) as openfile:
-		debugprint("Reading file " + openfile.name, DETAILED_DEBUG)	
+		debugprint("Reading file " + openfile.name, debug_levels.DETAILED_DEBUG)	
 
 		name_set=False
 		x_set=False		
@@ -84,7 +67,7 @@ def load_fiducial_from_file(filename):
 			if ('point|' in line):
 				split_line=line.split('|')
 				if (len(split_line) <> 6):
-					debugprint("Invalid coordinate line in file " + filename + ".",BASIC_DEBUG)
+					debugprint("Invalid coordinate line in file " + filename + ".",debug_levels.BASIC_DEBUG)
 					return(None)			
 
 				word_count=0
@@ -103,20 +86,20 @@ def load_fiducial_from_file(filename):
 					word_count+=1
 
 		if not(name_set and x_set and y_set and z_set):
-			debugprint("Unknown Error attempting to set coordinates from file " + filename + ".",BASIC_DEBUG)
+			debugprint("Unknown Error attempting to set coordinates from file " + filename + ".",debug_levels.BASIC_DEBUG)
 			return(None)
 		else:			
 			return fiducial(name,x,y,z)			
 
 if __name__ == '__main__':
-	setdebuglevel(BASIC_DEBUG)
-	debugprint('Now starting pelvic points program',BASIC_DEBUG)
+	setdebuglevel(debug_levels.BASIC_DEBUG)
+	debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
 	load_fiducials_from_dir()
 
 	for key in fiducial_points.iterkeys():
 		fid = fiducial_points[key]
 		print("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
-		debugprint(fid.coords, DETAILED_DEBUG)		
+		debugprint(fid.coords, debug_levels.DETAILED_DEBUG)		
 				
-	debugprint('Now leaving pelvic points program',BASIC_DEBUG)
+	debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
 

@@ -1,10 +1,24 @@
+#! /usr/bin/env python
+# Author: Sean Lisse
 # Collection of utility scripts
 
-NO_DEBUG=0
-BASIC_DEBUG=1
-DETAILED_DEBUG=2
+# Enum definition borrowed from this page: 
+def enum(*sequential, **named):
+    ''' Custom enumerator creator - 
+    example:  
+    Numbers = enum('ZERO', 'ONE', 'TWO')
+    >>> Numbers.ZERO
+    0
+    >>> Numbers.ONE
+    1
+    '''
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    return type('Enum', (), enums)
 
-debug_level=NO_DEBUG
+#TODO: collect the below into a range
+debug_levels=enum('NO_DEBUG','BASIC_DEBUG','DETAILED_DEBUG')
+
+debug_level=debug_levels.NO_DEBUG
 # debug_level=BASIC_DEBUG
 # debug_level=DETAILED_DEBUG
 
