@@ -56,9 +56,16 @@ def load_fiducials_from_mrml(filename, fiducial_list):
     
 if __name__ == '__main__':
     
+    import sys
+    
+    if len(sys.argv) < 2: 
+        filename = "/home/slisse/working/MRI_data/Reproducing_Larsen/Sagittal_Only_Slicer_Files/OPALII_138/OPII_138.mrml"
+    else:
+        filename = sys.argv[1]
+    
     debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
                 
-    load_fiducials_from_mrml("/home/slisse/working/MRI_data/Reproducing_Larsen/Sagittal_Only_Slicer_Files/OPALII_138/OPII_138.mrml", fiducial_points)
+    load_fiducials_from_mrml(filename, fiducial_points)
         
     print('************Final fiducials***********')
     for key in fiducial_points.iterkeys():

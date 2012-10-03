@@ -21,7 +21,7 @@ class fiducial:
         self.coords[1] = float(_y)
         self.coords[2] = float(_z)
         
-def distance_vector(startfiducial, endfiducial):
+def vector_from_fiducials(startfiducial, endfiducial):
     ''' Takes two points, startfiducial and endfiducial, and returns the vector from start to end. '''
     
     startarray = startfiducial.coords
