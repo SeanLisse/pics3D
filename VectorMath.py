@@ -66,6 +66,11 @@ def perpendicular_component(reference_vector, comparison_vector):
     
     return result
 
+####################################
+### DEFAULT MAIN PROC (UNIT TESTING)
+####################################
+
+
 if __name__ == '__main__':
     print("Unit Testing all functions in " + __file__ + ".")
     

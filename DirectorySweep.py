@@ -1,10 +1,8 @@
 #! /usr/bin/env python
 # Author: Sean Lisse
-# This code is designed to load in a set of fiducials and provide for some basic math on them
+# This code is designed to load in a set of fiducials from a directory tree
 
-import numpy
 from Utilities import debugprint
-from Utilities import setdebuglevel 
 from Utilities import debug_levels
 # import VectorMath
 
@@ -22,7 +20,7 @@ def load_fiducials_from_dir(dirname = curdir):
 		if path.isfile(dirname):
 			return load_fiducial_from_file(dirname)
 		else:
-			raise ValueError("Error at line " + __line__ + ": " + dirname + " is not a valid directory or file.")
+			raise ValueError("Error: " + dirname + " is not a valid directory or file.")
 	
 	# Walk the directory tree starting at dirname.  Find all the files with '.ascv' in their name.
 	for root, dirs, files in walk(dirname):
@@ -45,9 +43,10 @@ def load_fiducials_from_dir(dirname = curdir):
 				
 
 def load_fiducial_from_file(filename):
+	''' Load a fiducial point from a file (usually .acsv format) '''
 	
 	if not(path.isfile(filename)): 
-		raise ValueError("Error at line " + __line__ + ": " + filename + " is not a valid file name.")
+		raise ValueError("Error: " + filename + " is not a valid file name.")
 
 	debugprint("Loading file " + filename, debug_levels.DETAILED_DEBUG)	
 
@@ -91,8 +90,12 @@ def load_fiducial_from_file(filename):
 		else:			
 			return fiducial(name,x,y,z)			
 
+#####################
+### DEFAULT MAIN PROC
+#####################
+
 if __name__ == '__main__':
-	setdebuglevel(debug_levels.BASIC_DEBUG)
+	
 	debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
 	load_fiducials_from_dir()
 
