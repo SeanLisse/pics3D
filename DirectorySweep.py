@@ -96,7 +96,7 @@ def load_fiducial_from_file(filename):
 
 if __name__ == '__main__':
 	
-	debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
+	debugprint('Now starting directory sweep for fiducials',debug_levels.BASIC_DEBUG)
 	load_fiducials_from_dir()
 
 	for key in fiducial_points.iterkeys():
@@ -104,5 +104,5 @@ if __name__ == '__main__':
 		print("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
 		debugprint(fid.coords, debug_levels.DETAILED_DEBUG)		
 				
-	debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
+	debugprint('Now leaving directory sweep.',debug_levels.BASIC_DEBUG)
 
