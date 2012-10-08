@@ -37,7 +37,7 @@ def load_fiducials_from_dir(dirname = curdir):
 				if (new_fid != None):
 					fiducial_points[new_fid.name] = new_fid
 				else: 
-					debugprint("Invalid return from attempting to load from file " + path.join(root,name), debug_levels.BASIC_DEBUG)
+					debugprint("Invalid return from attempting to load from file " + path.join(root,name), debug_levels.ERRORS)
 			else: 
 				debugprint("Ignoring file " + name + " as it does not fit any of our patterns.", debug_levels.BASIC_DEBUG)
 				
@@ -66,7 +66,7 @@ def load_fiducial_from_file(filename):
 			if ('point|' in line):
 				split_line=line.split('|')
 				if (len(split_line) <> 6):
-					debugprint("Invalid coordinate line in file " + filename + ".",debug_levels.BASIC_DEBUG)
+					debugprint("Invalid coordinate line in file " + filename + ".",debug_levels.ERRORS)
 					return(None)			
 
 				word_count=0
@@ -85,7 +85,7 @@ def load_fiducial_from_file(filename):
 					word_count+=1
 
 		if not(name_set and x_set and y_set and z_set):
-			debugprint("Unknown Error attempting to set coordinates from file " + filename + ".",debug_levels.BASIC_DEBUG)
+			debugprint("Unknown Error attempting to set coordinates from file " + filename + ".",debug_levels.ERRORS)
 			return(None)
 		else:			
 			return fiducial(name,x,y,z)			
@@ -96,13 +96,12 @@ def load_fiducial_from_file(filename):
 
 if __name__ == '__main__':
 	
+	from Fiducials import print_all_fiducials
+	
 	debugprint('Now starting directory sweep for fiducials',debug_levels.BASIC_DEBUG)
 	load_fiducials_from_dir()
 
-	for key in fiducial_points.iterkeys():
-		fid = fiducial_points[key]
-		print("Found point " + fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
-		debugprint(fid.coords, debug_levels.DETAILED_DEBUG)		
+	print_all_fiducials()
 				
 	debugprint('Now leaving directory sweep.',debug_levels.BASIC_DEBUG)
 

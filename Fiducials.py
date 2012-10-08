@@ -28,3 +28,8 @@ def vector_from_fiducials(startfiducial, endfiducial):
     endarray = endfiducial.coords
     result = endarray - startarray
     return result
+
+def print_all_fiducials(fiducial_list):
+        for key in fiducial_points.iterkeys():
+            fid = fiducial_points[key]            
+            print(fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))

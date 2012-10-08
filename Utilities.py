@@ -2,7 +2,7 @@
 # Author: Sean Lisse
 # Collection of utility scripts
 
-# Enum definition borrowed from this page: 
+# Enum definition borrowed from the internet.  Thank you internet.
 def enum(*sequential, **named):
     ''' Custom enumerator creator - 
     example:  
@@ -15,8 +15,8 @@ def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)
     return type('Enum', (), enums)
 
-#TODO: collect the below into a range
-debug_levels=enum('NO_DEBUG','BASIC_DEBUG','DETAILED_DEBUG')
+
+debug_levels=enum('NO_DEBUG','ERRORS','BASIC_DEBUG','DETAILED_DEBUG')
 
 #debug_level=debug_levels.NO_DEBUG
 #debug_level=debug_levels.BASIC_DEBUG

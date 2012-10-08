@@ -5,7 +5,6 @@
 
 import numpy
 # import scipy
-# from Utilities import debugprint, debug_levels, setdebuglevel
 
 def magnitude(vector):
     ''' Given a 3D vector, computes and returns the scalar magnitude of the vector'''
@@ -61,7 +60,6 @@ def perpendicular_component(reference_vector, comparison_vector):
     ''' Given a reference vector and a comparison vector, projects the comparison onto the reference and returns
     only the component of the comparison vector that is perpindicular to the reference vector.'''
     
-    ref_vector_normal = normalize(reference_vector)
     result = comparison_vector - parallel_component(reference_vector, comparison_vector)
     
     return result

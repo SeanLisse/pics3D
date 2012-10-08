@@ -5,7 +5,7 @@
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
 from Fiducials import fiducial,vector_from_fiducials
 from VectorMath import perpendicular_component, magnitude
-from Graphing import add_fiducials_to_graph, show_graph
+from Graphing import add_fiducials_to_graph, add_line_to_graph, show_graph
 from numpy import Infinity, abs
 from Utilities import setdebuglevel, debug_levels, debugprint   
 
@@ -15,6 +15,8 @@ RIGHT_ISCHIAL_SPINE_FID_NAME="R_IS"
 
 incremental_color = 0
 def incremental_color_fn(fiducial):
+    ''' Basic fiducial point coloration function that colors each point slightly brighter than the last one drawn until we reach white,
+    then resets. ''' 
     INCREMENTAL_STEP = 0.01
     global incremental_color
     incremental_color = incremental_color + INCREMENTAL_STEP
@@ -28,6 +30,8 @@ x_min = y_min = z_min = Infinity
 x_max = y_max = z_max = -1 * Infinity
 
 def xyz_color_calibration(fiducial_list):
+    ''' Given a list of fiducials, gather their maximum and minimum 3D extents in the x, y, and z coordinates.
+    We will later use those extents to determine the RGB components of the color for the fiducials when drawn. '''
     global x_min, y_min, z_min, x_max, y_max,z_max
     
     for key in fiducial_points.iterkeys():
@@ -114,10 +118,10 @@ def PIS_color_fn(fiducial):
     max_distance_fraction = (chosen_PIS_distance - PIS_distance_min)/(PIS_distance_max - PIS_distance_min)
     
     if (max_distance_fraction > 1):
-        debugprint("Error!  Somehow we miscalibrated PIS distances.")
+        debugprint("Error!  Somehow we miscalibrated PIS distances.",debug_levels.ERRORS)
         max_distance_fraction = 1
     
-    return(max_distance_fraction, 1 - max_distance_fraction,0)
+    return(max_distance_fraction, 1 - max_distance_fraction, 0)
 
 #####################
 ### DEFAULT MAIN PROC
@@ -127,7 +131,7 @@ if __name__ == '__main__':
     
     from sys import argv
      
-    setdebuglevel(debug_levels.DETAILED_DEBUG) 
+    setdebuglevel(debug_levels.ERRORS) 
     
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."
@@ -137,15 +141,14 @@ if __name__ == '__main__':
         debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
                     
         load_fiducials_from_mrml(filename, fiducial_points)
-           
-#        print('************Final fiducials***********')
-#        for key in fiducial_points.iterkeys():
-#            fid = fiducial_points[key]            
-#            print(fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
+
         
+        ### Here we encode and graph with coloration of RGB=XYZ.
         #xyz_color_calibration(fiducial_points)
         #add_fiducials_to_graph(fiducial_points, xyz_color_fn)
-        
+        #show_graph()
+
+        ### Here we encode and graph by minimum distance from one of the P->IS lines.        
         if (fiducial_points.has_key(PUBIC_SYMPHYSIS_FID_NAME) 
             and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_FID_NAME) 
             and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_FID_NAME)):
@@ -155,9 +158,19 @@ if __name__ == '__main__':
                                   fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME],
                                   fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME])
             add_fiducials_to_graph(fiducial_points, PIS_color_fn)
+            
+            # Display the P_IS lines on the graph as well
+            PS = fiducial_points[PUBIC_SYMPHYSIS_FID_NAME]
+            L_IS = fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME]
+            R_IS = fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME]
+            add_line_to_graph(PS.coords, L_IS.coords, "black")
+            add_line_to_graph(PS.coords, R_IS.coords, "black")
+            
+            # Display the graph
+            show_graph()
         else:
             print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_FID_NAME + "," + LEFT_ISCHIAL_SPINE_FID_NAME + ", or " + RIGHT_ISCHIAL_SPINE_FID_NAME)
         
-        show_graph()
+       
             
         debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
