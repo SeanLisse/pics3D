@@ -3,8 +3,15 @@
 # This code is designed to load in a set of fiducials from a directory tree and perform some math upon them, then display the results.
 
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
+from Fiducials import fiducial,vector_from_fiducials
+from VectorMath import perpendicular_component, magnitude
 from Graphing import add_fiducials_to_graph, show_graph
-from numpy import Infinity
+from numpy import Infinity, abs
+from Utilities import setdebuglevel, debug_levels, debugprint   
+
+PUBIC_SYMPHYSIS_FID_NAME="PS"
+LEFT_ISCHIAL_SPINE_FID_NAME="L_IS"
+RIGHT_ISCHIAL_SPINE_FID_NAME="R_IS"
 
 incremental_color = 0
 def incremental_color_fn(fiducial):
@@ -16,7 +23,7 @@ def incremental_color_fn(fiducial):
     return [incremental_color, incremental_color, incremental_color]
 
 
-# Define absurd mins & maxes for use with xyz_color_fn
+# Define impossible mins & maxes for use with xyz_color_fn
 x_min = y_min = z_min = Infinity
 x_max = y_max = z_max = -1 * Infinity
 
@@ -45,6 +52,73 @@ def xyz_color_fn(fiducial):
     
     return [red,green,blue]
 
+# Globals for use in PIS colorization
+PIS_distance_min=Infinity
+PIS_distance_max=-1*Infinity
+
+# Set up our pelvic geometry defaults.  These should really *NEVER* be used.
+Pubic_Symphysis = fiducial(PUBIC_SYMPHYSIS_FID_NAME,0,0,0) #default to origin 
+Left_PIS_Vector = [1,0,0] #default to simple X vector
+Right_PIS_Vector = [0,1,0] #default to simple Y vector
+
+def PIS_color_calibration(fiducial_points, PS, L_IS, R_IS):
+    ''' Function that sets up our pubis to ischial spine distance colorization.
+    Takes as input a set of all fiducial points to be colorized,
+    a fiducial point PS for the pubic symphysis,
+    L_IS for left ischial spine, and R_IS for right ischial spine. '''
+    global Pubic_Symphysis, PIS_distance_min, PIS_distance_max, Left_PIS_Vector, Right_PIS_Vector 
+    
+    Pubic_Symphysis = PS
+    Left_PIS_Vector = vector_from_fiducials(PS, L_IS)
+    Right_PIS_Vector = vector_from_fiducials(PS, R_IS)
+    
+    for key in fiducial_points.iterkeys():
+        fid = fiducial_points[key]
+        
+        fid_vector = vector_from_fiducials(PS, fid)
+        
+        L_PIS_distance = abs(magnitude(perpendicular_component(Left_PIS_Vector, fid_vector)))
+        R_PIS_distance = abs(magnitude(perpendicular_component(Right_PIS_Vector, fid_vector)))
+        
+        if (L_PIS_distance <= R_PIS_distance):
+            chosen_PIS_distance = L_PIS_distance
+        else:
+            chosen_PIS_distance = R_PIS_distance
+        
+        if (chosen_PIS_distance > PIS_distance_max): PIS_distance_max = chosen_PIS_distance
+        if (chosen_PIS_distance < PIS_distance_min): PIS_distance_min = chosen_PIS_distance
+        
+        debugprint("Fiducial " + key, debug_levels.DETAILED_DEBUG)
+        debugprint("L_PIS distance: " + str(L_PIS_distance), debug_levels.DETAILED_DEBUG)
+        debugprint("R_PIS distance: " + str(R_PIS_distance), debug_levels.DETAILED_DEBUG)
+        debugprint("Chosen PIS distance: " + str(chosen_PIS_distance), debug_levels.DETAILED_DEBUG)
+        
+        
+    debugprint("Max PIS distance: " + str(PIS_distance_max), debug_levels.DETAILED_DEBUG)
+    debugprint("Min PIS distance: " + str(PIS_distance_min), debug_levels.DETAILED_DEBUG)
+
+def PIS_color_fn(fiducial):
+    global Pubic_Symphysis, PIS_distance_min, PIS_distance_max, Left_PIS_Vector, Right_PIS_Vector 
+    fid_vector = vector_from_fiducials(Pubic_Symphysis, fiducial)
+        
+    L_PIS_distance = abs(magnitude(perpendicular_component(Left_PIS_Vector, fid_vector)))
+    R_PIS_distance = abs(magnitude(perpendicular_component(Right_PIS_Vector, fid_vector)))
+    
+    if (L_PIS_distance <= R_PIS_distance):
+        chosen_PIS_distance = L_PIS_distance
+    else:
+        chosen_PIS_distance = R_PIS_distance
+        
+    debugprint("Fiducial named " + fiducial.name + " has min PIS distance " + str(chosen_PIS_distance))
+        
+    max_distance_fraction = (chosen_PIS_distance - PIS_distance_min)/(PIS_distance_max - PIS_distance_min)
+    
+    if (max_distance_fraction > 1):
+        debugprint("Error!  Somehow we miscalibrated PIS distances.")
+        max_distance_fraction = 1
+    
+    return(max_distance_fraction, 1 - max_distance_fraction,0)
+
 #####################
 ### DEFAULT MAIN PROC
 #####################
@@ -52,9 +126,8 @@ def xyz_color_fn(fiducial):
 if __name__ == '__main__':
     
     from sys import argv
-    from Utilities import setdebuglevel, debug_levels, debugprint
      
-    setdebuglevel(debug_levels.NO_DEBUG) 
+    setdebuglevel(debug_levels.DETAILED_DEBUG) 
     
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."
@@ -70,8 +143,21 @@ if __name__ == '__main__':
 #            fid = fiducial_points[key]            
 #            print(fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
         
-        xyz_color_calibration(fiducial_points)
-        add_fiducials_to_graph(fiducial_points, xyz_color_fn)
+        #xyz_color_calibration(fiducial_points)
+        #add_fiducials_to_graph(fiducial_points, xyz_color_fn)
+        
+        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_FID_NAME) 
+            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_FID_NAME) 
+            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_FID_NAME)):
+            
+            PIS_color_calibration(fiducial_points, 
+                                  fiducial_points[PUBIC_SYMPHYSIS_FID_NAME],
+                                  fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME],
+                                  fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME])
+            add_fiducials_to_graph(fiducial_points, PIS_color_fn)
+        else:
+            print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_FID_NAME + "," + LEFT_ISCHIAL_SPINE_FID_NAME + ", or " + RIGHT_ISCHIAL_SPINE_FID_NAME)
+        
         show_graph()
             
         debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
