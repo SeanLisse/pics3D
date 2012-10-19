@@ -1,6 +1,7 @@
 # import numpy as np
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do not remove this line!
 import matplotlib.pyplot as plt
+from Utilities import debug_levels, debugprint
 
 DEFAULT_COLOR=[0.5,0.5,0.75]
 
@@ -8,9 +9,9 @@ DEFAULT_COLOR=[0.5,0.5,0.75]
 fig = plt.figure()
 ax = fig.add_subplot('111',projection='3d')
 
-ax.set_xlabel('X Label')
-ax.set_ylabel('Y Label')
-ax.set_zlabel('Z Label')
+ax.set_xlabel('X ("Left-Right")')
+ax.set_ylabel('Y ("Anterior-Posterior")')
+ax.set_zlabel('Z ("Cranial-Caudal")')
 
 def default_color(fiducial): 
     ''' Default coloration function. Clone this and alter it to customize your coloration when graphing. '''
@@ -35,3 +36,13 @@ def add_fiducials_to_graph(fid_list, color_fn = default_color):
     for key in fid_list.iterkeys():
         fid = fid_list[key]
         add_scatterpoint_to_graph(fid.name, fid.x, fid.y, fid.z, color_fn(fid))
+        
+def add_legend_to_graph(minlabel, maxlabel, mincolor, maxcolor):
+    ''' Create a legend for the graph, using matched tuples of labels and colors (e.g. labels[0] gets colors[0]'''
+       
+    # Create fake lines to fool the legend.    
+    minline = plt.Line2D(range(10), range(10), linestyle='-', label=minlabel, color=mincolor)
+    maxline = plt.Line2D(range(10), range(10), linestyle='-', label=maxlabel, color=maxcolor)
+    
+    leg = ax.legend([minline,maxline], [minlabel,maxlabel], numpoints=2)
+    

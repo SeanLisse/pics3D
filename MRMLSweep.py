@@ -22,7 +22,7 @@ def load_fiducials_from_mrml(filename, fiducial_list):
     ''' Load a fiducial from an mrml file. '''
     
     def start_element(nodename, attrs):
-        ''' Internal helper for fiducial xml nodes '''
+        ''' Internal helper for loading fiducial xml nodes from Slicer4 MRML files'''
         debugprint("Checking XML element: " + nodename, debug_levels.DETAILED_DEBUG)
     
         if (nodename == FIDUCIAL_XML_NODE_NAME):
@@ -35,7 +35,7 @@ def load_fiducials_from_mrml(filename, fiducial_list):
             debugprint("Creating fiducial from XML: " + name + "," + x + "," + y + "," + z, debug_levels.BASIC_DEBUG)
             fiducial_list[name] = fiducial(name,float(x),float(y),float(z))
     
-    debugprint("Loading fiducials from mrml file: " + filename, debug_levels.BASIC_DEBUG)
+    debugprint("Loading fiducials from MRML file: " + filename, debug_levels.BASIC_DEBUG)
     
     if not(path.isfile(filename)): 
         raise ValueError("Error: " + filename + " is not a valid file name.")
