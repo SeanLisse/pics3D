@@ -20,12 +20,12 @@ def maps_get_x_axis(fiducial_points):
     if not(fiducial_points.has_key(LEFT_ISCHIAL_SPINE_FID_NAME) and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_FID_NAME)): 
         raise ValueError("Cannot find left and right ischial spines, so cannot set MAPS3D x axis.")
     else: 
-        return normalize(vector_from_fiducials(fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME], fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME]))
+        return normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME]))
 
 def maps_get_y_axis(fiducial_points):
     ''' Find the new MAPS3D Y axis, which will be SCIPP line rotate caudally 34 degrees through the pubic symphysis.'''
     
-    # WRONG right now but just for testing.,,
+    # WRONG axis right now but just for testing we'll pretend the inferior pubic point to inter-ischial point line is our Y axis.
     iis_coords = (fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME].coords + fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME].coords) / 2
     inter_ischial_point = fiducial("IIS", iis_coords[COORDS.X], iis_coords[COORDS.Y], iis_coords[COORDS.Z])
     return normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_FID_NAME], inter_ischial_point))
@@ -38,7 +38,7 @@ def maps_get_z_axis(fiducial_points):
 
 def maps_recenter_and_reorient(fid_points):
     ''' Rotate, translate, and (someday perhaps) scale all of our fiducial points to fit the MAPS3D reference system. ''' 
-    
+
     # Change origin of coordinates to fit our MAPS3D system
     recenter_fiducials(maps_get_new_origin(fid_points), fid_points)
             
