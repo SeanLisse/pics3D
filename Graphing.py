@@ -46,3 +46,20 @@ def add_legend_to_graph(minlabel, maxlabel, mincolor, maxcolor):
     
     ax.legend([minline,maxline], [minlabel,maxlabel], numpoints=2)
     
+def set_graph_boundaries(min_x, max_x, min_y, max_y, min_z, max_z):
+    
+    # HACK HACK HACK
+    # Because 3D axis boundary setting doesn't work well yet, we'll just draw a scatterpoint in black at each corner to force the issue.
+    add_scatterpoint_to_graph("FakePoint", min_x, min_y, min_z)
+    add_scatterpoint_to_graph("FakePoint", min_x, max_y, min_z)
+    
+    add_scatterpoint_to_graph("FakePoint", min_x, min_y, max_z)
+    add_scatterpoint_to_graph("FakePoint", min_x, max_y, max_z)
+
+    add_scatterpoint_to_graph("FakePoint", max_x, min_y, min_z)
+    add_scatterpoint_to_graph("FakePoint", max_x, max_y, min_z)
+    
+    add_scatterpoint_to_graph("FakePoint", max_x, min_y, max_z)
+    add_scatterpoint_to_graph("FakePoint", max_x, max_y, max_z)
+
+    
