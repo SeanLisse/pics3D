@@ -5,7 +5,7 @@
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
 from Fiducials import fiducial,vector_from_fiducials
 from VectorMath import perpendicular_component, magnitude
-from Graphing import add_fiducials_to_graph, add_line_to_graph, add_legend_to_graph, show_graph
+from Graphing import add_fiducials_to_graph, add_line_to_graph, add_legend_to_graph, set_graph_boundaries, show_graph
 from numpy import Infinity, abs
 from Utilities import setdebuglevel, debug_levels, debugprint
 
@@ -157,6 +157,13 @@ def draw_pelvic_points_graph(fid_points):
                         PIS_distance_color(minmax_distances[0]), 
                         PIS_distance_color(minmax_distances[1]))
     
+    # Temporary boundary setting to keep all graphs looking equal for comparison
+    #TODO: DELETE ME!
+    GRAPH_APERTURE_SIZE=150
+    set_graph_boundaries(-0.5*GRAPH_APERTURE_SIZE, 0.5 * GRAPH_APERTURE_SIZE,
+                         -0.5*GRAPH_APERTURE_SIZE, 0.5 * GRAPH_APERTURE_SIZE,
+                         -0.5*GRAPH_APERTURE_SIZE, 0.5 * GRAPH_APERTURE_SIZE)
+    
     # Display the graph
     show_graph()
 
@@ -168,7 +175,7 @@ if __name__ == '__main__':
     
     from sys import argv
      
-    setdebuglevel(debug_levels.BASIC_DEBUG) 
+    setdebuglevel(debug_levels.ERRORS) 
     
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."
