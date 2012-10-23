@@ -4,7 +4,7 @@
 
 import collections
 import numpy
-from VectorMath import magnitude
+from VectorMath import normalize, magnitude, perpendicular_component
 from Utilities import enum, debugprint, debug_levels
 
 COORDS=enum('X','Y','Z')
@@ -47,19 +47,32 @@ def recenter_fiducials(new_origin, points_to_recenter):
 def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
     ''' Given a new set of axes expressed in the *old* coordinate system, rotate the fiducial points so that they now lie along the new axes. ''' 
     
-    ROUGHLY_ZERO=0.001 #Fudge factor used in verifying that axes are indeed orthogonal
+    ROUGHLY_ZERO=0.01 #Fudge factor used in verifying that axes are indeed orthogonal
     
     if ((magnitude(new_x_axis) != 1) or (magnitude(new_y_axis) != 1) or magnitude (new_z_axis) != 1):
-        debugprint("WARNING - reorienting fiducials with non-normalized axes!")
+        debugprint("WARNING - requested reorientation of fiducials with non-normalized axes!", debug_levels.ERRORS)
     
     if ((numpy.dot(new_x_axis, new_y_axis) > ROUGHLY_ZERO) 
         or (numpy.dot(new_x_axis, new_z_axis) > ROUGHLY_ZERO)
         or (numpy.dot(new_y_axis, new_z_axis) > ROUGHLY_ZERO)):
-        debugprint("WARNING - reorienting fiducials without orthogonal vectors!", debug_levels.ERRORS)
-        debugprint("Requested new axes: " + str(new_x_axis) 
+        debugprint("WARNING: Correcting axes to be fully orthogonal, leaving the X axis unchanged!", debug_levels.ERRORS)
+        debugprint("WARNING: Requested new axes: " + str(new_x_axis) 
                    + "," + str(new_y_axis)
                    + "," + str(new_z_axis)
-                   , debug_levels.ERRORS)
+                   , debug_levels.DETAILED_DEBUG)
+        #debugprint("x dot y:" + str(numpy.dot(new_x_axis, new_y_axis)), debug_levels.ERRORS)
+        #debugprint("x dot z:" + str(numpy.dot(new_x_axis, new_z_axis)), debug_levels.ERRORS)
+        #debugprint("y dot z:" + str(numpy.dot(new_y_axis, new_z_axis)), debug_levels.ERRORS)
+        
+        # Fix this problem by redefining Y so it's fully perpendicular to X, and Z so it's fully perpindicular to both.
+        new_y_axis = normalize(perpendicular_component(new_x_axis, new_y_axis))
+        new_z_axis = normalize(perpendicular_component(new_x_axis, new_z_axis))
+        new_z_axis = normalize(perpendicular_component(new_y_axis, new_z_axis))
+ 
+        debugprint("WARNING: Actual new axes: " + str(new_x_axis) 
+                   + "," + str(new_y_axis)
+                   + "," + str(new_z_axis)
+                   , debug_levels.DETAILEd_DEBUG)
     
     for key in points_to_reorient.iterkeys():
         fid = fiducial_points[key]
@@ -67,12 +80,12 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
         debugprint("Reorienting fiducials!", debug_levels.DETAILED_DEBUG)
         debugprint("Coordinate " + str(fid.coords), debug_levels.DETAILED_DEBUG)
          
-        old_coords = fid.coords.copy()
+        original_coords = fid.coords.copy()
         
         # Cheating a little bit here and pretending that XYZ coordinates are XYZ vectors.  The math works fine.
-        fid.coords[COORDS.X] = numpy.dot(new_x_axis, old_coords)
-        fid.coords[COORDS.Y] = numpy.dot(new_y_axis, old_coords)
-        fid.coords[COORDS.Z] = numpy.dot(new_z_axis, old_coords) 
+        fid.coords[COORDS.X] = numpy.dot(new_x_axis, original_coords)
+        fid.coords[COORDS.Y] = numpy.dot(new_y_axis, original_coords)
+        fid.coords[COORDS.Z] = numpy.dot(new_z_axis, original_coords) 
         
         debugprint("Becomes: " + str(fid.coords), debug_levels.DETAILED_DEBUG)
          
