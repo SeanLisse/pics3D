@@ -11,8 +11,7 @@ from xml.parsers import expat
 from Utilities import debugprint
 from Utilities import debug_levels
 
-from Fiducials import fiducial
-from Fiducials import fiducial_points
+from Fiducials import fiducial, fiducial_points, print_all_fiducials
 
 FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
 FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
@@ -68,8 +67,6 @@ if __name__ == '__main__':
     load_fiducials_from_mrml(filename, fiducial_points)
         
     print('************Final fiducials***********')
-    for key in fiducial_points.iterkeys():
-        fid = fiducial_points[key]
-        print(fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
-        
+    print_all_fiducials(fiducial_points)
+    
     debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
