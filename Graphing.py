@@ -1,7 +1,7 @@
 # import numpy as np
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do not remove this line!
 import matplotlib.pyplot as plt
-from Utilities import debug_levels, debugprint
+from Fiducials import COORDS
 
 DEFAULT_COLOR=[0.5,0.5,0.75]
 
@@ -35,7 +35,7 @@ def add_fiducials_to_graph(fid_list, color_fn = default_color):
     ''' Add all fiducials in the dictionary fid_list to the graph.  Color code using the function color_fn which takes a fiducial as an argument. '''
     for key in fid_list.iterkeys():
         fid = fid_list[key]
-        add_scatterpoint_to_graph(fid.name, fid.x, fid.y, fid.z, color_fn(fid))
+        add_scatterpoint_to_graph(fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid))
         
 def add_legend_to_graph(minlabel, maxlabel, mincolor, maxcolor):
     ''' Create a legend for the graph, using matched tuples of labels and colors (e.g. labels[0] gets colors[0]'''
@@ -44,5 +44,5 @@ def add_legend_to_graph(minlabel, maxlabel, mincolor, maxcolor):
     minline = plt.Line2D(range(10), range(10), linestyle='-', label=minlabel, color=mincolor)
     maxline = plt.Line2D(range(10), range(10), linestyle='-', label=maxlabel, color=maxcolor)
     
-    leg = ax.legend([minline,maxline], [minlabel,maxlabel], numpoints=2)
+    ax.legend([minline,maxline], [minlabel,maxlabel], numpoints=2)
     
