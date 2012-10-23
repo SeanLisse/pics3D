@@ -72,7 +72,7 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
         debugprint("WARNING: Actual new axes: " + str(new_x_axis) 
                    + "," + str(new_y_axis)
                    + "," + str(new_z_axis)
-                   , debug_levels.DETAILEd_DEBUG)
+                   , debug_levels.DETAILED_DEBUG)
     
     for key in points_to_reorient.iterkeys():
         fid = fiducial_points[key]
