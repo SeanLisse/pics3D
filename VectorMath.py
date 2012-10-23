@@ -64,6 +64,12 @@ def perpendicular_component(reference_vector, comparison_vector):
     
     return result
 
+def orthogonalize(reference_vector, comparison_vector):
+    ''' Given a reference vector and a comparison vector, return a vector ORTHOGONAL to both of them.'''
+    
+    result = numpy.cross(reference_vector, comparison_vector)
+    return result
+
 ####################################
 ### DEFAULT MAIN PROC (UNIT TESTING)
 ####################################
@@ -86,7 +92,7 @@ if __name__ == '__main__':
     if not (magnitude(normalize(double_y)) == 1): raise Exception("TEST FAILED.  Normalization did not yield vector of length 1.")
     
     #Test vector_magnitude_sum
-    if not (vector_magnitude_sum((x_vec, y_vec, z_vec)) == 4): raise Exception("TEST FAILED. 3x 'X' path is not 3!")
+    if not (vector_magnitude_sum((x_vec, y_vec, z_vec)) == 3): raise Exception("TEST FAILED. 3x 'X' path is not 3!")
 
     #Test parallel_component
     if not (magnitude(parallel_component(x_vec, y_vec)) == 0): 
@@ -107,6 +113,16 @@ if __name__ == '__main__':
         raise Exception("TEST FAILED. Perpindicular component test 3.")
     if not (magnitude(perpendicular_component(magnify(x_vec,3), y_vec)) == 1): 
         raise Exception("TEST FAILED. Perpindicular component test 4.")
+    
+    #Check parallel against perpendicular
+    if not (numpy.dot(parallel_component(x_vec, [1,1,1]), perpendicular_component(x_vec, [1,1,1])) == 0):
+        raise Exception("TEST FAILED. Parallel component is NOT perpendicular to perpendicular component!")
+    
+    #TODO: Add a test for orthogonalize
+    if not (magnitude(orthogonalize(x_vec, y_vec)) == 1):
+        raise Exception("TEST FAILED.  Orthogonalize of two unit vectors yields a non-unit vector!")
+    if not (numpy.dot(parallel_component(x_vec, [1,1,1]), orthogonalize(x_vec, [1,1,1])) == 0):
+        raise Exception("TEST FAILED.  Orthogonalized vector is not perpendicular to 'parallel' vector!")
     
     print("All tests succeeded.")
     
