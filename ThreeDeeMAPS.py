@@ -7,31 +7,43 @@ from VectorMath import normalize, orthogonalize
 from Fiducials import fiducial, recenter_fiducials, reorient_fiducials, vector_from_fiducials, COORDS
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
 from PelvicPoints import draw_pelvic_points_graph
-from PelvicPoints import PUBIC_SYMPHYSIS_FID_NAME, LEFT_ISCHIAL_SPINE_FID_NAME, RIGHT_ISCHIAL_SPINE_FID_NAME
+from PelvicPoints import PUBIC_SYMPHYSIS_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, SC_JOINT_NAME
+from numpy import tan
 
 def maps_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using MAPS3D methodology (i.e. recenter on the pubic symphysis). '''
-    if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_FID_NAME)): raise ValueError("Cannot find pubic symphysis, so cannot set MAPS3D origin.")
+    if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): raise ValueError("Cannot find pubic symphysis, so cannot set MAPS3D origin.")
     else: 
-        return fiducial_points[PUBIC_SYMPHYSIS_FID_NAME] 
+        return fiducial_points[PUBIC_SYMPHYSIS_NAME] 
 
 def maps_get_x_axis(fiducial_points):
     ''' Find the new MAPS3D X axis, which is simply a normalized version of the line between the ischial spines. '''
-    if not(fiducial_points.has_key(LEFT_ISCHIAL_SPINE_FID_NAME) and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_FID_NAME)): 
+    if not(fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)): 
         raise ValueError("Cannot find left and right ischial spines, so cannot set MAPS3D x axis.")
     else: 
-        return normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME]))
+        return normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_NAME]))
 
 def maps_get_y_axis(fiducial_points):
-    ''' Find the new MAPS3D Y axis, which will be SCIPP line rotate caudally 34 degrees through the pubic symphysis.'''
+    ''' Find the new MAPS3D Y axis, which will be SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
     
-    # WRONG axis right now but just for testing we'll pretend the inferior pubic point to inter-ischial point line is our Y axis.
-    iis_coords = (fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME].coords + fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME].coords) / 2
-    inter_ischial_point = fiducial("IIS", iis_coords[COORDS.X], iis_coords[COORDS.Y], iis_coords[COORDS.Z])
-    return normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_FID_NAME], inter_ischial_point))
+    if not(fiducial_points.has_key(SC_JOINT_NAME)): 
+        raise ValueError("Cannot find sacrococcygeal joint, so cannot set MAPS3D y axis.")
+    else: 
+        # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
+        SCIPP_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], fiducial_points[SC_JOINT_NAME]))
+
+        # We wish to rotate the SCIPP line 34 degrees toward the "inferior" direction around the pubic symphysis.
+        # Calculate a 'z drop' from the end of the SCIPP line for a point on our new y axis candidate.
+        # tan(34) = zdrop/SCIPP_line so zdrop=magnitude(SCIPP_line) * tan(34), but SCIPP_line is normalized so zdrop= 1 * tan(34).
+        ZDROP = tan(34)
+        new_y_coords = SCIPP_line + [0,0,ZDROP]
+        new_y_point = fiducial("new y", new_y_coords[COORDS.X], new_y_coords[COORDS.Y], new_y_coords[COORDS.Z])
+        
+        MAPS_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], new_y_point))      
+        return MAPS_line
 
 def maps_get_z_axis(fiducial_points):
-    ''' Find the new MAPS3D Z axis, which is orthogonal to the new x and y axes.'''
+    ''' Find the new MAPS3D Z axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
     
     return orthogonalize(maps_get_x_axis(fiducial_points), maps_get_y_axis(fiducial_points))
 
@@ -75,14 +87,18 @@ if __name__ == '__main__':
         load_fiducials_from_mrml(filename, fiducial_points)
                 
         ### Here we encode and graph by minimum distance from one of the P->IS lines.        
-        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_FID_NAME) 
-            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_FID_NAME) 
-            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_FID_NAME)):
+        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
+            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
+            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)
+            and fiducial_points.has_key(SC_JOINT_NAME)):
             
             maps_recenter_and_reorient(fiducial_points)
                         
             draw_pelvic_points_graph(fiducial_points)
         else:
-            print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_FID_NAME + "," + LEFT_ISCHIAL_SPINE_FID_NAME + ", or " + RIGHT_ISCHIAL_SPINE_FID_NAME)   
+            print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
+                  + ", " + SC_JOINT_NAME 
+                  + ", " + LEFT_ISCHIAL_SPINE_NAME 
+                  + ", or " + RIGHT_ISCHIAL_SPINE_NAME)   
             
         debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
