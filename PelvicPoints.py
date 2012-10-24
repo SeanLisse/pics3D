@@ -9,9 +9,12 @@ from Graphing import add_fiducials_to_graph, add_line_to_graph, add_legend_to_gr
 from numpy import Infinity, abs
 from Utilities import setdebuglevel, debug_levels, debugprint
 
-PUBIC_SYMPHYSIS_FID_NAME="PS"
-LEFT_ISCHIAL_SPINE_FID_NAME="L_IS"
-RIGHT_ISCHIAL_SPINE_FID_NAME="R_IS"
+PUBIC_SYMPHYSIS_NAME="PS"
+SC_JOINT_NAME="SCJ"
+LEFT_ISCHIAL_SPINE_NAME="L_IS"
+RIGHT_ISCHIAL_SPINE_NAME="R_IS"
+
+REFERENCE_POINT_NAMES=[PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME]
 
 incremental_color = 0
 def incremental_color_fn(fiducial):
@@ -61,7 +64,7 @@ PIS_distance_min=Infinity
 PIS_distance_max=-1*Infinity
 
 # Set up our pelvic geometry defaults.  These should really *NEVER* be used.
-Pubic_Symphysis = fiducial(PUBIC_SYMPHYSIS_FID_NAME,0,0,0) #default to origin 
+Pubic_Symphysis = fiducial(PUBIC_SYMPHYSIS_NAME,0,0,0) #default to origin 
 Left_PIS_Vector = [1,0,0] #default to simple X vector
 Right_PIS_Vector = [0,1,0] #default to simple Y vector
 
@@ -78,6 +81,9 @@ def PIS_color_calibration(fiducial_points, PS, L_IS, R_IS):
     
     for key in fiducial_points.iterkeys():
         fid = fiducial_points[key]
+        
+        if (REFERENCE_POINT_NAMES.count(key) > 0):
+            continue
         
         fid_vector = vector_from_fiducials(PS, fid)
         
@@ -128,27 +134,29 @@ def PIS_distance_color(distance):
     max_distance_fraction = (distance - PIS_distance_min)/(PIS_distance_max - PIS_distance_min)
     
     if (max_distance_fraction < 0):
-        max_distance_fraction = 0 # Might be one of the points on the reference line...
+        max_distance_fraction = 0 # Might be one of the reference points that we ignored during calibration
         
     if (max_distance_fraction > 1):
-        debugprint("Error!  Somehow we underestimated PIS distances.",debug_levels.ERRORS)
-        max_distance_fraction = 1
+        max_distance_fraction = 1 # Might be one of the reference points that we ignored during calibration
     
     return(max_distance_fraction, 1 - max_distance_fraction, 0)
 
 def draw_pelvic_points_graph(fid_points):
     minmax_distances = PIS_color_calibration(fiducial_points, 
-                                 fiducial_points[PUBIC_SYMPHYSIS_FID_NAME],
-                                 fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME],
-                                 fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME])
+                                 fiducial_points[PUBIC_SYMPHYSIS_NAME],
+                                 fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
+                                 fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
     add_fiducials_to_graph(fiducial_points, PIS_color_fn)
     
     # Display the P_IS lines on the graph as well
-    PS = fiducial_points[PUBIC_SYMPHYSIS_FID_NAME]
-    L_IS = fiducial_points[LEFT_ISCHIAL_SPINE_FID_NAME]
-    R_IS = fiducial_points[RIGHT_ISCHIAL_SPINE_FID_NAME]
+    PS = fiducial_points[PUBIC_SYMPHYSIS_NAME]
+    L_IS = fiducial_points[LEFT_ISCHIAL_SPINE_NAME]
+    R_IS = fiducial_points[RIGHT_ISCHIAL_SPINE_NAME]
     add_line_to_graph(PS.coords, L_IS.coords, "black")
     add_line_to_graph(PS.coords, R_IS.coords, "black")
+    
+    if(fiducial_points.has_key(SC_JOINT_NAME)):
+        add_line_to_graph(PS.coords, fiducial_points[SC_JOINT_NAME].coords, "brown")
     
     # Add a legend 
     global PIS_distance_min, PIS_distance_max
@@ -186,22 +194,21 @@ if __name__ == '__main__':
                     
         load_fiducials_from_mrml(filename, fiducial_points)
 
-        
         ### Here we encode and graph with coloration of RGB=XYZ.
-        #xyz_color_calibration(fiducial_points)
-        #add_fiducials_to_graph(fiducial_points, xyz_color_fn)
-        #show_graph()
+        # xyz_color_calibration(fiducial_points)
+        # add_fiducials_to_graph(fiducial_points, xyz_color_fn)
+        # show_graph()
 
         ### Here we encode and graph by minimum distance from one of the P->IS lines.        
-        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_FID_NAME) 
-            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_FID_NAME) 
-            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_FID_NAME)):
+        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
+            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
+            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)):
             
             draw_pelvic_points_graph(fiducial_points)
         else:
             debugprint("Error!  Cannot find one of the points named: " 
-                       + PUBIC_SYMPHYSIS_FID_NAME 
-                       + "," + LEFT_ISCHIAL_SPINE_FID_NAME 
-                       + ", or " + RIGHT_ISCHIAL_SPINE_FID_NAME, debug_levels.ERRORS)   
+                       + PUBIC_SYMPHYSIS_NAME 
+                       + "," + LEFT_ISCHIAL_SPINE_NAME 
+                       + ", or " + RIGHT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)   
             
         debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
