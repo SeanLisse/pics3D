@@ -8,7 +8,10 @@ from Fiducials import fiducial, recenter_fiducials, reorient_fiducials, vector_f
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
 from PelvicPoints import draw_pelvic_points_graph
 from PelvicPoints import PUBIC_SYMPHYSIS_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, SC_JOINT_NAME
-from numpy import tan, arctan, sin, cos, pi
+from numpy import arctan, sin, cos, pi
+
+# (34 degrees above horizontal is 0.5934 in radians)
+DESIRED_SCIPP_ANGLE = -0.593411946
 
 def maps_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using MAPS3D methodology (i.e. recenter on the pubic symphysis). '''
@@ -44,11 +47,10 @@ def maps_get_y_axis(fiducial_points):
     # Determine our angular adjustment in order to reach 34 degrees above the horizontal for the SCIPP line
     # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
     # thus the inversion with a -1 multiplier.
-    # (34 degrees above horizontal is 0.5934 in radians)
-    angle_adjustment = ( -0.593411946 - SCIPP_angle_from_horiz)
+    angle_adjustment = DESIRED_SCIPP_ANGLE - SCIPP_angle_from_horiz
     
-    print("SCIPP YZ angle is " + str(SCIPP_angle_from_horiz * 180 / pi))
-    print("Adjustment YZ angle is " + str(angle_adjustment * 180 / pi))
+    debugprint("SCIPP YZ angle is " + str(SCIPP_angle_from_horiz * 180 / pi), debug_levels.DETAILED_DEBUG)
+    debugprint("Adjustment YZ angle is " + str(angle_adjustment * 180 / pi), debug_levels.DETAILED_DEBUG)
                          
     # ... then build in the correction.
     # This isn't perfect because ideally we'd be using the *new* z axis for the drop line, not the *old* one.  But in order to get the
@@ -80,7 +82,7 @@ def maps_recenter_and_reorient(fid_points):
     
     debugprint("Reorienting to x axis " + str(new_x_axis)
                + ", y axis  " + str(new_y_axis)
-               + ", z axis " + str(new_z_axis))
+               + ", z axis " + str(new_z_axis), debug_levels.DETAILED_DEBUG)
     reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, fid_points)
 
     # NO scaling for now - but we may reconsider this in the future!
@@ -93,8 +95,8 @@ def maps_verify(fid_points):
     # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
     SCIPP_angle_from_horiz = arctan(SCIPP_line[COORDS.Z]/SCIPP_line[COORDS.Y])
     
-    print("Final SCIPP angle from horizontal is: " + str(SCIPP_angle_from_horiz * 180 /pi ) 
-          + " degrees and should be: 34 degrees")
+    debugprint("Final SCIPP angle from horizontal is: " + str(abs(SCIPP_angle_from_horiz) * 180 /pi ) 
+               + " degrees and should be: " + str(abs(DESIRED_SCIPP_ANGLE) * 180 / pi) + " degrees", debug_levels.DETAILED_DEBUG)
     
 
 #####################
