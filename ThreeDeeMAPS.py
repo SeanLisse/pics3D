@@ -8,13 +8,21 @@ from Fiducials import fiducial, recenter_fiducials, reorient_fiducials, vector_f
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
 from PelvicPoints import draw_pelvic_points_graph
 from PelvicPoints import PUBIC_SYMPHYSIS_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, SC_JOINT_NAME
-from numpy import tan
+from numpy import tan, arctan, sin, cos, pi
 
 def maps_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using MAPS3D methodology (i.e. recenter on the pubic symphysis). '''
     if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): raise ValueError("Cannot find pubic symphysis, so cannot set MAPS3D origin.")
     else: 
         return fiducial_points[PUBIC_SYMPHYSIS_NAME] 
+
+def maps_get_SCIPP_line(fiducial_points):
+    if not(fiducial_points.has_key(SC_JOINT_NAME)): 
+        raise ValueError("Cannot find sacrococcygeal joint, so cannot find SCIPP line.")
+    if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): 
+        raise ValueError("Cannot find sacrococcygeal joint, so cannot find SCIPP line.")
+    
+    return vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], fiducial_points[SC_JOINT_NAME])
 
 def maps_get_x_axis(fiducial_points):
     ''' Find the new MAPS3D X axis, which is simply a normalized version of the line between the ischial spines. '''
@@ -26,21 +34,32 @@ def maps_get_x_axis(fiducial_points):
 def maps_get_y_axis(fiducial_points):
     ''' Find the new MAPS3D Y axis, which will be SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
     
-    if not(fiducial_points.has_key(SC_JOINT_NAME)): 
-        raise ValueError("Cannot find sacrococcygeal joint, so cannot set MAPS3D y axis.")
-    else: 
-        # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
-        SCIPP_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], fiducial_points[SC_JOINT_NAME]))
-
-        # We wish to rotate the SCIPP line 34 degrees toward the "inferior" direction around the pubic symphysis.
-        # Calculate a 'z drop' from the end of the SCIPP line for a point on our new y axis candidate.
-        # tan(34) = zdrop/SCIPP_line so zdrop=magnitude(SCIPP_line) * tan(34), but SCIPP_line is normalized so zdrop= 1 * tan(34).
-        ZDROP = tan(34)
-        new_y_coords = SCIPP_line + [0,0,ZDROP]
-        new_y_point = fiducial("new y", new_y_coords[COORDS.X], new_y_coords[COORDS.Y], new_y_coords[COORDS.Z])
-        
-        MAPS_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], new_y_point))      
-        return MAPS_line
+    # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
+    SCIPP_line = normalize(maps_get_SCIPP_line(fiducial_points))
+    
+    # Determine the current angle of the SCIPP line from the horizontal
+    # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
+    SCIPP_angle_from_horiz = arctan(SCIPP_line[COORDS.Z]/SCIPP_line[COORDS.Y]) 
+    
+    # Determine our angular adjustment in order to reach 34 degrees above the horizontal for the SCIPP line
+    # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
+    # thus the inversion with a -1 multiplier.
+    # (34 degrees above horizontal is 0.5934 in radians)
+    angle_adjustment = ( -0.593411946 - SCIPP_angle_from_horiz)
+    
+    print("SCIPP YZ angle is " + str(SCIPP_angle_from_horiz * 180 / pi))
+    print("Adjustment YZ angle is " + str(angle_adjustment * 180 / pi))
+                         
+    # ... then build in the correction.
+    # This isn't perfect because ideally we'd be using the *new* z axis for the drop line, not the *old* one.  But in order to get the
+    # new z axis, we need the new y axis.  So, we rotate along the old z axis instead.
+    new_y_vector = [0, -1 * cos(angle_adjustment), sin(angle_adjustment)]        
+       
+    new_y_point = fiducial("new y", new_y_vector[COORDS.X], new_y_vector[COORDS.Y], new_y_vector[COORDS.Z])
+    
+    MAPS_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], new_y_point))  
+      
+    return MAPS_line
 
 def maps_get_z_axis(fiducial_points):
     ''' Find the new MAPS3D Z axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
@@ -65,6 +84,18 @@ def maps_recenter_and_reorient(fid_points):
     reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, fid_points)
 
     # NO scaling for now - but we may reconsider this in the future!
+
+def maps_verify(fid_points):
+    # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
+    SCIPP_line = normalize(maps_get_SCIPP_line(fid_points))
+    
+    # Determine the current angle of the SCIPP line from the horizontal
+    # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
+    SCIPP_angle_from_horiz = arctan(SCIPP_line[COORDS.Z]/SCIPP_line[COORDS.Y])
+    
+    print("Final SCIPP angle from horizontal is: " + str(SCIPP_angle_from_horiz * 180 /pi ) 
+          + " degrees and should be: 34 degrees")
+    
 
 #####################
 ### DEFAULT MAIN PROC
@@ -93,8 +124,10 @@ if __name__ == '__main__':
             and fiducial_points.has_key(SC_JOINT_NAME)):
             
             maps_recenter_and_reorient(fiducial_points)
+            
+            maps_verify(fiducial_points)
                         
-            draw_pelvic_points_graph(fiducial_points)
+            draw_pelvic_points_graph(fiducial_points, filename)
         else:
             print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
                   + ", " + SC_JOINT_NAME 
