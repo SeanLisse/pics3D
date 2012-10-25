@@ -3,9 +3,10 @@
 # This code is designed to load in a set of fiducials from a directory tree and perform some math upon them, then display the results.
 
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
-from Fiducials import fiducial,vector_from_fiducials
+from Fiducials import fiducial,vector_from_fiducials, COORDS
 from VectorMath import perpendicular_component, magnitude
-from Graphing import add_fiducials_to_graph, add_line_to_graph, add_legend_to_graph, set_graph_boundaries, show_graph
+from Graphing import add_fiducials_to_graph, add_columns_to_graph, add_line_to_graph
+from Graphing import add_legend_to_graph, set_graph_boundaries, show_graph
 from numpy import Infinity, abs
 from Utilities import setdebuglevel, debug_levels, debugprint
 
@@ -15,6 +16,12 @@ LEFT_ISCHIAL_SPINE_NAME="L_IS"
 RIGHT_ISCHIAL_SPINE_NAME="R_IS"
 
 REFERENCE_POINT_NAMES=[PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME]
+
+# Draw columns under each point (decorations).  Set to False to not draw.
+DRAW_COLUMNS=False
+
+# Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
+PAD_GRAPH=False
 
 incremental_color = 0
 def incremental_color_fn(fiducial):
@@ -40,12 +47,19 @@ def xyz_color_calibration(fiducial_list):
     for key in fiducial_points.iterkeys():
         fid = fiducial_points[key]
         
-        if (fid.x < x_min): x_min = fid.x
-        if (fid.y < y_min): y_min = fid.y
-        if (fid.z < z_min): z_min = fid.z
-        if (fid.x > x_max): x_max = fid.x
-        if (fid.y > y_max): y_max = fid.y
-        if (fid.z > z_max): z_max = fid.z
+        x = fid.coords[COORDS.X]
+        y = fid.coords[COORDS.Y]
+        z = fid.coords[COORDS.Z]
+        
+        if (x < x_min): x_min = x
+        if (y < y_min): y_min = y
+        if (z < z_min): z_min = z
+        if (x > x_max): x_max = x
+        if (y > y_max): y_max = y
+        if (z > z_max): z_max = z
+        
+    # Not quite appropriate return here, but it'll at least give some info for the legend.
+    return [x_min, x_max]
 
 def xyz_color_fn(fiducial):
     ''' Takes a fiducial point and returns a color with R based on relative X, G based on Y and B based on Z.
@@ -53,11 +67,30 @@ def xyz_color_fn(fiducial):
     
     global x_min, y_min, z_min, x_max, y_max,z_max
     
-    red = (fiducial.x - x_min) / (x_max - x_min)
-    green = (fiducial.y - y_min) / (y_max - y_min)
-    blue = (fiducial.z - z_min) / (z_max - z_min)
+    red = (fiducial.coords[COORDS.X] - x_min) / (x_max - x_min)
+    green = (fiducial.coords[COORDS.Y] - y_min) / (y_max - y_min)
+    blue = (fiducial.coords[COORDS.Z] - z_min) / (z_max - z_min)
     
     return [red,green,blue]
+
+def z_color_calibration(fiducial_list):
+    global z_min, z_max
+    
+    for key in fiducial_points.iterkeys():
+        fid = fiducial_points[key]
+        
+        if (fid.coords[COORDS.Z] < z_min): z_min = fid.coords[COORDS.Z]
+        if (fid.coords[COORDS.Z] > z_max): z_max = fid.coords[COORDS.Z]    
+        
+    return [z_min, z_max]
+
+def z_color_fn(fiducial):
+    ''' Takes a fiducial point and returns a color based on its height Z. '''
+    green = (fiducial.coords[COORDS.Z] - z_min) / (z_max - z_min)
+    red = 1 - green
+    
+    return [red,green,0]
+    
 
 # Globals for use in PIS colorization
 PIS_distance_min=Infinity
@@ -141,12 +174,27 @@ def PIS_distance_color(distance):
     
     return(max_distance_fraction, 1 - max_distance_fraction, 0)
 
-def draw_pelvic_points_graph(fid_points):
+def draw_pelvic_points_graph(fid_points, graphname):
+
+    ### OPTION 1: XYZ COLOR CODING
+    # minmax_distances = xyz_color_calibration(fiducial_points)
+    # color_fn=xyz_color_fn
+    
+    ### OPTION 2: Z COLOR CODING
+#    minmax_distances = z_color_calibration(fiducial_points)
+#    color_fn = z_color_fn
+    
+    ### OPTION 3: PIS DISTANCE COLOR CODING
     minmax_distances = PIS_color_calibration(fiducial_points, 
-                                 fiducial_points[PUBIC_SYMPHYSIS_NAME],
-                                 fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
-                                 fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
-    add_fiducials_to_graph(fiducial_points, PIS_color_fn)
+                                            fiducial_points[PUBIC_SYMPHYSIS_NAME],
+                                            fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
+                                            fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
+    color_fn = PIS_color_fn
+    
+    add_fiducials_to_graph(fiducial_points, color_fn)
+    
+    if DRAW_COLUMNS: 
+        add_columns_to_graph(fiducial_points, color_fn)
     
     # Display the P_IS lines on the graph as well
     PS = fiducial_points[PUBIC_SYMPHYSIS_NAME]
@@ -155,25 +203,31 @@ def draw_pelvic_points_graph(fid_points):
     add_line_to_graph(PS.coords, L_IS.coords, "black")
     add_line_to_graph(PS.coords, R_IS.coords, "black")
     
+#    IIS_coords = (L_IS.coords + R_IS.coords)/2
+#    add_scatterpoint_to_graph("IIS", IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z],"brown")
+#    add_line_to_graph(PS.coords, IIS_coords, "brown")
+    
     if(fiducial_points.has_key(SC_JOINT_NAME)):
         add_line_to_graph(PS.coords, fiducial_points[SC_JOINT_NAME].coords, "brown")
     
+    if PAD_GRAPH:
+        # Pad the graph to keep all graphs at equal scale for comparison
+        GRAPH_PADDING=100
+        set_graph_boundaries(PS.coords[COORDS.X] + GRAPH_PADDING, 
+                             PS.coords[COORDS.X] - GRAPH_PADDING,
+                             PS.coords[COORDS.Y] + GRAPH_PADDING, 
+                             PS.coords[COORDS.Y] - GRAPH_PADDING,
+                             PS.coords[COORDS.Z] + GRAPH_PADDING,
+                             PS.coords[COORDS.Z] - GRAPH_PADDING)
+        
     # Add a legend 
-    global PIS_distance_min, PIS_distance_max
     add_legend_to_graph("Minimum Distance: " + str(round(minmax_distances[0],1)) + "mm", 
                         "Maximum Distance: " + str(round(minmax_distances[1],1)) + "mm",
                         PIS_distance_color(minmax_distances[0]), 
                         PIS_distance_color(minmax_distances[1]))
     
-    # Temporary boundary setting to keep all graphs looking equal for comparison
-    #TODO: DELETE ME!
-    GRAPH_APERTURE_SIZE=150
-    set_graph_boundaries(-0.5*GRAPH_APERTURE_SIZE, 0.5 * GRAPH_APERTURE_SIZE,
-                         -0.5*GRAPH_APERTURE_SIZE, 0.5 * GRAPH_APERTURE_SIZE,
-                         -0.5*GRAPH_APERTURE_SIZE, 0.5 * GRAPH_APERTURE_SIZE)
-    
     # Display the graph
-    show_graph()
+    show_graph(graphname)
 
 #####################
 ### DEFAULT MAIN PROC
@@ -194,17 +248,12 @@ if __name__ == '__main__':
                     
         load_fiducials_from_mrml(filename, fiducial_points)
 
-        ### Here we encode and graph with coloration of RGB=XYZ.
-        # xyz_color_calibration(fiducial_points)
-        # add_fiducials_to_graph(fiducial_points, xyz_color_fn)
-        # show_graph()
-
         ### Here we encode and graph by minimum distance from one of the P->IS lines.        
         if (fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
             and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
             and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)):
             
-            draw_pelvic_points_graph(fiducial_points)
+            draw_pelvic_points_graph(fiducial_points, filename)
         else:
             debugprint("Error!  Cannot find one of the points named: " 
                        + PUBIC_SYMPHYSIS_NAME 
