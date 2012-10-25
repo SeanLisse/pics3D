@@ -51,6 +51,9 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
     
     if ((magnitude(new_x_axis) != 1) or (magnitude(new_y_axis) != 1) or magnitude (new_z_axis) != 1):
         debugprint("WARNING - requested reorientation of fiducials with non-normalized axes!", debug_levels.ERRORS)
+        debugprint("X magnitude: " + str(magnitude(new_x_axis))
+                   + ", Y magnitude: " + str(magnitude (new_y_axis))
+                   + ", Z magnitude: " + str(magnitude (new_z_axis)), debug_levels.DETAILED_DEBUG)
     
     if ((numpy.dot(new_x_axis, new_y_axis) > ROUGHLY_ZERO) 
         or (numpy.dot(new_x_axis, new_z_axis) > ROUGHLY_ZERO)
@@ -60,9 +63,6 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
                    + "," + str(new_y_axis)
                    + "," + str(new_z_axis)
                    , debug_levels.DETAILED_DEBUG)
-        #debugprint("x dot y:" + str(numpy.dot(new_x_axis, new_y_axis)), debug_levels.ERRORS)
-        #debugprint("x dot z:" + str(numpy.dot(new_x_axis, new_z_axis)), debug_levels.ERRORS)
-        #debugprint("y dot z:" + str(numpy.dot(new_y_axis, new_z_axis)), debug_levels.ERRORS)
         
         # Fix this problem by redefining Y so it's fully perpendicular to X, and Z so it's fully perpindicular to both.
         new_y_axis = normalize(perpendicular_component(new_x_axis, new_y_axis))
@@ -88,5 +88,3 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
         fid.coords[COORDS.Z] = numpy.dot(new_z_axis, original_coords) 
         
         debugprint("Becomes: " + str(fid.coords), debug_levels.DETAILED_DEBUG)
-         
-    
