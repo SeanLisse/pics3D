@@ -265,9 +265,8 @@ def width_distance_color_calibration(fid_points):
     
     for rowindex in range(0,len(vagwidths)):
         
-        green = (vagwidths[rowindex] - vagwidthmin) / vagwidthmax
-        # green = (vagwidths[rowindex]/vagwidthmax)
-        red = 1 - green
+        red = (vagwidths[rowindex] - vagwidthmin) / vagwidthmax
+        green = 1 - red
         blue = 0
         vagrowcolors.append([red,green,blue])
     
