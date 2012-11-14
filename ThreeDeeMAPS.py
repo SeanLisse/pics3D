@@ -45,14 +45,15 @@ def maps_get_y_axis(fiducial_points):
     SCIPP_angle_from_horiz = arctan(SCIPP_line[COORDS.Z]/SCIPP_line[COORDS.Y]) 
     
     # Determine our angular adjustment in order to reach 34 degrees above the horizontal for the SCIPP line
-    # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
-    # thus the inversion with a -1 multiplier.
+   
     angle_adjustment = DESIRED_SCIPP_ANGLE - SCIPP_angle_from_horiz
     
     debugprint("SCIPP YZ angle is " + str(SCIPP_angle_from_horiz * 180 / pi), debug_levels.DETAILED_DEBUG)
     debugprint("Adjustment YZ angle is " + str(angle_adjustment * 180 / pi), debug_levels.DETAILED_DEBUG)
                          
     # ... then build in the correction.
+    # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
+    # thus the inversion with a -1 multiplier.
     # This isn't perfect because ideally we'd be using the *new* z axis for the drop line, not the *old* one.  But in order to get the
     # new z axis, we need the new y axis.  So, we rotate along the old z axis instead.
     new_y_vector = [0, -1 * cos(angle_adjustment), sin(angle_adjustment)]        

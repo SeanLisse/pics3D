@@ -39,8 +39,10 @@ def add_fiducials_to_graph(fid_list, color_fn = default_color):
         fid = fid_list[key]
         add_scatterpoint_to_graph(fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid))
         
+## BELOW FN IS CURRRENTLY UNUSED.
 def add_columns_to_graph(fid_list, color_fn = default_color):
     ''' Add all fiducials in the dictionary fid_list to the graph as columns from Z=-50.  Color code using the function color_fn which takes a fiducial as an argument. '''
+    
     for key in fid_list.iterkeys():
         fid = fid_list[key]
         add_line_to_graph(fid.coords, [fid.coords[COORDS.X], fid.coords[COORDS.Y], COLUMN_START], color_fn(fid))

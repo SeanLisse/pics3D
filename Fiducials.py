@@ -82,7 +82,7 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
          
         original_coords = fid.coords.copy()
         
-        # Cheating a little bit here and pretending that XYZ coordinates are XYZ vectors.  The math works fine.
+        # Cheating a little bit here and pretending that XYZ coordinates are XYZ vectors.  The math works fine, as we are rotating around the origin.
         fid.coords[COORDS.X] = numpy.dot(new_x_axis, original_coords)
         fid.coords[COORDS.Y] = numpy.dot(new_y_axis, original_coords)
         fid.coords[COORDS.Z] = numpy.dot(new_z_axis, original_coords) 

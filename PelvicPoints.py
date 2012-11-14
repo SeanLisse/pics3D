@@ -2,42 +2,26 @@
 # Author: Sean Lisse
 # This code is designed to load in a set of fiducials from a directory tree and perform some math upon them, then display the results.
 
+from numpy import Infinity, abs
 from MRMLSweep import load_fiducials_from_mrml, fiducial_points
 from Fiducials import fiducial,vector_from_fiducials, COORDS
-from VectorMath import perpendicular_component, magnitude
-from Graphing import add_fiducials_to_graph, add_columns_to_graph, add_line_to_graph
+from VectorMath import perpendicular_component, magnitude, vector_magnitude_sum
+from Graphing import add_fiducials_to_graph, add_columns_to_graph, add_line_to_graph, add_scatterpoint_to_graph
 from Graphing import add_legend_to_graph, set_graph_boundaries, show_graph
-from numpy import Infinity, abs
-from Utilities import setdebuglevel, debug_levels, debugprint
+from Utilities import setdebuglevel, debug_levels, debugprint, enum
 
 PUBIC_SYMPHYSIS_NAME="PS"
 SC_JOINT_NAME="SCJ"
 LEFT_ISCHIAL_SPINE_NAME="L_IS"
 RIGHT_ISCHIAL_SPINE_NAME="R_IS"
 
-REFERENCE_POINT_NAMES=[PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME]
+REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME}
 
-# Draw columns under each point (decorations).  Set to False to not draw.
-DRAW_COLUMNS=False
+COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE')
+COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.PIS_DISTANCE
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
 PAD_GRAPH=False
-
-incremental_color = 0
-def incremental_color_fn(fiducial):
-    ''' Basic fiducial point coloration function that colors each point slightly brighter than the last one drawn until we reach white,
-    then resets. ''' 
-    INCREMENTAL_STEP = 0.01
-    global incremental_color
-    incremental_color = incremental_color + INCREMENTAL_STEP
-    while (incremental_color > 1):
-        incremental_color=incremental_color -1
-    return [incremental_color, incremental_color, incremental_color]
-
-
-# Define impossible mins & maxes for use with xyz_color_fn
-x_min = y_min = z_min = Infinity
-x_max = y_max = z_max = -1 * Infinity
 
 def xyz_color_calibration(fiducial_list):
     ''' Given a list of fiducials, gather their maximum and minimum 3D extents in the x, y, and z coordinates.
@@ -77,6 +61,9 @@ def z_color_calibration(fiducial_list):
     global z_min, z_max
     
     for key in fiducial_points.iterkeys():
+        if (key in REFERENCE_POINT_NAMES):
+            continue
+        
         fid = fiducial_points[key]
         
         if (fid.coords[COORDS.Z] < z_min): z_min = fid.coords[COORDS.Z]
@@ -115,7 +102,7 @@ def PIS_color_calibration(fiducial_points, PS, L_IS, R_IS):
     for key in fiducial_points.iterkeys():
         fid = fiducial_points[key]
         
-        if (REFERENCE_POINT_NAMES.count(key) > 0):
+        if (key in REFERENCE_POINT_NAMES):
             continue
         
         fid_vector = vector_from_fiducials(PS, fid)
@@ -147,6 +134,7 @@ def PIS_color_calibration(fiducial_points, PS, L_IS, R_IS):
     
 
 def PIS_color_fn(fiducial):
+    ''' determine where on the red-green spectrum our chosen point distance lies (based on minimum distance from the nearest PIS line) '''
     global Pubic_Symphysis, PIS_distance_min, PIS_distance_max, Left_PIS_Vector, Right_PIS_Vector 
     fid_vector = vector_from_fiducials(Pubic_Symphysis, fiducial)
         
@@ -163,7 +151,7 @@ def PIS_color_fn(fiducial):
     return PIS_distance_color(chosen_PIS_distance)
     
 def PIS_distance_color(distance):
-    # determine where on the spectrum our chosen PIS distance lies    
+    ''' determine where on the red-green spectrum our chosen PIS distance lies '''    
     max_distance_fraction = (distance - PIS_distance_min)/(PIS_distance_max - PIS_distance_min)
     
     if (max_distance_fraction < 0):
@@ -174,27 +162,110 @@ def PIS_distance_color(distance):
     
     return(max_distance_fraction, 1 - max_distance_fraction, 0)
 
+def width_distance_color_calibration(fid_points):
+    ''' Determine the vaginal width at each level, then color-code based on the longest and shortest. 
+        Assumes that each point to be included in a width has a name of the format *A_L_*, 
+        where the number after A is the rank from the apex (starting at 1)
+        and the number after L is the rank from the left side (starting at 1).
+        
+        E.G. the top-left most vaginal point will be at least "A1L1", but could be something like "A1L1 (Os)" or "(Os) A1L1".
+        '''
+    
+    # Grab the regular expressions library "re" so we can use it to parse fiducial names
+    import re
+    
+    # List of lists.
+    # Outer list index is row number (minus one), so A1 == rows[0]
+    # Inner list index is column number (minus one), so A1L3 == rows[0][2]
+    # Note that we may have some empty entries, which we will skip when tabulating later.
+    rows=[]
+    
+    for key in fiducial_points.iterkeys():
+        
+        # We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
+        # (assuming 999 is the highest number of points we'll ever have in a row, which seems pretty safe)
+        INDEX_PATTERN='A(\d+)L(\d+)'
+        
+        # Ignore reference points in coloration calibration
+        if (key in REFERENCE_POINT_NAMES):
+            continue
+
+        searchresults = re.search(INDEX_PATTERN, key)
+
+        if (searchresults == None): continue
+
+        rownum = searchresults.groups()[0] # the first group we grab should be the number after the 'A', so the row number.
+        colnum = searchresults.groups()[1] # The second group we grab should be the number after the 'L', so the column number.
+
+        rowindex = int(rownum) - 1
+        colindex = int(colnum) - 1
+
+        # Expand rows[] to encompass our new row as needed
+        while(len(rows) < (rowindex + 1)):
+            rows.append([])
+ 
+        # Expand rows[][] to encompass our new column as needed
+        while(len(rows[rowindex]) < (colindex + 1)):
+            rows[int(rowindex)].append([])
+ 
+        fid = fiducial_points[key]
+        rows[rowindex][colindex] = fid
+    
+    # List of vaginal widths by row # 
+    vagwidths=[]    
+    
+    for rowindex in range(0,len(rows)-1):
+
+        columns = rows[rowindex]
+        
+        # A list of vectors, from each point to the next in the list.
+        vecs = []
+        
+        for colindex in range(0, len(columns)-1):
+            if (colindex == 0): continue #skip the first point
+            
+            # Avoid empty entries by checking boolean values of "list items".  
+            # Empty lists register as false.
+            if (columns[colindex-1]) and (columns[colindex]):
+                
+                        # draw vector that goes from each point to the point before
+                        vecs.append(vector_from_fiducials(columns[colindex - 1], columns[colindex]))
+
+                        print (str(rowindex) + ":" + str(colindex - 1) + "-" + str(colindex) + 
+                               str(vecs[len(vecs) -1 ]))
+        
+        ### STOPPED WORKING HERE...
+        vagwidths.insert(rowindex,vector_magnitude_sum(vecs))
+        
+    print vagwidths
+        
+
+def width_distance_color(fid_point):
+    None
+
 def draw_pelvic_points_graph(fid_points, graphname):
 
     ### OPTION 1: XYZ COLOR CODING
-    # minmax_distances = xyz_color_calibration(fiducial_points)
-    # color_fn=xyz_color_fn
+    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.XYZ):
+        minmax_distances = xyz_color_calibration(fiducial_points)
+        color_fn=xyz_color_fn
     
     ### OPTION 2: Z COLOR CODING
-#    minmax_distances = z_color_calibration(fiducial_points)
-#    color_fn = z_color_fn
+    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.Z):
+        minmax_distances = z_color_calibration(fiducial_points)
+        color_fn = z_color_fn
     
     ### OPTION 3: PIS DISTANCE COLOR CODING
-    minmax_distances = PIS_color_calibration(fiducial_points, 
-                                            fiducial_points[PUBIC_SYMPHYSIS_NAME],
-                                            fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
-                                            fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
-    color_fn = PIS_color_fn
+    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.PIS_DISTANCE):
+        minmax_distances = PIS_color_calibration(fiducial_points, 
+                                                fiducial_points[PUBIC_SYMPHYSIS_NAME],
+                                                fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
+                                                fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
+        color_fn = PIS_color_fn
+    
+    width_distance_color_calibration(fiducial_points)
     
     add_fiducials_to_graph(fiducial_points, color_fn)
-    
-    if DRAW_COLUMNS: 
-        add_columns_to_graph(fiducial_points, color_fn)
     
     # Display the P_IS lines on the graph as well
     PS = fiducial_points[PUBIC_SYMPHYSIS_NAME]
@@ -203,12 +274,11 @@ def draw_pelvic_points_graph(fid_points, graphname):
     add_line_to_graph(PS.coords, L_IS.coords, "black")
     add_line_to_graph(PS.coords, R_IS.coords, "black")
     
-#    IIS_coords = (L_IS.coords + R_IS.coords)/2
-#    add_scatterpoint_to_graph("IIS", IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z],"brown")
-#    add_line_to_graph(PS.coords, IIS_coords, "brown")
+    IIS_coords = (L_IS.coords + R_IS.coords)/2
+    add_scatterpoint_to_graph("IIS", IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z],"black")
     
     if(fiducial_points.has_key(SC_JOINT_NAME)):
-        add_line_to_graph(PS.coords, fiducial_points[SC_JOINT_NAME].coords, "brown")
+        add_line_to_graph(PS.coords, fiducial_points[SC_JOINT_NAME].coords, "black")
     
     if PAD_GRAPH:
         # Pad the graph to keep all graphs at equal scale for comparison
