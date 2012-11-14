@@ -17,8 +17,12 @@ RIGHT_ISCHIAL_SPINE_NAME="R_IS"
 
 REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME}
 
-COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE')
-COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.PIS_DISTANCE
+COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH')
+COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.WIDTH
+
+# This is the pattern used to match fiducial names and parse out the row number (from apex, A) and column number (from left, L).
+# We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
+INDEX_PATTERN='A(\d+)L(\d+)'
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
 PAD_GRAPH=False
@@ -162,6 +166,31 @@ def PIS_distance_color(distance):
     
     return(max_distance_fraction, 1 - max_distance_fraction, 0)
 
+
+def get_fiducial_row_and_column(fid_point):
+    ''' Parse a fiducial point's name to find out what its row and column are.  
+    Returns a [row, column] tuple.  E.g. if the point is A1L1, returns [1,1].
+    Returns [None, None] if it cannot find them.'''
+     
+    # Grab the regular expressions library "re" so we can use it to parse fiducial names
+    import re
+       
+    # Ignore reference points
+    if (fid_point.name in REFERENCE_POINT_NAMES):
+        return [None, None]
+
+    searchresults = re.search(INDEX_PATTERN, fid_point.name)
+    
+    if (searchresults == None): return [None, None]
+    
+    rownum = searchresults.groups()[0] # the first group we grab should be the number after the 'A', so the row number.
+    colnum = searchresults.groups()[1] # The second group we grab should be the number after the 'L', so the column number.
+    
+    return [int(rownum), int(colnum)]
+
+# Vaginal width globals
+vagrowcolors=[]
+
 def width_distance_color_calibration(fid_points):
     ''' Determine the vaginal width at each level, then color-code based on the longest and shortest. 
         Assumes that each point to be included in a width has a name of the format *A_L_*, 
@@ -169,33 +198,23 @@ def width_distance_color_calibration(fid_points):
         and the number after L is the rank from the left side (starting at 1).
         
         E.G. the top-left most vaginal point will be at least "A1L1", but could be something like "A1L1 (Os)" or "(Os) A1L1".
+        
+        Assumes that there are no gaps within a row (the sequence can go A1L4, A1L5, A1L6, but cannot go A1L1, A1L4, A1L5)
         '''
     
-    # Grab the regular expressions library "re" so we can use it to parse fiducial names
-    import re
-    
-    # List of lists.
+    # "rows" is a list of lists.
     # Outer list index is row number (minus one), so A1 == rows[0]
     # Inner list index is column number (minus one), so A1L3 == rows[0][2]
-    # Note that we may have some empty entries, which we will skip when tabulating later.
+    # Note that we may have some empty entries (fid point A1L1 may not exist, for example), which we will skip when tabulating later.
     rows=[]
     
+    # Iterate through the fiducial points and gather those that have a row and column number into "rows"
     for key in fiducial_points.iterkeys():
         
-        # We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
-        # (assuming 999 is the highest number of points we'll ever have in a row, which seems pretty safe)
-        INDEX_PATTERN='A(\d+)L(\d+)'
-        
-        # Ignore reference points in coloration calibration
-        if (key in REFERENCE_POINT_NAMES):
+        rownum,colnum = get_fiducial_row_and_column(fiducial_points[key])
+
+        if ((rownum == None) or (colnum == None)):
             continue
-
-        searchresults = re.search(INDEX_PATTERN, key)
-
-        if (searchresults == None): continue
-
-        rownum = searchresults.groups()[0] # the first group we grab should be the number after the 'A', so the row number.
-        colnum = searchresults.groups()[1] # The second group we grab should be the number after the 'L', so the column number.
 
         rowindex = int(rownum) - 1
         colindex = int(colnum) - 1
@@ -211,37 +230,68 @@ def width_distance_color_calibration(fid_points):
         fid = fiducial_points[key]
         rows[rowindex][colindex] = fid
     
-    # List of vaginal widths by row # 
-    vagwidths=[]    
+  
+    # List of vaginal widths for each row 
+    vagwidths=[]  
     
-    for rowindex in range(0,len(rows)-1):
+    # Minimum and maximum row width overall for colorization and display purposes
+    vagwidthmin = Infinity
+    vagwidthmax = -1 * Infinity
+    
+    # Iterate over all the fiducial points and collect them into a sequence of point-to-point vectors for each row 
+    for rowindex in range(0,len(rows)):
 
         columns = rows[rowindex]
         
-        # A list of vectors, from each point to the next in the list.
+        # Our list of vectors from each point to the next in the list, starting leftmost and continuing right.
         vecs = []
         
-        for colindex in range(0, len(columns)-1):
-            if (colindex == 0): continue #skip the first point
+        for colindex in range(1, len(columns)):
+            # Start at 1 to intentionally skip the first point so we don't underrun when looking at rows[colindex - 1]. 
             
-            # Avoid empty entries by checking boolean values of "list items".  
-            # Empty lists register as false.
             if (columns[colindex-1]) and (columns[colindex]):
-                
-                        # draw vector that goes from each point to the point before
-                        vecs.append(vector_from_fiducials(columns[colindex - 1], columns[colindex]))
+                # We know we have two non-empty entries, so add a vector from this point to the point before
+                vecs.append(vector_from_fiducials(columns[colindex - 1], columns[colindex]))
 
-                        print (str(rowindex) + ":" + str(colindex - 1) + "-" + str(colindex) + 
-                               str(vecs[len(vecs) -1 ]))
-        
-        ### STOPPED WORKING HERE...
         vagwidths.insert(rowindex,vector_magnitude_sum(vecs))
         
-    print vagwidths
+        if (vagwidths[rowindex] < vagwidthmin): 
+            vagwidthmin = vagwidths[rowindex]
+            
+        if (vagwidths[rowindex] > vagwidthmax):
+            vagwidthmax = vagwidths[rowindex]
+
+    global vagrowcolors
+    
+    for rowindex in range(0,len(vagwidths)):
+        
+        green = (vagwidths[rowindex] - vagwidthmin) / vagwidthmax
+        # green = (vagwidths[rowindex]/vagwidthmax)
+        red = 1 - green
+        blue = 0
+        vagrowcolors.append([red,green,blue])
+    
+    return([vagwidthmin, vagwidthmax])
         
 
 def width_distance_color(fid_point):
-    None
+    ''' Determine the vaginal width at each level, then color-code based on the longest and shortest. 
+        Return the color determined by our previous calibration. '''
+    # The below line is an unnecessary line because we're not modifying vagrowcolors,
+    #   but it's a good reminder that we're pulling in a global.
+    #global vagrowcolors
+    
+    rownum, colnum = get_fiducial_row_and_column(fid_point)
+    
+    if (rownum == None):
+        return [0,0,0]
+     
+    rowindex = rownum - 1
+        
+    print("coloring point " + fid_point.name)
+    print("****" + str(rowindex) + "******")
+    
+    return vagrowcolors[rowindex]
 
 def draw_pelvic_points_graph(fid_points, graphname):
 
@@ -262,8 +312,12 @@ def draw_pelvic_points_graph(fid_points, graphname):
                                                 fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
                                                 fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
         color_fn = PIS_color_fn
-    
-    width_distance_color_calibration(fiducial_points)
+        
+    ### OPTION 4: VAGINAL WIDTH BY ROW
+    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.WIDTH):
+        minmax_distances = width_distance_color_calibration(fiducial_points)
+        
+        color_fn = width_distance_color
     
     add_fiducials_to_graph(fiducial_points, color_fn)
     
