@@ -11,7 +11,7 @@ from xml.parsers import expat
 from Utilities import debugprint
 from Utilities import debug_levels
 
-from Fiducials import fiducial, fiducial_points, print_all_fiducials
+from Fiducials import fiducial
 
 FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
 FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
@@ -48,25 +48,3 @@ def load_fiducials_from_mrml(filename, fiducial_list):
 
     # Automagically deals with fiducials using the start_element procedure above
     xmlparser.Parse(filecontents)
-
-#####################
-### DEFAULT MAIN PROC
-#####################
-    
-if __name__ == '__main__':
-    
-    import sys
-    
-    if len(sys.argv) < 2: 
-        filename = "/home/slisse/working/MRI_data/Reproducing_Larsen/Sagittal_Only_Slicer_Files/OPALII_138/OPII_138.mrml"
-    else:
-        filename = sys.argv[1]
-    
-    debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
-                
-    load_fiducials_from_mrml(filename, fiducial_points)
-        
-    print('************Final fiducials***********')
-    print_all_fiducials(fiducial_points)
-    
-    debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)

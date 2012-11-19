@@ -2,13 +2,19 @@
 # Author: Sean Lisse
 # This code is designed to load in a set of fiducials from a directory tree and normalize them to the 3DMAPS system, then display the results.
 
+# Built in library imports
+from numpy import arctan, sin, cos, pi
+
+# Generic custom imports
 from Utilities import setdebuglevel, debug_levels, debugprint
-from VectorMath import normalize, orthogonalize
+
+# Domain specific custom imports
 from Fiducials import fiducial, recenter_fiducials, reorient_fiducials, vector_from_fiducials, COORDS
-from MRMLSweep import load_fiducials_from_mrml, fiducial_points
+from VaginalProperties import VaginalProperties
+from VectorMath import normalize, orthogonalize
+from MRMLSweep import load_fiducials_from_mrml
 from PelvicPoints import draw_pelvic_points_graph
 from PelvicPoints import PUBIC_SYMPHYSIS_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, SC_JOINT_NAME
-from numpy import arctan, sin, cos, pi
 
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
@@ -105,7 +111,6 @@ def maps_verify(fid_points):
 #####################  
 
 if __name__ == '__main__':
-    
         
     from sys import argv
      
@@ -118,19 +123,21 @@ if __name__ == '__main__':
     
         debugprint('Now starting MAPS3D pelvic points program',debug_levels.BASIC_DEBUG)
                     
-        load_fiducials_from_mrml(filename, fiducial_points)
+        vagprops = VaginalProperties()
+                    
+        load_fiducials_from_mrml(filename, vagprops._fiducial_points)
                 
         ### Here we encode and graph by minimum distance from one of the P->IS lines.        
-        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
-            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
-            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)
-            and fiducial_points.has_key(SC_JOINT_NAME)):
+        if (vagprops._fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
+            and vagprops._fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
+            and vagprops._fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)
+            and vagprops._fiducial_points.has_key(SC_JOINT_NAME)):
             
-            maps_recenter_and_reorient(fiducial_points)
+            maps_recenter_and_reorient(vagprops._fiducial_points)
             
-            maps_verify(fiducial_points)
+            maps_verify(vagprops._fiducial_points)
                         
-            draw_pelvic_points_graph(fiducial_points, filename)
+            draw_pelvic_points_graph(vagprops._fiducial_points, filename)
         else:
             print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
                   + ", " + SC_JOINT_NAME 

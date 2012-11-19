@@ -2,13 +2,20 @@
 # Author: Sean Lisse
 # This code is designed to load in a set of fiducials from a directory tree and perform some math upon them, then display the results.
 
+# Built-in imports
 from numpy import Infinity, abs
-from MRMLSweep import load_fiducials_from_mrml, fiducial_points
+
+# Nonspecific imports
+from Utilities import setdebuglevel, debug_levels, debugprint, enum
+
+# My custom function imports
+from MRMLSweep import load_fiducials_from_mrml
+from VaginalProperties import VaginalProperties
 from Fiducials import fiducial,vector_from_fiducials, COORDS
 from VectorMath import perpendicular_component, magnitude, vector_magnitude_sum
 from Graphing import add_fiducials_to_graph, add_columns_to_graph, add_line_to_graph, add_scatterpoint_to_graph
-from Graphing import add_legend_to_graph, set_graph_boundaries, show_graph
-from Utilities import setdebuglevel, debug_levels, debugprint, enum
+from Graphing import add_legend_to_graph, set_graph_boundaries, show_graph, PelvicGraph
+
 
 PUBIC_SYMPHYSIS_NAME="PS"
 SC_JOINT_NAME="SCJ"
@@ -32,8 +39,8 @@ def xyz_color_calibration(fiducial_list):
     We will later use those extents to determine the RGB components of the color for the fiducials when drawn. '''
     global x_min, y_min, z_min, x_max, y_max,z_max
     
-    for key in fiducial_points.iterkeys():
-        fid = fiducial_points[key]
+    for key in fiducial_list.iterkeys():
+        fid = fiducial_list[key]
         
         x = fid.coords[COORDS.X]
         y = fid.coords[COORDS.Y]
@@ -64,11 +71,11 @@ def xyz_color_fn(fiducial):
 def z_color_calibration(fiducial_list):
     global z_min, z_max
     
-    for key in fiducial_points.iterkeys():
+    for key in fiducial_list.iterkeys():
         if (key in REFERENCE_POINT_NAMES):
             continue
         
-        fid = fiducial_points[key]
+        fid = fiducial_list[key]
         
         if (fid.coords[COORDS.Z] < z_min): z_min = fid.coords[COORDS.Z]
         if (fid.coords[COORDS.Z] > z_max): z_max = fid.coords[COORDS.Z]    
@@ -209,9 +216,9 @@ def width_distance_color_calibration(fid_points):
     rows=[]
     
     # Iterate through the fiducial points and gather those that have a row and column number into "rows"
-    for key in fiducial_points.iterkeys():
+    for key in fid_points.iterkeys():
         
-        rownum,colnum = get_fiducial_row_and_column(fiducial_points[key])
+        rownum,colnum = get_fiducial_row_and_column(fid_points[key])
 
         if ((rownum == None) or (colnum == None)):
             continue
@@ -227,7 +234,7 @@ def width_distance_color_calibration(fid_points):
         while(len(rows[rowindex]) < (colindex + 1)):
             rows[int(rowindex)].append([])
  
-        fid = fiducial_points[key]
+        fid = fid_points[key]
         rows[rowindex][colindex] = fid
     
   
@@ -294,49 +301,52 @@ def width_distance_color(fid_point):
 
 def draw_pelvic_points_graph(fid_points, graphname):
 
+    graph = PelvicGraph(graphname)
+
     ### OPTION 1: XYZ COLOR CODING
     if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.XYZ):
-        minmax_distances = xyz_color_calibration(fiducial_points)
+        minmax_distances = xyz_color_calibration(fid_points)
         color_fn=xyz_color_fn
     
     ### OPTION 2: Z COLOR CODING
     if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.Z):
-        minmax_distances = z_color_calibration(fiducial_points)
+        minmax_distances = z_color_calibration(fid_points)
         color_fn = z_color_fn
     
     ### OPTION 3: PIS DISTANCE COLOR CODING
     if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.PIS_DISTANCE):
-        minmax_distances = PIS_color_calibration(fiducial_points, 
-                                                fiducial_points[PUBIC_SYMPHYSIS_NAME],
-                                                fiducial_points[LEFT_ISCHIAL_SPINE_NAME],
-                                                fiducial_points[RIGHT_ISCHIAL_SPINE_NAME])
+        minmax_distances = PIS_color_calibration(fid_points, 
+                                                fid_points[PUBIC_SYMPHYSIS_NAME],
+                                                fid_points[LEFT_ISCHIAL_SPINE_NAME],
+                                                fid_points[RIGHT_ISCHIAL_SPINE_NAME])
         color_fn = PIS_color_fn
         
     ### OPTION 4: VAGINAL WIDTH BY ROW
     if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.WIDTH):
-        minmax_distances = width_distance_color_calibration(fiducial_points)
+        minmax_distances = width_distance_color_calibration(fid_points)
         
         color_fn = width_distance_color
     
-    add_fiducials_to_graph(fiducial_points, color_fn)
+    add_fiducials_to_graph(graph, fid_points, color_fn)
     
     # Display the P_IS lines on the graph as well
-    PS = fiducial_points[PUBIC_SYMPHYSIS_NAME]
-    L_IS = fiducial_points[LEFT_ISCHIAL_SPINE_NAME]
-    R_IS = fiducial_points[RIGHT_ISCHIAL_SPINE_NAME]
-    add_line_to_graph(PS.coords, L_IS.coords, "black")
-    add_line_to_graph(PS.coords, R_IS.coords, "black")
+    PS = fid_points[PUBIC_SYMPHYSIS_NAME]
+    L_IS = fid_points[LEFT_ISCHIAL_SPINE_NAME]
+    R_IS = fid_points[RIGHT_ISCHIAL_SPINE_NAME]
+    add_line_to_graph(graph, PS.coords, L_IS.coords, "black")
+    add_line_to_graph(graph, PS.coords, R_IS.coords, "black")
     
     IIS_coords = (L_IS.coords + R_IS.coords)/2
-    add_scatterpoint_to_graph("IIS", IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z],"black")
+    add_scatterpoint_to_graph(graph, "IIS", IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z],"black")
     
-    if(fiducial_points.has_key(SC_JOINT_NAME)):
-        add_line_to_graph(PS.coords, fiducial_points[SC_JOINT_NAME].coords, "black")
+    if(fid_points.has_key(SC_JOINT_NAME)):
+        add_line_to_graph(graph, PS.coords, fid_points[SC_JOINT_NAME].coords, "black")
     
     if PAD_GRAPH:
         # Pad the graph to keep all graphs at equal scale for comparison
         GRAPH_PADDING=100
-        set_graph_boundaries(PS.coords[COORDS.X] + GRAPH_PADDING, 
+        set_graph_boundaries(graph,
+                             PS.coords[COORDS.X] + GRAPH_PADDING, 
                              PS.coords[COORDS.X] - GRAPH_PADDING,
                              PS.coords[COORDS.Y] + GRAPH_PADDING, 
                              PS.coords[COORDS.Y] - GRAPH_PADDING,
@@ -344,13 +354,16 @@ def draw_pelvic_points_graph(fid_points, graphname):
                              PS.coords[COORDS.Z] - GRAPH_PADDING)
         
     # Add a legend 
-    add_legend_to_graph("Minimum Distance: " + str(round(minmax_distances[0],1)) + "mm", 
+    add_legend_to_graph(graph,
+                        "Minimum Distance: " + str(round(minmax_distances[0],1)) + "mm", 
                         "Maximum Distance: " + str(round(minmax_distances[1],1)) + "mm",
                         PIS_distance_color(minmax_distances[0]), 
                         PIS_distance_color(minmax_distances[1]))
     
     # Display the graph
-    show_graph(graphname)
+    show_graph(graph)
+
+
 
 #####################
 ### DEFAULT MAIN PROC
@@ -368,15 +381,17 @@ if __name__ == '__main__':
         filename = argv[1]
     
         debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
+        
+        vag_props = VaginalProperties()
                     
-        load_fiducials_from_mrml(filename, fiducial_points)
+        load_fiducials_from_mrml(filename, vag_props._fiducial_points)
 
         ### Here we encode and graph by minimum distance from one of the P->IS lines.        
-        if (fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
-            and fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
-            and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)):
+        if (vag_props._fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
+            and vag_props._fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
+            and vag_props._fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)):
             
-            draw_pelvic_points_graph(fiducial_points, filename)
+            draw_pelvic_points_graph(vag_props._fiducial_points, filename)
         else:
             debugprint("Error!  Cannot find one of the points named: " 
                        + PUBIC_SYMPHYSIS_NAME 

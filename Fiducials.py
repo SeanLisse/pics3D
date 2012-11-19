@@ -9,9 +9,6 @@ from Utilities import enum, debugprint, debug_levels
 
 COORDS=enum('X','Y','Z')
 
-# Create a dictionary to contain our fidicual points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
-fiducial_points=collections.OrderedDict()
-
 class fiducial:
     ''' Represents a Slicer fiducial point, with name, x, y, and z values. '''
     def __init__(self,_name,_x,_y,_z): 
@@ -31,8 +28,8 @@ def vector_from_fiducials(startfiducial, endfiducial):
     return result
 
 def print_all_fiducials(fiducial_list):
-        for key in fiducial_points.iterkeys():
-            fid = fiducial_points[key]            
+        for key in fiducial_list.iterkeys():
+            fid = fiducial_list[key]            
             print(fid.name + " at x:" + str(fid.x) + ", y:" + str(fid.y) + ", z:" + str(fid.z))
             
 def recenter_fiducials(new_origin, points_to_recenter):
@@ -41,7 +38,7 @@ def recenter_fiducials(new_origin, points_to_recenter):
     recenter_vector = vector_from_fiducials(new_origin, fiducial("origin",0,0,0))
     
     for key in points_to_recenter.iterkeys():
-        fid = fiducial_points[key]
+        fid = points_to_recenter[key]
         fid.coords = fid.coords + recenter_vector
         
 def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
@@ -75,7 +72,7 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
                    , debug_levels.DETAILED_DEBUG)
     
     for key in points_to_reorient.iterkeys():
-        fid = fiducial_points[key]
+        fid = points_to_reorient[key]
         
         debugprint("Reorienting fiducials!", debug_levels.DETAILED_DEBUG)
         debugprint("Coordinate " + str(fid.coords), debug_levels.DETAILED_DEBUG)
