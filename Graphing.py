@@ -3,7 +3,10 @@ from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projec
 import matplotlib.pyplot as plt
 from Fiducials import COORDS
 
+# Default color for pelvic points
 DEFAULT_COLOR=[0.5,0.5,0.75]
+
+# Z coordinate for drawing columns to points (this defines the "base" of the column)
 COLUMN_START=-50
 
 class PelvicGraph(object):
@@ -22,7 +25,7 @@ def default_color(fiducial):
     ''' Default coloration function. Clone this and alter it to customize your coloration when graphing. '''
     return DEFAULT_COLOR
 
-def show_graph(graph):
+def show_all_graphs():
     ''' Display the graph.  Call this after adding all scatterpoints to it. '''
     plt.show()
 
@@ -34,11 +37,14 @@ def add_line_to_graph(graph, pt1,pt2, newcolor):
     ''' Draws a line from [x1,y1,z1] to [x2,y2,z2] of color newcolor.'''
     graph._ax.plot([pt1[0],pt2[0]], [pt1[1],pt2[1]], [pt1[2],pt2[2]], color=newcolor)
 
-def add_fiducials_to_graph(graph, fid_list, color_fn = default_color):
+def add_fiducials_to_graph(graph, vagprops, color_fn = default_color):
+    
+    fid_list = vagprops._fiducial_points
+    
     ''' Add all fiducials in the dictionary fid_list to the graph.  Color code using the function color_fn which takes a fiducial as an argument. '''
     for key in fid_list.iterkeys():
         fid = fid_list[key]
-        add_scatterpoint_to_graph(graph, fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid))
+        add_scatterpoint_to_graph(graph, fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid, vagprops))
         
 ## BELOW FN IS CURRRENTLY UNUSED.
 def add_columns_to_graph(graph, fid_list, color_fn = default_color):

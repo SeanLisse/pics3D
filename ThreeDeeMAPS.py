@@ -13,8 +13,9 @@ from Fiducials import fiducial, recenter_fiducials, reorient_fiducials, vector_f
 from VaginalProperties import VaginalProperties
 from VectorMath import normalize, orthogonalize
 from MRMLSweep import load_fiducials_from_mrml
-from PelvicPoints import draw_pelvic_points_graph
-from PelvicPoints import PUBIC_SYMPHYSIS_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, SC_JOINT_NAME
+from Graphing import show_all_graphs
+from PelvicPoints import create_pelvic_points_graph
+from PelvicPoints import PUBIC_SYMPHYSIS_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, SC_JOINT_NAME, COLORIZATION_OPTIONS
 
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
@@ -119,29 +120,43 @@ if __name__ == '__main__':
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."
     else:
-        filename = argv[1]
-    
-        debugprint('Now starting MAPS3D pelvic points program',debug_levels.BASIC_DEBUG)
-                    
-        vagprops = VaginalProperties()
-                    
-        load_fiducials_from_mrml(filename, vagprops._fiducial_points)
-                
-        ### Here we encode and graph by minimum distance from one of the P->IS lines.        
-        if (vagprops._fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
-            and vagprops._fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
-            and vagprops._fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)
-            and vagprops._fiducial_points.has_key(SC_JOINT_NAME)):
-            
-            maps_recenter_and_reorient(vagprops._fiducial_points)
-            
-            maps_verify(vagprops._fiducial_points)
+        
+        ##### FIXME FIXME FIXME Look at PelvicPoints.py for the new syntax!!! #####
+        
+        vag_prop_collection = []
+        
+        graph = None
+        
+        for i in range(1,len(argv)):
+            filename = argv[i]
+        
+            debugprint('Now starting MAPS3D pelvic points program',debug_levels.BASIC_DEBUG)
                         
-            draw_pelvic_points_graph(vagprops._fiducial_points, filename)
-        else:
-            print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
-                  + ", " + SC_JOINT_NAME 
-                  + ", " + LEFT_ISCHIAL_SPINE_NAME 
-                  + ", or " + RIGHT_ISCHIAL_SPINE_NAME)   
+            vagprops = VaginalProperties()
+                        
+            load_fiducials_from_mrml(filename, vagprops._fiducial_points)
+                    
+            ### Here we encode and graph by minimum distance from one of the P->IS lines.        
+            if (vagprops._fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
+                and vagprops._fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
+                and vagprops._fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)
+                and vagprops._fiducial_points.has_key(SC_JOINT_NAME)):
+                
+                maps_recenter_and_reorient(vagprops._fiducial_points)
+                
+                maps_verify(vagprops._fiducial_points)
+                                                            
+                vag_prop_collection.append(vagprops)
+                
+                graph = create_pelvic_points_graph(graph, vagprops, filename)
+                
+            else:
+                print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
+                      + ", " + SC_JOINT_NAME 
+                      + ", " + LEFT_ISCHIAL_SPINE_NAME 
+                      + ", or " + RIGHT_ISCHIAL_SPINE_NAME
+                      + " in file " + filename)   
+            
+        show_all_graphs()
             
         debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)

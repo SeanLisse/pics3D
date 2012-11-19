@@ -2,16 +2,26 @@
 # Author: Sean Lisse
 # Definitions of fiducials and a place to store them
 
-import collections
 import numpy
 from VectorMath import normalize, magnitude, perpendicular_component
 from Utilities import enum, debugprint, debug_levels
 
 COORDS=enum('X','Y','Z')
 
+PUBIC_SYMPHYSIS_NAME="PS"
+SC_JOINT_NAME="SCJ"
+LEFT_ISCHIAL_SPINE_NAME="L_IS"
+RIGHT_ISCHIAL_SPINE_NAME="R_IS"
+
+REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME}
+
+# This is the pattern used to match fiducial names and parse out the row number (from apex, A) and column number (from left, L).
+# We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
+INDEX_PATTERN='A(\d+)L(\d+)'
+
 class fiducial:
     ''' Represents a Slicer fiducial point, with name, x, y, and z values. '''
-    def __init__(self,_name,_x,_y,_z): 
+    def __init__(self,_name, _x,_y,_z): 
         self.name = _name
         self.coords = numpy.zeros((3))
 
@@ -85,3 +95,24 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
         fid.coords[COORDS.Z] = numpy.dot(new_z_axis, original_coords) 
         
         debugprint("Becomes: " + str(fid.coords), debug_levels.DETAILED_DEBUG)
+        
+def get_fiducial_row_and_column(fid_point):
+    ''' Parse a fiducial point's name to find out what its row and column are.  
+    Returns a [row, column] tuple.  E.g. if the point is A1L1, returns [1,1].
+    Returns [None, None] if it cannot find them.'''
+     
+    # Grab the regular expressions library "re" so we can use it to parse fiducial names
+    import re
+       
+    # Ignore reference points
+    if (fid_point.name in REFERENCE_POINT_NAMES):
+        return [None, None]
+
+    searchresults = re.search(INDEX_PATTERN, fid_point.name)
+    
+    if (searchresults == None): return [None, None]
+    
+    rownum = searchresults.groups()[0] # the first group we grab should be the number after the 'A', so the row number.
+    colnum = searchresults.groups()[1] # The second group we grab should be the number after the 'L', so the column number.
+    
+    return [int(rownum), int(colnum)]
