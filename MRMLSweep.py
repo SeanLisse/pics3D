@@ -22,13 +22,13 @@ def load_fiducials_from_mrml(filename, fiducial_list):
     
     def start_element(nodename, attrs):
         ''' Internal helper for loading fiducial xml nodes from Slicer4 MRML files'''
-        debugprint("Checking XML element: " + nodename, debug_levels.DETAILED_DEBUG)
+        # debugprint("Checking XML element: " + nodename, debug_levels.DETAILED_DEBUG)
     
         if (nodename == FIDUCIAL_XML_NODE_NAME):
             name = attrs[FIDUCIAL_NAME_ATTR_NAME] 
             
             coordstring = attrs[FIDUCIAL_COORD_ATTR_NAME]
-            debugprint("Coordstring is: " + coordstring, debug_levels.DETAILED_DEBUG)
+            # debugprint("Coordstring is: " + coordstring, debug_levels.DETAILED_DEBUG)
             x,y,z = coordstring.split(" ")
         
             debugprint("Creating fiducial from XML: " + name + "," + x + "," + y + "," + z, debug_levels.BASIC_DEBUG)

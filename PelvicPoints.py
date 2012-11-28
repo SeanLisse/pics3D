@@ -6,14 +6,13 @@
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # My custom domain imports
-from MRMLSweep import load_fiducials_from_mrml
 from VaginalProperties import VaginalDisplay
 from Graphing import add_fiducials_to_graph, add_columns_to_graph, add_line_to_graph, add_scatterpoint_to_graph
 from Graphing import add_legend_to_graph, set_graph_boundaries, show_all_graphs, PelvicGraph
 from GraphColoring import calibrate_colorization_strategy_fn, fraction_color
 
 # Constants
-from Fiducials import COORDS, SC_JOINT_NAME
+from Fiducials import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME
 from GraphColoring import COLORIZATION_OPTIONS
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
@@ -39,7 +38,7 @@ def create_pelvic_points_graph(graph, vagprops, graphname, color_strategy = COLO
     add_line_to_graph(graph, PS_coords, R_IS_coords, "black")
     
     IIS_coords = vagprops._IIS.coords
-    add_scatterpoint_to_graph(graph, "IIS", IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z],"black")
+    add_scatterpoint_to_graph(graph, INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z], "black")
     
     if(fid_points.has_key(SC_JOINT_NAME)):
         add_line_to_graph(graph, PS_coords, fid_points[SC_JOINT_NAME].coords, "black")
@@ -56,7 +55,6 @@ def create_pelvic_points_graph(graph, vagprops, graphname, color_strategy = COLO
                              PS_coords[COORDS.Z] - GRAPH_PADDING)
         
     # Add a legend
-    # HACK HACK currently doing a direct call to PIS_distance_color for our legend colors.  This is WRONG.
     add_legend_to_graph(graph,
                         "Minimum Distance: " + str(round(minmax_distances[0],1)) + "mm", 
                         "Maximum Distance: " + str(round(minmax_distances[1],1)) + "mm",

@@ -12,14 +12,18 @@ PUBIC_SYMPHYSIS_NAME="PS"
 SC_JOINT_NAME="SCJ"
 LEFT_ISCHIAL_SPINE_NAME="L_IS"
 RIGHT_ISCHIAL_SPINE_NAME="R_IS"
+INTER_ISCHIAL_SPINE_NAME="IIS"
 
-REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME}
+REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME}
 
 # This is the pattern used to match fiducial names and parse out the row number (from apex, A) and column number (from left, L).
 # We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
 INDEX_PATTERN='A(\d+)L(\d+)'
 
 class fiducial:
+    name = ""
+    coords = []
+    
     ''' Represents a Slicer fiducial point, with name, x, y, and z values. '''
     def __init__(self,_name, _x,_y,_z): 
         self.name = _name
@@ -28,6 +32,20 @@ class fiducial:
         self.coords[COORDS.X] = float(_x)
         self.coords[COORDS.Y] = float(_y)
         self.coords[COORDS.Z] = float(_z)
+        
+    def to_string(self):
+        if (self == None): return "[None]"
+        
+        retstring = self.name + ":"
+        retstring += "["
+        retstring += str(self.coords[COORDS.X])
+        retstring += ","
+        retstring += str(self.coords[COORDS.Y])
+        retstring += ","
+        retstring += str(self.coords[COORDS.Z])
+        retstring += "]"
+        
+        return retstring
         
 def vector_from_fiducials(startfiducial, endfiducial):
     ''' Takes two points, startfiducial and endfiducial, and returns the vector from start to end. '''
@@ -54,14 +72,17 @@ def recenter_fiducials(new_origin, points_to_recenter):
 def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
     ''' Given a new set of axes expressed in the *old* coordinate system, rotate the fiducial points so that they now lie along the new axes. ''' 
     
-    ROUGHLY_ZERO=0.01 #Fudge factor used in verifying that axes are indeed orthogonal
+    ROUGHLY_ZERO=0.05 #Fudge factor used in verifying that axes are indeed orthogonal
     
-    if ((magnitude(new_x_axis) != 1) or (magnitude(new_y_axis) != 1) or magnitude (new_z_axis) != 1):
+    # Give a margin of 0.01 before warning about non-unit magnitude axes.
+    if ((magnitude(new_x_axis) < 0.99) or (magnitude(new_y_axis) < 0.99) or (magnitude(new_z_axis) < 0.99)
+        or (magnitude(new_x_axis) > 1.01) or (magnitude(new_y_axis) > 1.01) or (magnitude(new_z_axis) > 1.01)):
         debugprint("WARNING - requested reorientation of fiducials with non-normalized axes!", debug_levels.ERRORS)
         debugprint("X magnitude: " + str(magnitude(new_x_axis))
                    + ", Y magnitude: " + str(magnitude (new_y_axis))
                    + ", Z magnitude: " + str(magnitude (new_z_axis)), debug_levels.DETAILED_DEBUG)
     
+    # Check for orthogonality of the new axis
     if ((numpy.dot(new_x_axis, new_y_axis) > ROUGHLY_ZERO) 
         or (numpy.dot(new_x_axis, new_z_axis) > ROUGHLY_ZERO)
         or (numpy.dot(new_y_axis, new_z_axis) > ROUGHLY_ZERO)):

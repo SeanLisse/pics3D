@@ -39,15 +39,14 @@ def vector_magnitude_sum(vectorList):
     ''' Given a list of vectors, sum their magnitudes and return that as a scalar. '''
     
     total_length=0
-    print("summing vectors!")
     
     for i in range(len(vectorList)): 
         vector = vectorList[i]
         total_length= total_length + magnitude(vector)
     
-        print("summing " + str(magnitude(vector)))
+        # print("summing " + str(magnitude(vector)))
 
-    print("total:" + str(total_length))
+    # print("total:" + str(total_length))
     
     return total_length
 
