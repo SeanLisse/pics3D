@@ -3,7 +3,7 @@
 
 # Built in library imports
 import collections
-from numpy import Infinity
+from numpy import Infinity, abs
 
 # Basic utilities
 from Utilities import debug_levels, debugprint
@@ -134,7 +134,9 @@ class VaginalProperties(object):
                     # We know we have two non-empty entries, so add a vector from this point to the point before
                     vecs.append(vector_from_fiducials(columns[colindex - 1], columns[colindex]))
         
-            self._vagwidths.insert(rowindex,vector_magnitude_sum(vecs))
+            new_width = abs(vector_magnitude_sum(vecs))
+        
+            self._vagwidths.insert(rowindex,new_width)
             
             if (self._vagwidths[rowindex] < self._vagwidthmin): 
                 self._vagwidthmin = self._vagwidths[rowindex]
