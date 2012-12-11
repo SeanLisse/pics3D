@@ -4,27 +4,30 @@
 # File encapsulating all of my graph coloring logic for pelvic floor graphing.
 
 # Built-in imports
-from numpy import Infinity, abs
+from numpy import Infinity, abs, floor
 
 # Nonspecific imports
 from Utilities import debug_levels, debugprint, enum
 
 # My custom function imports
 from Fiducials import vector_from_fiducials, get_fiducial_row_and_column
-from VectorMath import perpendicular_component, magnitude, vector_magnitude_sum
+from VectorMath import perpendicular_component, magnitude
 
 # Constants
-from Fiducials import COORDS, REFERENCE_POINT_NAMES, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME
+from Fiducials import COORDS, REFERENCE_POINT_NAMES
 
-COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH')
-COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.WIDTH
+COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH', 'SEQUENTIAL')
+DEFAULT_COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.XYZ
 
 REFERENCE_POINT_COLOR = [0,0,0]
 
-# Colorization globals (careful, multideclaration!)
+# PIS Colorization globals (careful, multideclaration!)
 PIS_distance_min = x_min = y_min = z_min = Infinity
 PIS_distance_max = x_max = y_max = z_max = -1 * Infinity
 
+# Globals used for sequential_color_fn
+seq_color_fn_counter = 0
+SEQ_COLOR_FN_STEP_SIZE = 0.33
 
 def xyz_color_calibration(fiducial_list):
     ''' Given a list of fiducials, gather their maximum and minimum 3D extents in the x, y, and z coordinates.
@@ -210,29 +213,57 @@ def width_distance_color_fn(fiducial,vagdisplay):
     
     return vagdisplay._vagrowcolors[rowindex]
 
-def calibrate_colorization_strategy_fn(color_strat_enum, vagdisplay):
+
+ 
+def sequential_color_fn_calibration(vagdisplay):
+    ''' Each vagina gets a different color.'''
+    
+    global seq_color_fn_counter
+    
+    red_color_fraction = seq_color_fn_counter % 1
+    green_color_fraction = 1 - red_color_fraction
+    blue_color_fraction = floor(seq_color_fn_counter/1) * SEQ_COLOR_FN_STEP_SIZE
+    
+    seq_color_fn_counter += SEQ_COLOR_FN_STEP_SIZE
+    
+    def custom_color_fn(fiducial, vagdisplay): 
+        return [red_color_fraction, green_color_fraction, blue_color_fraction] 
+    
+    return custom_color_fn
+
+def calibrate_colorization_strategy_fn(vagdisplay):
     ''' Calibrates a colorization strategy given its enum and the vaginal properties.
         Returns a tuple of [fn, minmax] where "function" is a colorizing function to be used later
         and "minmax" is a tuple [min,max] of minimum and maximum values to add to the graph legend.'''
 
+    color_strat_enum = vagdisplay._color_strategy
+    
+    color_fn = None
+    minmax_distances=[Infinity, -1 * Infinity]
+
     ### OPTION 1: XYZ COLOR CODING
-    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.XYZ):
+    if (color_strat_enum == COLORIZATION_OPTIONS.XYZ):
         minmax_distances = xyz_color_calibration(vagdisplay._fiducial_points)
         color_fn = xyz_color_fn
     
     ### OPTION 2: Z COLOR CODING
-    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.Z):
+    if (color_strat_enum == COLORIZATION_OPTIONS.Z):
         minmax_distances = z_color_calibration(vagdisplay._fiducial_points)
         color_fn = z_color_fn
     
     ### OPTION 3: PIS DISTANCE COLOR CODING
-    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.PIS_DISTANCE):
+    if (color_strat_enum == COLORIZATION_OPTIONS.PIS_DISTANCE):
         minmax_distances = PIS_color_calibration(vagdisplay)
         color_fn = PIS_color_fn
         
     ### OPTION 4: VAGINAL WIDTH BY ROW
-    if (COLORIZATION_STRATEGY == COLORIZATION_OPTIONS.WIDTH):
+    if (color_strat_enum == COLORIZATION_OPTIONS.WIDTH):
         minmax_distances = width_distance_color_calibration(vagdisplay)    
         color_fn = width_distance_color_fn
+        
+    ### OPTION 5: SEQUENTIAL COLORING
+    if (color_strat_enum == COLORIZATION_OPTIONS.SEQUENTIAL):
+        color_fn = sequential_color_fn_calibration(vagdisplay)
+        minmax_distances = [-1 * Infinity,Infinity]
         
     return color_fn, minmax_distances

@@ -165,23 +165,24 @@ class VaginalProperties(object):
         return retstring
 
 class VaginalDisplay(VaginalProperties):
-    
-    # Graph to use to display this vagina
-    _graph = None
-        # Strategy to use to color this vagina
+ 
+    # What strategy should we use to display this vagina?
     _color_strategy = None
+    
     # Vaginal width list (indexed by fiducial rows)
-    _vagrowcolors=[]
+    _vagrowcolors = None
     
     # Intentionally "Class Global" items that are used to display comparisons
     _globalvagwidthmin = Infinity
     _globalvagwidthmax = -1 * Infinity
     
-    def __init__(self, name):
+    def __init__(self, name, color_strat):
         VaginalProperties.__init__(self, name)
-    
-    def setColorStrategy(self, color_strategy):
-        self._color_strategy = color_strategy
+        
+        self._color_strategy = color_strat
+        
+        self._vagrowcolors=[]
+       
         
     def compute_properties(self):
         VaginalProperties.compute_properties(self)

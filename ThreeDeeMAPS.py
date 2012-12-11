@@ -17,9 +17,13 @@ from PelvicPoints import create_pelvic_points_graph
 
 #Constants
 from Fiducials import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
+from GraphColoring import COLORIZATION_OPTIONS
+
+COLOR_STRAT = COLORIZATION_OPTIONS.XYZ
 
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
+
 
 def maps_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using MAPS3D methodology (i.e. recenter on the pubic symphysis). '''
@@ -150,7 +154,7 @@ if __name__ == '__main__':
         
             debugprint('Now starting MAPS3D pelvic points program',debug_levels.BASIC_DEBUG)
                         
-            vag_display = VaginalDisplay(filename)        
+            vag_display = VaginalDisplay(filename, COLOR_STRAT)        
             vag_display.initialize_from_MRML(filename)
                     
             maps_recenter_and_reorient(vag_display)
