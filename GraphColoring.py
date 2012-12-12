@@ -27,7 +27,7 @@ PIS_distance_max = x_max = y_max = z_max = -1 * Infinity
 
 # Globals used for sequential_color_fn
 seq_color_fn_counter = 0
-SEQ_COLOR_FN_STEP_SIZE = 0.33
+SEQ_COLOR_FN_STEP_SIZE = 0.1
 
 def xyz_color_calibration(fiducial_list):
     ''' Given a list of fiducials, gather their maximum and minimum 3D extents in the x, y, and z coordinates.
@@ -220,11 +220,17 @@ def sequential_color_fn_calibration(vagdisplay):
     
     global seq_color_fn_counter
     
-    red_color_fraction = seq_color_fn_counter % 1
-    green_color_fraction = 1 - red_color_fraction
-    blue_color_fraction = floor(seq_color_fn_counter/1) * SEQ_COLOR_FN_STEP_SIZE
-    
     seq_color_fn_counter += SEQ_COLOR_FN_STEP_SIZE
+    
+    # Define RGB colors.  Arbitrary colorization functions that I made up.
+    red_color_fraction = seq_color_fn_counter 
+    green_color_fraction = (seq_color_fn_counter % 0.5) * 2
+    blue_color_fraction =  (seq_color_fn_counter % 0.5) * 3
+    
+    # Limit the range of each portion of RGB to 0..1
+    red_color_fraction = red_color_fraction % 1
+    green_color_fraction = green_color_fraction % 1
+    blue_color_fraction = blue_color_fraction % 1 
     
     def custom_color_fn(fiducial, vagdisplay): 
         return [red_color_fraction, green_color_fraction, blue_color_fraction] 
