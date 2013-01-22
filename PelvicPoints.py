@@ -16,7 +16,7 @@ from Fiducials import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME
 from GraphColoring import DEFAULT_COLORIZATION_STRATEGY
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
-PAD_GRAPH=True
+PAD_GRAPH=False
 
 def create_pelvic_points_graph(graph, vagdisplay, graphname):
 

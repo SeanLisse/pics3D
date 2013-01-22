@@ -11,10 +11,11 @@ from Utilities import debug_levels, debugprint
 # My custom function imports
 from Fiducials import fiducial, vector_from_fiducials, get_fiducial_row_and_column
 from MRMLSweep import load_fiducials_from_mrml
-from VectorMath import vector_magnitude_sum
+from VectorMath import vector_magnitude_sum, magnitude
 
 # Constants
 from Fiducials import COORDS, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
+from GraphColoring import DEFAULT_COLORIZATION_STRATEGY
 
 class VaginalProperties(object):
     ''' This class is used to store information about the bony pelvis and pelvic floor of a particular woman, as determined by imaging. '''
@@ -47,11 +48,11 @@ class VaginalProperties(object):
     _vagwidthmin =  None
     _vagwidthmax = None
     
-    def __init__(self, name, fiducials=None):
+    def __init__(self, name, fiducials = None):
         
         self._name = name
         
-        if (fiducials==None):
+        if (fiducials == None):
             # Create a dictionary to contain our fiducial points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
             self._fiducial_points = collections.OrderedDict()
         else: 
@@ -145,10 +146,12 @@ class VaginalProperties(object):
                 self._vagwidthmax = self._vagwidths[rowindex]
             
     def initialize_from_MRML(self, filename):
+        ''' Load a set of fiducials from an MRML file.'''
         load_fiducials_from_mrml(filename, self._fiducial_points)
         self.compute_properties() 
 
     def to_string(self):
+        ''' Converts this object to a string readout. '''
         retstring = ("Vaginal properties.  " + "\n") 
         retstring += ("Name: " + self._name + "\n")
         
@@ -156,6 +159,9 @@ class VaginalProperties(object):
         retstring += ("Left Ischial Spine: " + self._Left_IS.to_string() + "\n")
         retstring += ("Right Ischial Spine: " + self._Right_IS.to_string() + "\n")
         retstring += ("Sacrococcygeal Joint: " + self._SC_Joint.to_string() + "\n")
+        
+        IIS_distance = magnitude(vector_from_fiducials(self._Left_IS, self._Right_IS))
+        retstring += ("Distance from L_IS to R_IS: " + str(IIS_distance))
         
         retstring += ("Vaginal Width Table: \n")
         
@@ -176,7 +182,7 @@ class VaginalDisplay(VaginalProperties):
     _globalvagwidthmin = Infinity
     _globalvagwidthmax = -1 * Infinity
     
-    def __init__(self, name, color_strat):
+    def __init__(self, name, color_strat = DEFAULT_COLORIZATION_STRATEGY ):
         VaginalProperties.__init__(self, name)
         
         self._color_strategy = color_strat
