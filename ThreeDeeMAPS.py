@@ -69,13 +69,11 @@ def maps_get_y_axis(fiducial_points):
     # ... then build in the correction.
     # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
     # thus the inversion with a -1 multiplier.
-    # This isn't perfect because ideally we'd be using the *new* z axis for the drop line, not the *old* one.  But in order to get the
+    # This isn't perfect because ideally we'd be using the *new* z axis for the angle measurement, not the *old* one.  But in order to get the
     # new z axis, we need the new y axis.  So, we rotate along the old z axis instead.
+    #
+    # FIXME - This would be better if we could rotate about the new X axis, instead of the old.
     new_y_vector = normalize([0, -1 * cos(angle_adjustment), sin(angle_adjustment)])   
-    
-    # new_y_point = fiducial("new y", new_y_vector[COORDS.X], new_y_vector[COORDS.Y], new_y_vector[COORDS.Z])
-    
-    # MAPS_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], new_y_point))  
     
     debugprint("New Y vector is " +str(new_y_vector))
       
@@ -124,6 +122,9 @@ def maps_generate_transformation_matrix(vag_props):
     # Our origin translation becomes the new fourth row, *after* being converted to the new coordinate system.
     row4 = [origin_translation[COORDS.X], origin_translation[COORDS.Y], origin_translation[COORDS.Z], 1] * transform_matrix
     transform_matrix = matrix([row1, row2, row3, row4.tolist()[0]])
+
+
+    print("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis) )
     
     print("Transformation Matrix: " + str(transform_matrix.tolist()))
     
