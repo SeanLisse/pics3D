@@ -9,7 +9,7 @@ from numpy import arctan, sin, cos, pi, matrix, array
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
-from Fiducials import fiducial, recenter_fiducials, reorient_fiducials, vector_from_fiducials, COORDS
+from Fiducials import vector_from_fiducials, COORDS
 from VaginalProperties import VaginalDisplay
 from VectorMath import normalize, orthogonalize
 from Graphing import show_all_graphs
@@ -50,6 +50,8 @@ def maps_get_x_axis(fiducial_points):
 def maps_get_y_axis(fiducial_points):
     ''' Find the new MAPS3D Y axis, which will be SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
     
+    # TODO - fix me to rotate properly around the X axis, as possible...
+    
     # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
     SCIPP_line = normalize(maps_get_SCIPP_line(fiducial_points))
     
@@ -69,13 +71,15 @@ def maps_get_y_axis(fiducial_points):
     # thus the inversion with a -1 multiplier.
     # This isn't perfect because ideally we'd be using the *new* z axis for the drop line, not the *old* one.  But in order to get the
     # new z axis, we need the new y axis.  So, we rotate along the old z axis instead.
-    new_y_vector = [0, -1 * cos(angle_adjustment), sin(angle_adjustment)]        
-       
-    new_y_point = fiducial("new y", new_y_vector[COORDS.X], new_y_vector[COORDS.Y], new_y_vector[COORDS.Z])
+    new_y_vector = normalize([0, -1 * cos(angle_adjustment), sin(angle_adjustment)])   
     
-    MAPS_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], new_y_point))  
+    # new_y_point = fiducial("new y", new_y_vector[COORDS.X], new_y_vector[COORDS.Y], new_y_vector[COORDS.Z])
+    
+    # MAPS_line = normalize(vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], new_y_point))  
+    
+    debugprint("New Y vector is " +str(new_y_vector))
       
-    return MAPS_line
+    return new_y_vector
 
 def maps_get_z_axis(fiducial_points):
     ''' Find the new MAPS3D Z axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
@@ -146,9 +150,8 @@ def maps_recenter_and_reorient(vag_props):
               + " in file " + filename)   
         return
 
-
     # TESTING TESTING
-    transformation_matrix = maps_generate_transformation_matrix(vag_display)
+    transformation_matrix = maps_generate_transformation_matrix(vag_props)
  
     for fid in fid_points:
         fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, transformation_matrix)
@@ -166,8 +169,8 @@ def maps_verify(vag_props):
     # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
     SCIPP_angle_from_horiz = arctan(SCIPP_line[COORDS.Z]/SCIPP_line[COORDS.Y])
     
-    debugprint("Final SCIPP angle from horizontal is: " + str(abs(SCIPP_angle_from_horiz) * 180 /pi ) 
-               + " degrees and should be: " + str(abs(DESIRED_SCIPP_ANGLE) * 180 / pi) + " degrees", debug_levels.DETAILED_DEBUG)
+    debugprint("Final SCIPP angle from horizontal is: " + str(SCIPP_angle_from_horiz * 180 /pi ) 
+               + " degrees and should be: " + str(DESIRED_SCIPP_ANGLE * 180 / pi) + " degrees", debug_levels.DETAILED_DEBUG)
     
 
 #####################
@@ -178,7 +181,7 @@ if __name__ == '__main__':
         
     from sys import argv
      
-    setdebuglevel(debug_levels.ERRORS) 
+    setdebuglevel(debug_levels.DETAILED_DEBUG) 
     
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."
