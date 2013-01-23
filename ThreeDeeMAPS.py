@@ -86,7 +86,7 @@ def transform_coords_by_matrix(coords, matrix):
     ''' Given a transformation matrix and a set of coordinates, return the coordinates transformed by the matrix. '''
     coords_vector = [coords[COORDS.X],coords[COORDS.Y],coords[COORDS.Z], 1]
     
-    return ((coords_vector * matrix).tolist()[0])
+    return array((coords_vector * matrix).tolist()[0])
 
 def maps_generate_transformation_matrix(vag_props):
     ''' Generate a transformation matrix that we can use to translate points from radiological coordinates into MAPS coordinates.
@@ -147,18 +147,11 @@ def maps_recenter_and_reorient(vag_props):
         return
 
 
-    # Change origin of coordinates to fit our MAPS3D system
-    recenter_fiducials(maps_get_new_origin(fid_points), fid_points)
-            
-    # Change axes of coordinates to fit our MAPS3D system
-    new_x_axis = maps_get_x_axis(fid_points)
-    new_y_axis = maps_get_y_axis(fid_points)
-    new_z_axis = maps_get_z_axis(fid_points)
-    
-    debugprint("Reorienting to x axis " + str(new_x_axis)
-               + ", y axis  " + str(new_y_axis)
-               + ", z axis " + str(new_z_axis), debug_levels.DETAILED_DEBUG)
-    reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, fid_points)
+    # TESTING TESTING
+    transformation_matrix = maps_generate_transformation_matrix(vag_display)
+ 
+    for fid in fid_points:
+        fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, transformation_matrix)
 
     # NO scaling for now - but we may reconsider this in the future!
 
@@ -202,14 +195,11 @@ if __name__ == '__main__':
             vag_display = VaginalDisplay(filename, COLOR_STRAT)        
             vag_display.initialize_from_MRML(filename)
             
-            # TESTING TESTING
-            maps_generate_transformation_matrix(vag_display)
-                    
-            # maps_recenter_and_reorient(vag_display)
+            maps_recenter_and_reorient(vag_display)
                 
-            # maps_verify(vag_display)
+            maps_verify(vag_display)
                 
-            # graph = create_pelvic_points_graph(graph, vag_display, filename)
+            graph = create_pelvic_points_graph(graph, vag_display, filename)
             
             print(vag_display.to_string())
                             
