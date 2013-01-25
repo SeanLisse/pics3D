@@ -5,7 +5,7 @@
 # Built in library imports
 from numpy import arctan, sin, cos, pi, matrix, array
 
-# Generic custom imports
+# Generic custom imports 
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
