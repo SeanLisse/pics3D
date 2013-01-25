@@ -2,11 +2,12 @@
 # Author: Sean Lisse
 # This code is designed to load in a set of fiducials from a directory tree
 
+import collections
+
 from Utilities import debugprint
 from Utilities import debug_levels
 # import VectorMath
 
-from Fiducials import fiducial_points
 from Fiducials import fiducial
 
 from os import path
@@ -16,6 +17,9 @@ from os import curdir
 FIDUCIAL_EXTENSIONS=['.acsv']
 		
 def load_fiducials_from_dir(dirname = curdir):
+	
+	fiducial_points = collections.OrderedDict()
+	
 	if not(path.isdir(dirname)):
 		if path.isfile(dirname):
 			return load_fiducial_from_file(dirname)
@@ -40,6 +44,8 @@ def load_fiducials_from_dir(dirname = curdir):
 					debugprint("Invalid return from attempting to load from file " + path.join(root,name), debug_levels.ERRORS)
 			else: 
 				debugprint("Ignoring file " + name + " as it does not fit any of our patterns.", debug_levels.BASIC_DEBUG)
+				
+	return fiducial_points
 				
 
 def load_fiducial_from_file(filename):
@@ -99,9 +105,9 @@ if __name__ == '__main__':
 	from Fiducials import print_all_fiducials
 	
 	debugprint('Now starting directory sweep for fiducials',debug_levels.BASIC_DEBUG)
-	load_fiducials_from_dir()
+	fids = load_fiducials_from_dir()
 
-	print_all_fiducials()
+	print_all_fiducials(fids)
 				
 	debugprint('Now leaving directory sweep.',debug_levels.BASIC_DEBUG)
 
