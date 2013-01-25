@@ -15,9 +15,9 @@ class PelvicGraph(object):
         self._fig = plt.figure()
         self._ax = self._fig.add_subplot('111',projection='3d')
         
-        self._ax.set_xlabel('X ("Left-Right")')
-        self._ax.set_ylabel('Y ("Anterior-Posterior")')
-        self._ax.set_zlabel('Z ("Cranial-Caudal")')
+        self._ax.set_xlabel('X')
+        self._ax.set_ylabel('Y')
+        self._ax.set_zlabel('Z')
         
         plt.title(name)
 
