@@ -137,3 +137,33 @@ def get_fiducial_row_and_column(fid_point):
     colnum = searchresults.groups()[1] # The second group we grab should be the number after the 'L', so the column number.
     
     return [int(rownum), int(colnum)]
+
+def get_fiducial_list_by_row_and_column(fids):
+    ''' Given an orderedDict fids, iterate through it and parse out all names by row and column.  Return a list of rows, each of which is a list of fiducials by column. '''
+    
+    # Rows go from Apex (A1) to near the hiatus.
+    # Columns go from leftmost (L1) to rightmost (e.g. L10).
+    
+    # The below two dictionaries will be indexed by row (e.g. leftmostpoints[1] will be the leftmost point in row 1). 
+    rows = list()
+    
+    print ("Created rows: " + str(rows))
+    
+    # There is no row "zero", so we'll make that index a None-value.
+    rows.append(None)
+    
+    for fid_name in fids:
+        [row,column] = get_fiducial_row_and_column(fids[fid_name])
+        
+        if (row == None): continue
+        
+        # Add 1 since there is no row 0.
+        while (len(rows) < (row + 1)): rows.append(list())
+        
+        while (len(rows[row]) < (column + 1)): rows[row].append(None)
+        
+        rows[row][column] = fids[fid_name]
+        
+        
+    print ("Returning rows: " + str(rows))
+    return rows
