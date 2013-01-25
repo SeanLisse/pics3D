@@ -6,7 +6,9 @@
 from numpy import arctan, sin, cos, pi, matrix, array
 
 # Generic custom imports 
+from Utilities import enum
 from Utilities import setdebuglevel, debug_levels, debugprint
+
 
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials, COORDS
@@ -24,6 +26,35 @@ COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
 
+# Which axes go where.
+# In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior.
+# In "pics3d" encoding, "X" increases to the patient's posterior, "Y" increases to the patient's superior, and "Z" increases to the patient's left.
+# In "pseudo-JCS" encoding, that "X" increases to the patient's anterior, "Y" increases to the patient's superior, and "Z" increases to the patient's right.
+# 
+# In ALL of the above, we adjust the anterior-posterior axis to attempt to corect pelvic inclination to true "standing" position.
+AXIS_CODING_OPTIONS = enum('lisse','pics3d', 'pseudo-jcs')
+
+def lisse_axes_matrix_fn(fiducial_points):
+    # We need to create a "transformation matrix".  
+    # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
+    # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
+    new_x_axis = pics_get_LR_axis(fiducial_points)
+    new_y_axis = pics_get_AP_axis(fiducial_points)
+    new_z_axis = pics_get_IS_axis(fiducial_points)
+    
+    # Since our coordinates will come to us as vectors in [X,Y,Z] format, each column of our transformation matrix will 
+    # decide one of our new coordinates' elements - first column will be new x, second new y, third new z.
+    # To make the matrix math work, the fourth column will be all zeros.  
+
+    row1 = [new_x_axis[COORDS.X], new_y_axis[COORDS.X], new_z_axis[COORDS.X], 0]
+    row2 = [new_x_axis[COORDS.Y], new_y_axis[COORDS.Y], new_z_axis[COORDS.Y], 0]
+    row3 = [new_x_axis[COORDS.Z], new_y_axis[COORDS.Z], new_z_axis[COORDS.Z], 0]
+    row4 = [0,0,0,0]    # We'll determine translation next, for now it's 0s. 
+    
+    debugprint("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis), debug_levels.DETAILED_DEBUG)
+    
+    return matrix([row1, row2, row3, row4])
+
 def pics_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using PICS methodology (i.e. recenter on the pubic symphysis). '''
     if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): raise ValueError("Cannot find pubic symphysis, so cannot set PICS origin.")
@@ -31,27 +62,27 @@ def pics_get_new_origin(fiducial_points):
         return fiducial_points[PUBIC_SYMPHYSIS_NAME] 
 
 def pics_get_SCIPP_line(fiducial_points):
+    ''' Determine the sacrococcygeal->inferior pubic point line ("SCIPP line").
+        The SCIPP line is the line between the pubic symphysis and the sacro-coccygeal junction.'''
         
-    if not(fiducial_points.has_key(SC_JOINT_NAME)): 
+    if not(fiducial_points.has_key(SC_JOINT_NAME)):
         raise ValueError("Cannot find sacrococcygeal joint, so cannot find SCIPP line.")
     if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): 
         raise ValueError("Cannot find sacrococcygeal joint, so cannot find SCIPP line.")
     
     return vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], fiducial_points[SC_JOINT_NAME])
 
-def pics_get_x_axis(fiducial_points):
-    ''' Find the new PICS X axis, which is simply a normalized version of the line between the ischial spines. '''
+def pics_get_LR_axis(fiducial_points):
+    ''' Find the new Left<->Right axis, which is simply a normalized version of the line between the ischial spines. '''
     if not(fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)): 
         raise ValueError("Cannot find left and right ischial spines, so cannot set PICS x axis.")
     else: 
         return normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_NAME]))
 
-def pics_get_y_axis(fiducial_points):
-    ''' Find the new PICS Y axis, which will be SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
+# TODO - fix me to rotate properly around the X axis, as possible...
+def pics_get_AP_axis(fiducial_points):
+    ''' Find the new Anterior<->Posterior axis, which will be the SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
     
-    # TODO - fix me to rotate properly around the X axis, as possible...
-    
-    # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
     SCIPP_line = normalize(pics_get_SCIPP_line(fiducial_points))
     
     # Determine the current angle of the SCIPP line from the horizontal
@@ -62,8 +93,8 @@ def pics_get_y_axis(fiducial_points):
    
     angle_adjustment = DESIRED_SCIPP_ANGLE - SCIPP_angle_from_horiz
     
-    debugprint("SCIPP YZ angle is " + str(SCIPP_angle_from_horiz * 180 / pi), debug_levels.DETAILED_DEBUG)
-    debugprint("Adjustment YZ angle is " + str(angle_adjustment * 180 / pi), debug_levels.DETAILED_DEBUG)
+    debugprint("SCIPP AP to IS angle is " + str(SCIPP_angle_from_horiz * 180 / pi), debug_levels.DETAILED_DEBUG)
+    debugprint("Adjustment AP to IS angle is " + str(angle_adjustment * 180 / pi), debug_levels.DETAILED_DEBUG)
                          
     # ... then build in the correction.
     # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
@@ -72,16 +103,16 @@ def pics_get_y_axis(fiducial_points):
     # new z axis, we need the new y axis.  So, we rotate along the old z axis instead.
     #
     # FIXME - This would be better if we could rotate about the new X axis, instead of the old.
-    new_y_vector = normalize([0, -1 * cos(angle_adjustment), sin(angle_adjustment)])   
+    new_AP_vector = normalize([0, -1 * cos(angle_adjustment), sin(angle_adjustment)])   
     
-    debugprint("New Y vector is " +str(new_y_vector))
+    debugprint("New AnteroPosterior vector is " +str(new_AP_vector))
       
-    return new_y_vector
+    return new_AP_vector
 
-def pics_get_z_axis(fiducial_points):
-    ''' Find the new PICS Z axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
+def pics_get_IS_axis(fiducial_points):
+    ''' Find the new Inferior<->Superior axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
     
-    return orthogonalize(pics_get_x_axis(fiducial_points), pics_get_y_axis(fiducial_points))
+    return orthogonalize(pics_get_LR_axis(fiducial_points), pics_get_AP_axis(fiducial_points))
 
 def transform_coords_by_matrix(coords, matrix):
     ''' Given a transformation matrix and a set of coordinates, return the coordinates transformed by the matrix. '''
@@ -96,35 +127,19 @@ def pics_generate_transformation_matrix(vag_props):
     
     fiducial_points = vag_props._fiducial_points
 
-    # We need to create a "transformation matrix".  
-    # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
-    # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
-    new_x_axis = pics_get_x_axis(fiducial_points)
-    new_y_axis = pics_get_y_axis(fiducial_points)
-    new_z_axis = pics_get_z_axis(fiducial_points)
-    new_origin = pics_get_new_origin(fiducial_points).coords
+    transform_matrix=lisse_axes_matrix_fn(fiducial_points)
 
     # To find out how much to translate each old point to the new coordinate system,
     # we find the vector from the old origin (0,0,0) to the new origin.
-    origin_translation = [0,0,0] - new_origin
-    
-    # Since our coordinates will come to us as vectors in [X,Y,Z] format, each column of our transformation matrix will 
-    # decide one of our new coordinates' elements - first column will be new x, second new y, third new z.
-    # To make the matrix math work, the fourth column will be all zeros.  
-
-    row1 = [new_x_axis[COORDS.X], new_y_axis[COORDS.X], new_z_axis[COORDS.X], 0]
-    row2 = [new_x_axis[COORDS.Y], new_y_axis[COORDS.Y], new_z_axis[COORDS.Y], 0]
-    row3 = [new_x_axis[COORDS.Z], new_y_axis[COORDS.Z], new_z_axis[COORDS.Z], 0]
-    row4 = [0,0,0,0]    # We'll determine translation next, for now it's 0s. 
-    transform_matrix = matrix([row1, row2, row3, row4])
-
     # Our origin translation becomes the new fourth row, *after* being converted to the new coordinate system.
+    new_origin = pics_get_new_origin(fiducial_points).coords
+    origin_translation = [0,0,0] - new_origin
     row4 = [origin_translation[COORDS.X], origin_translation[COORDS.Y], origin_translation[COORDS.Z], 1] * transform_matrix
-    transform_matrix = matrix([row1, row2, row3, row4.tolist()[0]])
-
-
-    debugprint("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis), debug_levels.DETAILED_DEBUG)
-    
+    transform_matrix = matrix([transform_matrix[0].tolist()[0], 
+                               transform_matrix[1].tolist()[0],
+                               transform_matrix[2].tolist()[0],
+                               row4.tolist()[0]])
+     
     debugprint("Transformation Matrix: " + str(transform_matrix.tolist()), debug_levels.DETAILED_DEBUG)
     
     debugprint("New origin in old coordinates: " + str(new_origin), debug_levels.DETAILED_DEBUG)
