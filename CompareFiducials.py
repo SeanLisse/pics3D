@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # Author: Sean Lisse
-# This code is designed to load in two sets of fiducials from two files, normalize them to the 3DMAPS system, compare them, and display the results.
+# This code is designed to load in two sets of fiducials from two files, normalize them to the PICS3D system, compare them, and display the results.
 
 # Built in library imports
 import collections
@@ -8,7 +8,7 @@ import collections
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials, COORDS, get_fiducial_list_by_row_and_column
 from VectorMath import magnitude 
-from ThreeDeeMAPS import maps_recenter_and_reorient, maps_verify
+from ThreeDeeMAPS import pics_recenter_and_reorient, pics_verify
 from VaginalProperties import VaginalDisplay
 from Graphing import show_all_graphs, add_line_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
@@ -134,9 +134,9 @@ if __name__ == '__main__':
         vag_display1 = VaginalDisplay(filename, COLORIZATION_OPTIONS.SEQUENTIAL)        
         vag_display1.initialize_from_MRML(filename)
         
-        # Normalize to MAPS.        
-        maps_recenter_and_reorient(vag_display1)
-        maps_verify(vag_display1)
+        # Normalize to pics.        
+        pics_recenter_and_reorient(vag_display1)
+        pics_verify(vag_display1)
         
         # Display it.
         print(vag_display1.to_string())    
@@ -147,9 +147,9 @@ if __name__ == '__main__':
         vag_display2 = VaginalDisplay(filename, COLORIZATION_OPTIONS.SEQUENTIAL)        
         vag_display2.initialize_from_MRML(filename)
         
-        # Normalize to MAPS.        
-        maps_recenter_and_reorient(vag_display2)
-        maps_verify(vag_display2)
+        # Normalize to pics.        
+        pics_recenter_and_reorient(vag_display2)
+        pics_verify(vag_display2)
 
         # Display it.
         graph = create_pelvic_points_graph(graph, vag_display2, filename)

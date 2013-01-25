@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # Author: Sean Lisse
-# This code is designed to load in a set of fiducials from a directory tree and normalize them to the 3DMAPS system, then display the results.
+# This code is designed to load in a set of fiducials from a directory tree and normalize them to the PICS system, then display the results.
 
 # Built in library imports
 from numpy import arctan, sin, cos, pi, matrix, array
@@ -24,14 +24,13 @@ COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
 
-
-def maps_get_new_origin(fiducial_points):
-    ''' Find the new origin of our coordinate system using MAPS3D methodology (i.e. recenter on the pubic symphysis). '''
-    if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): raise ValueError("Cannot find pubic symphysis, so cannot set MAPS3D origin.")
+def pics_get_new_origin(fiducial_points):
+    ''' Find the new origin of our coordinate system using PICS methodology (i.e. recenter on the pubic symphysis). '''
+    if not(fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME)): raise ValueError("Cannot find pubic symphysis, so cannot set PICS origin.")
     else: 
         return fiducial_points[PUBIC_SYMPHYSIS_NAME] 
 
-def maps_get_SCIPP_line(fiducial_points):
+def pics_get_SCIPP_line(fiducial_points):
         
     if not(fiducial_points.has_key(SC_JOINT_NAME)): 
         raise ValueError("Cannot find sacrococcygeal joint, so cannot find SCIPP line.")
@@ -40,20 +39,20 @@ def maps_get_SCIPP_line(fiducial_points):
     
     return vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], fiducial_points[SC_JOINT_NAME])
 
-def maps_get_x_axis(fiducial_points):
-    ''' Find the new MAPS3D X axis, which is simply a normalized version of the line between the ischial spines. '''
+def pics_get_x_axis(fiducial_points):
+    ''' Find the new PICS X axis, which is simply a normalized version of the line between the ischial spines. '''
     if not(fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)): 
-        raise ValueError("Cannot find left and right ischial spines, so cannot set MAPS3D x axis.")
+        raise ValueError("Cannot find left and right ischial spines, so cannot set PICS x axis.")
     else: 
         return normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_NAME]))
 
-def maps_get_y_axis(fiducial_points):
-    ''' Find the new MAPS3D Y axis, which will be SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
+def pics_get_y_axis(fiducial_points):
+    ''' Find the new PICS Y axis, which will be SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
     
     # TODO - fix me to rotate properly around the X axis, as possible...
     
     # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
-    SCIPP_line = normalize(maps_get_SCIPP_line(fiducial_points))
+    SCIPP_line = normalize(pics_get_SCIPP_line(fiducial_points))
     
     # Determine the current angle of the SCIPP line from the horizontal
     # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
@@ -79,10 +78,10 @@ def maps_get_y_axis(fiducial_points):
       
     return new_y_vector
 
-def maps_get_z_axis(fiducial_points):
-    ''' Find the new MAPS3D Z axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
+def pics_get_z_axis(fiducial_points):
+    ''' Find the new PICS Z axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
     
-    return orthogonalize(maps_get_x_axis(fiducial_points), maps_get_y_axis(fiducial_points))
+    return orthogonalize(pics_get_x_axis(fiducial_points), pics_get_y_axis(fiducial_points))
 
 def transform_coords_by_matrix(coords, matrix):
     ''' Given a transformation matrix and a set of coordinates, return the coordinates transformed by the matrix. '''
@@ -90,20 +89,20 @@ def transform_coords_by_matrix(coords, matrix):
     
     return array((coords_vector * matrix).tolist()[0])
 
-def maps_generate_transformation_matrix(vag_props):
-    ''' Generate a transformation matrix that we can use to translate points from radiological coordinates into MAPS coordinates.
-        To do this, we compute our MAPS x,y, and z axes as described in the radiological coordinate system, find our new origin point, 
+def pics_generate_transformation_matrix(vag_props):
+    ''' Generate a transformation matrix that we can use to translate points from radiological coordinates into pics coordinates.
+        To do this, we compute our pics x,y, and z axes as described in the radiological coordinate system, find our new origin point, 
         and create a matrix from that information.  NO scaling for now - but we may reconsider this in the future.'''
     
     fiducial_points = vag_props._fiducial_points
-    
+
     # We need to create a "transformation matrix".  
     # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
     # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
-    new_x_axis = maps_get_x_axis(fiducial_points)
-    new_y_axis = maps_get_y_axis(fiducial_points)
-    new_z_axis = maps_get_z_axis(fiducial_points)
-    new_origin = maps_get_new_origin(fiducial_points).coords
+    new_x_axis = pics_get_x_axis(fiducial_points)
+    new_y_axis = pics_get_y_axis(fiducial_points)
+    new_z_axis = pics_get_z_axis(fiducial_points)
+    new_origin = pics_get_new_origin(fiducial_points).coords
 
     # To find out how much to translate each old point to the new coordinate system,
     # we find the vector from the old origin (0,0,0) to the new origin.
@@ -124,17 +123,17 @@ def maps_generate_transformation_matrix(vag_props):
     transform_matrix = matrix([row1, row2, row3, row4.tolist()[0]])
 
 
-    print("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis) )
+    debugprint("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis), debug_levels.DETAILED_DEBUG)
     
-    print("Transformation Matrix: " + str(transform_matrix.tolist()))
+    debugprint("Transformation Matrix: " + str(transform_matrix.tolist()), debug_levels.DETAILED_DEBUG)
     
-    print("New origin in old coordinates: " + str(new_origin))
-    print("New origin in new coordinates: " + str(transform_coords_by_matrix(new_origin, transform_matrix)))
+    debugprint("New origin in old coordinates: " + str(new_origin), debug_levels.DETAILED_DEBUG)
+    debugprint("New origin in new coordinates: " + str(transform_coords_by_matrix(new_origin, transform_matrix)), debug_levels.DETAILED_DEBUG)
 
     return transform_matrix
 
-def maps_recenter_and_reorient(vag_props):
-    ''' Rotate, translate, and (someday perhaps) scale all of our fiducial points to fit the MAPS3D reference system. ''' 
+def pics_recenter_and_reorient(vag_props):
+    ''' Rotate, translate, and (someday perhaps) scale all of our fiducial points to fit the PICS reference system. ''' 
 
     fid_points = vag_props._fiducial_points
 
@@ -152,19 +151,19 @@ def maps_recenter_and_reorient(vag_props):
         return
 
     # TESTING TESTING
-    transformation_matrix = maps_generate_transformation_matrix(vag_props)
+    transformation_matrix = pics_generate_transformation_matrix(vag_props)
  
     for fid in fid_points:
         fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, transformation_matrix)
 
     # NO scaling for now - but we may reconsider this in the future!
 
-def maps_verify(vag_props):
+def pics_verify(vag_props):
     
     fid_points = vag_props._fiducial_points
     
     # Determine the sacrococcygeal->inferior pubic point line ("SCIPP line")
-    SCIPP_line = normalize(maps_get_SCIPP_line(fid_points))
+    SCIPP_line = normalize(pics_get_SCIPP_line(fid_points))
     
     # Determine the current angle of the SCIPP line from the horizontal
     # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
@@ -194,14 +193,14 @@ if __name__ == '__main__':
         for i in range(1,len(argv)):
             filename = argv[i]
         
-            debugprint('Now starting MAPS3D pelvic points program',debug_levels.BASIC_DEBUG)
+            debugprint('Now starting PICS pelvic points program',debug_levels.BASIC_DEBUG)
                         
             vag_display = VaginalDisplay(filename, COLOR_STRAT)        
             vag_display.initialize_from_MRML(filename)
             
-            maps_recenter_and_reorient(vag_display)
+            pics_recenter_and_reorient(vag_display)
                 
-            maps_verify(vag_display)
+            pics_verify(vag_display)
                 
             graph = create_pelvic_points_graph(graph, vag_display, filename)
             
