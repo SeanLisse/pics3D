@@ -9,7 +9,6 @@ from numpy import arctan, sin, cos, pi, matrix, array
 from Utilities import enum
 from Utilities import setdebuglevel, debug_levels, debugprint
 
-
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials, COORDS
 from VaginalProperties import VaginalDisplay
@@ -33,8 +32,11 @@ DESIRED_SCIPP_ANGLE = -0.593411946
 # 
 # In ALL of the above, we adjust the anterior-posterior axis to attempt to corect pelvic inclination to true "standing" position.
 AXIS_CODING_OPTIONS = enum('lisse','pics3d', 'pseudo-jcs')
+AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 
 def lisse_axes_matrix_fn(fiducial_points):
+    # In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior.
+
     # We need to create a "transformation matrix".  
     # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
     # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
@@ -54,6 +56,30 @@ def lisse_axes_matrix_fn(fiducial_points):
     debugprint("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis), debug_levels.DETAILED_DEBUG)
     
     return matrix([row1, row2, row3, row4])
+
+def pics3d_axes_matrix_fn(fiducial_points):
+    # In "pics3d" encoding, "X" increases to the patient's posterior, "Y" increases to the patient's superior, and "Z" increases to the patient's left.
+
+    # We need to create a "transformation matrix".  
+    # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
+    # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
+    new_x_axis = pics_get_AP_axis(fiducial_points)
+    new_y_axis = pics_get_IS_axis(fiducial_points)
+    new_z_axis = pics_get_LR_axis(fiducial_points)
+    
+    # Since our coordinates will come to us as vectors in [X,Y,Z] format, each column of our transformation matrix will 
+    # decide one of our new coordinates' elements - first column will be new x, second new y, third new z.
+    # To make the matrix math work, the fourth column will be all zeros.  
+
+    row1 = [new_x_axis[COORDS.X], new_y_axis[COORDS.X], new_z_axis[COORDS.X], 0]
+    row2 = [new_x_axis[COORDS.Y], new_y_axis[COORDS.Y], new_z_axis[COORDS.Y], 0]
+    row3 = [new_x_axis[COORDS.Z], new_y_axis[COORDS.Z], new_z_axis[COORDS.Z], 0]
+    row4 = [0,0,0,0]    # We'll determine translation next, for now it's 0s. 
+    
+    debugprint("Degree of collinearity in X and Y axes: " + str(new_x_axis * new_y_axis), debug_levels.DETAILED_DEBUG)
+    
+    return matrix([row1, row2, row3, row4])
+
 
 def pics_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using PICS methodology (i.e. recenter on the pubic symphysis). '''
@@ -127,8 +153,12 @@ def pics_generate_transformation_matrix(vag_props):
     
     fiducial_points = vag_props._fiducial_points
 
-    transform_matrix=lisse_axes_matrix_fn(fiducial_points)
+    if (AXIS_CODING == AXIS_CODING_OPTIONS.lisse):
+        transform_matrix=lisse_axes_matrix_fn(fiducial_points)
 
+    if (AXIS_CODING == AXIS_CODING_OPTIONS.pics3d):
+        transform_matrix=pics3d_axes_matrix_fn(fiducial_points)
+        
     # To find out how much to translate each old point to the new coordinate system,
     # we find the vector from the old origin (0,0,0) to the new origin.
     # Our origin translation becomes the new fourth row, *after* being converted to the new coordinate system.
