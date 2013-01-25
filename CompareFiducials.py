@@ -2,13 +2,10 @@
 # Author: Sean Lisse
 # This code is designed to load in two sets of fiducials from two files, normalize them to the PICS3D system, compare them, and display the results.
 
-# Built in library imports
-import collections
-
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials, COORDS, get_fiducial_list_by_row_and_column
 from VectorMath import magnitude 
-from ThreeDeeMAPS import pics_recenter_and_reorient, pics_verify
+from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 from VaginalProperties import VaginalDisplay
 from Graphing import show_all_graphs, add_line_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
