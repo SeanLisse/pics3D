@@ -55,11 +55,11 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
                              PS_coords[COORDS.Z] - GRAPH_PADDING/10)
         
     # Add a legend
-    add_legend_to_graph(graph,
-                        "Minimum Distance: " + str(round(minmax_distances[0],1)) + "mm", 
-                        "Maximum Distance: " + str(round(minmax_distances[1],1)) + "mm",
-                        fraction_color(minmax_distances[0], minmax_distances[0], minmax_distances[1]), 
-                        fraction_color(minmax_distances[1], minmax_distances[0], minmax_distances[1]))
+    #    add_legend_to_graph(graph,
+#                        "Minimum Distance: " + str(round(minmax_distances[0],1)) + "mm", 
+#                        "Maximum Distance: " + str(round(minmax_distances[1],1)) + "mm",
+#                        fraction_color(minmax_distances[0], minmax_distances[0], minmax_distances[1]), 
+#                        fraction_color(minmax_distances[1], minmax_distances[0], minmax_distances[1]))
     
     return graph   
 
