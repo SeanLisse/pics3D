@@ -20,18 +20,26 @@ from PelvicPoints import create_pelvic_points_graph
 from Fiducials import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
 from GraphColoring import COLORIZATION_OPTIONS
 
-COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
+COLOR_STRAT = COLORIZATION_OPTIONS.WIDTH
 
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
 
 # Which axes go where.
-# In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior.
-# In "pics3d" encoding, "X" increases to the patient's posterior, "Y" increases to the patient's superior, and "Z" increases to the patient's left.
-# In "pseudo-JCS" encoding, that "X" increases to the patient's anterior, "Y" increases to the patient's superior, and "Z" increases to the patient's right.
+# In "lisse" encoding, "X" increases to the patient's left, 
+# "Y" increases to the patient's posterior, and 
+# "Z" increases to the patient's superior.
+#
+# In "pics3d" encoding, "X" increases to the patient's posterior, 
+# "Y" increases to the patient's superior, 
+# and "Z" increases to the patient's left.
+# 
+# In "pseudo-JCS" encoding, that "X" increases to the patient's anterior, 
+# "Y" increases to the patient's superior, and 
+# "Z" increases to the patient's right.
 # 
 # In ALL of the above, we adjust the anterior-posterior axis to attempt to corect pelvic inclination to true "standing" position.
-AXIS_CODING_OPTIONS = enum('lisse','pics3d', 'pseudo-jcs')
+AXIS_CODING_OPTIONS = enum('lisse','pics3d', 'pseudojcs')
 AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 
 def lisse_axes_matrix_fn(fiducial_points):
