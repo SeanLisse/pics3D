@@ -48,6 +48,10 @@ class VaginalProperties(object):
     _vagwidthmin =  None
     _vagwidthmax = None
     
+     # Intentionally "Class Global" items that are used to display comparisons
+    _globalvagwidthmin = Infinity
+    _globalvagwidthmax = -1 * Infinity
+    
     def __init__(self, name, fiducials = None):
         
         self._name = name
@@ -139,11 +143,19 @@ class VaginalProperties(object):
         
             self._vagwidths.insert(rowindex,new_width)
             
+            # Compare against *this vagina's* min/max values
             if (self._vagwidths[rowindex] < self._vagwidthmin): 
                 self._vagwidthmin = self._vagwidths[rowindex]
                 
             if (self._vagwidths[rowindex] > self._vagwidthmax):
                 self._vagwidthmax = self._vagwidths[rowindex]
+            
+            # Compare against *all vaginas'* min/max values    
+            if (self._vagwidths[rowindex] < self._globalvagwidthmin): 
+                self._globalvagwidthmin = self._vagwidths[rowindex]
+                
+            if (self._vagwidths[rowindex] > self._globalvagwidthmax):
+                self._globalvagwidthmax = self._vagwidths[rowindex]
             
     def initialize_from_MRML(self, filename):
         ''' Load a set of fiducials from an MRML file.'''
@@ -178,27 +190,12 @@ class VaginalDisplay(VaginalProperties):
     # Vaginal width list (indexed by fiducial rows)
     _vagrowcolors = None
     
-    # Intentionally "Class Global" items that are used to display comparisons
-    _globalvagwidthmin = Infinity
-    _globalvagwidthmax = -1 * Infinity
-    
     def __init__(self, name, color_strat = DEFAULT_COLORIZATION_STRATEGY ):
         VaginalProperties.__init__(self, name)
         
         self._color_strategy = color_strat
         
         self._vagrowcolors=[]
-       
-        
-    def compute_properties(self):
-        VaginalProperties.compute_properties(self)
-        
-        # Iterate over all the fiducial points and collect them into a sequence of point-to-point vectors for each row 
-        for rowindex in range(0,len(self._rows)):
-        
-            if (self._vagwidths[rowindex] < self._globalvagwidthmin): 
-                self._globalvagwidthmin = self._vagwidths[rowindex]
-                
-            if (self._vagwidths[rowindex] > self._globalvagwidthmax):
-                self._globalvagwidthmax = self._vagwidths[rowindex]
+ 
+           
     
