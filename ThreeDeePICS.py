@@ -12,7 +12,7 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials, COORDS
 from VaginalProperties import VaginalDisplay
-from VectorMath import normalize, orthogonalize
+from VectorMath import magnitude, normalize, orthogonalize
 from Graphing import show_all_graphs
 from PelvicPoints import create_pelvic_points_graph
 
@@ -24,6 +24,14 @@ COLOR_STRAT = COLORIZATION_OPTIONS.WIDTH
 
 # (34 degrees above horizontal is 0.5934 in radians)
 DESIRED_SCIPP_ANGLE = -0.593411946
+
+# Scale all points so that the SCIPP LINE LENGTH is equal to SCIPP_SCALE_LENGTH?
+#
+# WARNING WARNING - IF THIS IS TRUE, THEN ALL MEASUREMENTS BECOME RELATIVE AND ARE NO LONGER ABSOLUTE VALUES!!!
+SCALE_BY_SCIPP_LINE=False
+
+# If scaling is desired, to what length should we normalize the SCIPP line? 
+SCIPP_SCALE_LENGTH=1
 
 # Which axes go where.
 # In "lisse" encoding, "X" increases to the patient's left, 
@@ -185,6 +193,23 @@ def pics_generate_transformation_matrix(vag_props):
 
     return transform_matrix
 
+def pics_normalize_to_SCIPP_line(vag_props):
+    ''' Scale all points toward/away from the origin so that the length of the SCIPP line is equal to the constant SCIPP_SCALE. ''' 
+    
+    fid_points = vag_props._fiducial_points
+    
+    SCIPP_line = pics_get_SCIPP_line(fid_points)
+    
+    scale_factor = SCIPP_SCALE_LENGTH/magnitude(SCIPP_line)
+    
+    scale_matrix = matrix([[scale_factor,0,0,0],
+                              [0,scale_factor,0,0],
+                              [0,0,scale_factor,0],
+                              [0,0,0,0]])
+    
+    for fid in fid_points:
+        fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, scale_matrix)
+
 def pics_recenter_and_reorient(vag_props):
     ''' Rotate, translate, and (someday perhaps) scale all of our fiducial points to fit the PICS reference system. ''' 
 
@@ -203,13 +228,13 @@ def pics_recenter_and_reorient(vag_props):
               + " in file " + filename)   
         return
 
-    # TESTING TESTING
     transformation_matrix = pics_generate_transformation_matrix(vag_props)
  
     for fid in fid_points:
         fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, transformation_matrix)
 
-    # NO scaling for now - but we may reconsider this in the future!
+    if SCALE_BY_SCIPP_LINE:
+        pics_normalize_to_SCIPP_line(vag_props)
 
 def pics_verify(vag_props):
     
@@ -225,6 +250,7 @@ def pics_verify(vag_props):
     debugprint("Final SCIPP angle from horizontal is: " + str(SCIPP_angle_from_horiz * 180 /pi ) 
                + " degrees and should be: " + str(DESIRED_SCIPP_ANGLE * 180 / pi) + " degrees", debug_levels.DETAILED_DEBUG)
     
+
 
 #####################
 ### DEFAULT MAIN PROC
@@ -248,16 +274,16 @@ if __name__ == '__main__':
         
             debugprint('Now starting PICS pelvic points program',debug_levels.BASIC_DEBUG)
                         
-            vag_display = VaginalDisplay(filename, COLOR_STRAT)        
-            vag_display.initialize_from_MRML(filename)
+            vag_props = VaginalDisplay(filename, COLOR_STRAT)        
+            vag_props.initialize_from_MRML(filename)
             
-            pics_recenter_and_reorient(vag_display)
+            pics_recenter_and_reorient(vag_props)
                 
-            pics_verify(vag_display)
+            pics_verify(vag_props)
                 
-            graph = create_pelvic_points_graph(graph, vag_display, filename)
+            graph = create_pelvic_points_graph(graph, vag_props, filename)
             
-            print(vag_display.to_string())
+            print(vag_props.to_string())
                             
         show_all_graphs()
             
