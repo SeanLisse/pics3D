@@ -147,7 +147,7 @@ def get_fiducial_list_by_row_and_column(fids):
     # The below two dictionaries will be indexed by row (e.g. leftmostpoints[1] will be the leftmost point in row 1). 
     rows = list()
     
-    print ("Created rows: " + str(rows))
+    # print ("Created rows: " + str(rows))
     
     # There is no row "zero", so we'll make that index a None-value.
     rows.append(None)
@@ -165,5 +165,5 @@ def get_fiducial_list_by_row_and_column(fids):
         rows[row][column] = fids[fid_name]
         
         
-    print ("Returning rows: " + str(rows))
+    # print ("Returning rows: " + str(rows))
     return rows
