@@ -19,8 +19,8 @@ def enum(*sequential, **named):
 debug_levels=enum('NO_DEBUG','ERRORS','BASIC_DEBUG','DETAILED_DEBUG')
 
 #debug_level=debug_levels.NO_DEBUG
-#debug_level=debug_levels.BASIC_DEBUG
-debug_level=debug_levels.DETAILED_DEBUG
+debug_level=debug_levels.BASIC_DEBUG
+#debug_level=debug_levels.DETAILED_DEBUG
 
 def debugprint(info, level = debug_levels.BASIC_DEBUG):
     ''' Prints info if level is less than or equal to the current debug_level '''
