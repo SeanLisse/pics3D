@@ -147,7 +147,7 @@ def pics_get_AP_axis(fiducial_points):
     # FIXME - This would be better if we could rotate about the new X axis, instead of the old.
     new_AP_vector = normalize([0, -1 * cos(angle_adjustment), sin(angle_adjustment)])   
     
-    debugprint("New AnteroPosterior vector is " +str(new_AP_vector))
+    debugprint("New AnteroPosterior vector is " +str(new_AP_vector), debug_levels.DETAILED_DEBUG)
       
     return new_AP_vector
 
@@ -260,7 +260,7 @@ if __name__ == '__main__':
         
     from sys import argv
      
-    setdebuglevel(debug_levels.DETAILED_DEBUG) 
+    setdebuglevel(debug_levels.BASIC_DEBUG) 
     
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."
