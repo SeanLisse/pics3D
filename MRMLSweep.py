@@ -31,7 +31,7 @@ def load_fiducials_from_mrml(filename, fiducial_list):
             # debugprint("Coordstring is: " + coordstring, debug_levels.DETAILED_DEBUG)
             x,y,z = coordstring.split(" ")
         
-            debugprint("Creating fiducial from XML: " + name + "," + x + "," + y + "," + z, debug_levels.BASIC_DEBUG)
+            debugprint("Creating fiducial from XML: " + name + "," + x + "," + y + "," + z, debug_levels.DETAILED_DEBUG)
             fiducial_list[name] = fiducial(name,float(x),float(y),float(z))
     
     debugprint("Loading fiducials from MRML file: " + filename, debug_levels.BASIC_DEBUG)
