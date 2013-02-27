@@ -47,8 +47,8 @@ class VaginalProperties(object):
     
     _vagwidthmin =  None
     _vagwidthmax = None
-    
-     # Intentionally "Class Global" items that are used to display comparisons
+
+    # Intentionally "Class Global" items that are used to display comparisons
     _globalvagwidthmin = Infinity
     _globalvagwidthmax = -1 * Infinity
     
