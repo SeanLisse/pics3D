@@ -18,11 +18,22 @@ from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 # Graph drawing imports 
 from VaginalProperties import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
-from Graphing import show_all_graphs
+from Graphing import show_all_graphs, add_line_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
 
 # CONSTANTS
 COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
+
+# Should we compute edge points?
+COMPUTE_EDGES = True
+
+# Should we directly compare points by name?
+COMPUTE_POINTS_BY_NAME = False
+
+# Should we draw std_dev error bars?
+GRAPH_STD_DEV = True
+# How long should they be?  length = std_)dev * graph_multiplier.
+STD_DEV_GRAPH_MULTIPLIER=2
 
 class fiducial_statistics():
     ''' This is a class that collects statistical information about a particular fiducial point. '''
@@ -86,10 +97,13 @@ def load_vaginal_properties(filenames):
         
     return propslist
 
-def collate_fiducials_reference_points(propslist):
-    ''' Iterate over all gathered sets of vaginal properties, gathering the specially named reference point fiducials from them all and collating.'''
+def collate_fiducials_reference_points(propslist, allfidstats = None):
+    ''' Iterate over all gathered sets of vaginal properties, gathering the specially named reference point fiducials from them all and collating.
+    Fills statslist with the results and returns it.'''
 
-    allfidstats = OrderedDict()
+    if (allfidstats == None): 
+        allfidstats = OrderedDict()
+        
     for vag_props in propslist:
         
         # Grab the special cases that aren't named by row and column
@@ -107,41 +121,42 @@ def collate_fiducials_reference_points(propslist):
     return allfidstats
 
 
-#def collate_fiducials_by_row_and_column(propslist):
-#    ''' Iterate over all gathered sets of vaginal properties, gathering the fiducials from them all and collating according to standardized names.'''
-#    
-#    # Gather the reference point fiducials to start
-#    allfids = collate_fiducials_reference_points(propslist)
-#
-#    for vag_props in propslist:                    
-#        # Grab the rest that are named by row and column 
-#        fids = get_fiducial_list_by_row_and_column(vag_props._fiducial_points)
-#        
-#        for rowindex in range(1,len(fids)):
-#            colindex = None
-#            
-#            for colindex in range(1,len(fids[rowindex])):
-#            
-#                current_fid = fids[rowindex][colindex]
-#                
-#                standardized_fid_name = "A" + str(rowindex) + "L" + str(colindex)
-#            
-#                if (not (standardized_fid_name in allfids)): 
-#                    allfids[standardized_fid_name] = fiducial_statistics(standardized_fid_name)
-#                    
-#                allfids[standardized_fid_name].add_fiducial(current_fid)
-#                    
-#    return allfids
+def collate_fiducials_by_row_and_column(propslist, allfidstats = None):
+    ''' Iterate over all gathered sets of vaginal properties, gathering the fiducials from them all and collating according to standardized names.'''
+    
+    if (allfidstats == None): 
+        allfidstats = OrderedDict()
+        
+    for vag_props in propslist:                    
+        # Grab the rest that are named by row and column 
+        fids = get_fiducial_list_by_row_and_column(vag_props._fiducial_points)
+        
+        for rowindex in range(1,len(fids)):
+            colindex = None
+            
+            for colindex in range(1,len(fids[rowindex])):
+            
+                current_fid = fids[rowindex][colindex]
+                
+                standardized_fid_name = "A" + str(rowindex) + "L" + str(colindex)
+            
+                if (not (standardized_fid_name in allfidstats)): 
+                    allfidstats[standardized_fid_name] = fiducial_statistics(standardized_fid_name)
+                    
+                allfidstats[standardized_fid_name].add_fiducial(current_fid)
+                    
+    return allfidstats
 
-def collate_fiducials_by_edges(propslist):
-    ''' Iterate over all gathered sets of vaginal properties, gathering the edge fiducials from them all and collating.'''
+def collate_fiducials_by_edges(propslist, allfidstats = None):
+    ''' Iterate over propslist, gathering the edge fiducials from them all and collating.
+    Fills statslist with the results and returns it.'''
     
     LEFT_EDGE_PREFIX="Left_Edge_"
     RIGHT_EDGE_PREFIX="Right_Edge_"
     
-    # Gather the reference point fiducials to start
-    allfidstats = collate_fiducials_reference_points(propslist)
-    
+    if (allfidstats == None): 
+        allfidstats = OrderedDict()
+            
     for vag_props in propslist:
         # Grab the edges from the subset which are named by row and column 
         fids = get_fiducial_list_by_row_and_column(vag_props._fiducial_points)
@@ -205,7 +220,14 @@ if __name__ == '__main__':
     else:
         propslist = load_vaginal_properties(argv)                    
         
-        allfidstats = collate_fiducials_by_edges(propslist)
+        # Gather the reference point fiducials to start
+        allfidstats = collate_fiducials_reference_points(propslist)
+
+        if (COMPUTE_EDGES): 
+            collate_fiducials_by_edges(propslist, allfidstats)
+        
+        if (COMPUTE_POINTS_BY_NAME):
+            collate_fiducials_by_row_and_column(propslist, allfidstats)
         
         # Iterate over our collated fiducial stats using their standardized names, and compute some values. 
         for fidname in allfidstats:
@@ -223,6 +245,40 @@ if __name__ == '__main__':
         #pics_recenter_and_reorient(averagedisplay)
         averagedisplay.compute_properties()
         avg_graph = create_pelvic_points_graph(None, averagedisplay, "Averages")
+        
+        if (GRAPH_STD_DEV):
+            for fidname in allfidstats:
+                fidstats = allfidstats[fidname]
+                avg_fid = fidstats._averaged_fid
+                
+                center_x = avg_fid.coords[COORDS.X]
+                center_y = avg_fid.coords[COORDS.Y]
+                center_z = avg_fid.coords[COORDS.Z]
+                
+                max_x = center_x + (fidstats._fid_std_dev_x * STD_DEV_GRAPH_MULTIPLIER)
+                min_x = center_x - (fidstats._fid_std_dev_x * STD_DEV_GRAPH_MULTIPLIER)
+                
+                max_y = center_y + (fidstats._fid_std_dev_y * STD_DEV_GRAPH_MULTIPLIER)
+                min_y = center_y - (fidstats._fid_std_dev_y * STD_DEV_GRAPH_MULTIPLIER)
+                
+                max_z = center_z + (fidstats._fid_std_dev_z * STD_DEV_GRAPH_MULTIPLIER)
+                min_z = center_z - (fidstats._fid_std_dev_z * STD_DEV_GRAPH_MULTIPLIER)
+                
+                # Draw a line through the average point from min to max for x
+                start_coords=[min_x, center_y, center_z]
+                end_coords=[max_x, center_y, center_z]
+                add_line_to_graph(avg_graph, start_coords, end_coords, "pink")
+                
+                # Draw a line through the average point from min to max for y
+                start_coords=[center_x, min_y, center_z]
+                end_coords=[center_x, max_y, center_z]
+                add_line_to_graph(avg_graph, start_coords, end_coords, "lightgreen")
+                
+                # Draw a line through the average point from min to max for z
+                start_coords=[center_x, center_y, min_z]
+                end_coords=[center_x, center_y, max_z]
+                add_line_to_graph(avg_graph, start_coords, end_coords, "lightblue")
+                
         
         show_all_graphs()
         # TODO: Print out statistics and properties in some ordered form, here
