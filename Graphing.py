@@ -1,7 +1,9 @@
-# import numpy as np
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do not remove this line!
 import matplotlib.pyplot as plt
 from Fiducials import COORDS
+
+# Our generic libraries
+from Utilities import debugprint, debug_levels
 
 # Default color for pelvic points
 DEFAULT_COLOR=[0.5,0.5,0.75]
@@ -43,7 +45,9 @@ def add_fiducials_to_graph(graph, vagprops, color_fn = default_color):
     
     ''' Add all fiducials in the dictionary fid_list to the graph.  Color code using the function color_fn which takes a fiducial as an argument. '''
     for key in fid_list.iterkeys():
+        
         fid = fid_list[key]
+        debugprint("Adding fiducial to graph: " + fid.to_string(), debug_levels.DETAILED_DEBUG)
         add_scatterpoint_to_graph(graph, fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid, vagprops))
         
 ## BELOW FN IS CURRRENTLY UNUSED.
