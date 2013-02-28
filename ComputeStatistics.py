@@ -32,7 +32,7 @@ COMPUTE_POINTS_BY_NAME = False
 
 # Should we draw std_dev error bars?
 GRAPH_STD_DEV = True
-# How long should they be?  length = std_)dev * graph_multiplier.
+# How long should they be?  length = std_dev * graph_multiplier.
 STD_DEV_GRAPH_MULTIPLIER=2
 
 class fiducial_statistics():
@@ -80,7 +80,7 @@ class fiducial_statistics():
             self._fid_std_dev_z = std_dev(zlist)
 
 def load_vaginal_properties(filenames):
-    ''' Gather sets of vaginal properties from the filenames provided as arguments '''
+    ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
     
     propslist = []
     for i in range(1,len(filenames)):
@@ -204,6 +204,18 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
             fids[rowindex].reverse()
                 
     return allfidstats
+
+def print_results(allfidstats):
+    
+    for statname in allfidstats:
+        stat = allfidstats[statname]
+        print("================")
+        print("Statistics for " + stat._fid_name)
+        print("Mean fiducial: " + stat._averaged_fid.to_string())
+        print("X std dev: " + str(stat._fid_std_dev_x))
+        print("Y std dev: " + str(stat._fid_std_dev_y))
+        print("Z std dev: " + str(stat._fid_std_dev_z))
+        print("================")
         
 #####################
 ### DEFAULT MAIN PROC
@@ -218,8 +230,8 @@ if __name__ == '__main__':
     if len(argv) < 2: 
         debugprint("Need to supply at least one mrml file name argument.",debug_levels.ERROR)
     else:
-        propslist = load_vaginal_properties(argv)                    
-        
+        propslist = load_vaginal_properties(argv)  
+
         # Gather the reference point fiducials to start
         allfidstats = collate_fiducials_reference_points(propslist)
 
@@ -240,11 +252,10 @@ if __name__ == '__main__':
             fidstats = allfidstats[fidname]
             averagedisplay._fiducial_points[fidname] = fidstats._averaged_fid
             
-            print("Adding to the average display:" + averagedisplay._fiducial_points[fidname].to_string())
+            # print("Adding to the average display:" + averagedisplay._fiducial_points[fidname].to_string())
         
-        #pics_recenter_and_reorient(averagedisplay)
         averagedisplay.compute_properties()
-        avg_graph = create_pelvic_points_graph(None, averagedisplay, "Averages")
+        avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
         
         if (GRAPH_STD_DEV):
             for fidname in allfidstats:
@@ -279,6 +290,8 @@ if __name__ == '__main__':
                 end_coords=[center_x, center_y, max_z]
                 add_line_to_graph(avg_graph, start_coords, end_coords, "lightblue")
                 
+        
+        print_results(allfidstats)
         
         show_all_graphs()
         # TODO: Print out statistics and properties in some ordered form, here
