@@ -18,7 +18,7 @@ from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 # Graph drawing imports 
 from VaginalProperties import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
-from Graphing import show_all_graphs, add_line_to_graph, add_ellipsoid_to_graph
+from Graphing import show_all_graphs, add_line_to_graph #, add_ellipsoid_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
 
 # CONSTANTS

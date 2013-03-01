@@ -44,7 +44,7 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
     
     if PAD_GRAPH:
         # Pad the graph to keep all graphs at equal scale for comparison
-        GRAPH_PADDING=100
+        GRAPH_PADDING=1
         set_graph_boundaries(graph,
                              PS_coords[COORDS.X] + GRAPH_PADDING, 
                              PS_coords[COORDS.X] - GRAPH_PADDING,
