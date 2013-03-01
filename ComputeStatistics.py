@@ -18,24 +18,32 @@ from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 # Graph drawing imports 
 from VaginalProperties import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
-from Graphing import show_all_graphs, add_line_to_graph
+from Graphing import show_all_graphs, add_line_to_graph, add_ellipsoid_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
 
 # CONSTANTS
 COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 
 # Should we compute edge points?
-COMPUTE_EDGES = True
+COMPUTE_EDGES = False
+
+# What about the mid-sagittal section?
+COMPUTE_CENTER = True
 
 # Should we directly compare points by name?
-COMPUTE_POINTS_BY_NAME = False
+COMPUTE_ALL_INDIVIDUAL_POINTS = False
 
 # Should we draw std_dev error bars?
 GRAPH_STD_DEV = True
 # How long should they be?  length = std_dev * graph_multiplier.
 STD_DEV_GRAPH_MULTIPLIER=2
 
-class fiducial_statistics():
+# String constants for constructing standard names
+LEFT_EDGE_PREFIX="Left_Edge_"
+RIGHT_EDGE_PREFIX="Right_Edge_"
+CENTER_PREFIX="Center_"
+
+class FiducialStatistics():
     ''' This is a class that collects statistical information about a particular fiducial point. '''
     
     def __init__(self,name):
@@ -79,6 +87,26 @@ class fiducial_statistics():
             self._fid_std_dev_y = std_dev(ylist)
             self._fid_std_dev_z = std_dev(zlist)
 
+class FiducialStatCollection():
+    ''' A self-maintaining list of FiducialStatistics '''
+    def __init__(self):
+        self._statlist = OrderedDict()
+        
+    def add_fiducial_by_name(self, fiducialname, fiducial):
+        if (not fiducialname in self._statlist):
+            self._statlist[fiducialname] = FiducialStatistics(fiducialname)
+         
+        self._statlist[fiducialname].add_fiducial(fiducial)
+    
+    def get_all_stats(self):
+        return self._statlist
+         
+    def get_stats_for_name(self, fiducialname):
+        if (not fiducialname in self._statlist): 
+            return None
+        else:
+            return self._statlist[fiducialname]
+
 def load_vaginal_properties(filenames):
     ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
     
@@ -102,7 +130,7 @@ def collate_fiducials_reference_points(propslist, allfidstats = None):
     Fills statslist with the results and returns it.'''
 
     if (allfidstats == None): 
-        allfidstats = OrderedDict()
+        allfidstats = FiducialStatCollection()
         
     for vag_props in propslist:
         
@@ -113,10 +141,8 @@ def collate_fiducials_reference_points(propslist, allfidstats = None):
                 debugprint("WARNING: Cannot find reference point fiducial named: " + fidname + "in vaginal properties " + vag_props.name, debug_levels.ERROR)        
             else: 
                 current_fid = vag_props._fiducial_points[fidname]
-                if (not (fidname in allfidstats)): 
-                    allfidstats[fidname] = fiducial_statistics(fidname)
-                    
-                allfidstats[fidname].add_fiducial(current_fid)
+               
+                allfidstats.add_fiducial_by_name(fidname, current_fid)
 
     return allfidstats
 
@@ -125,7 +151,7 @@ def collate_fiducials_by_row_and_column(propslist, allfidstats = None):
     ''' Iterate over all gathered sets of vaginal properties, gathering the fiducials from them all and collating according to standardized names.'''
     
     if (allfidstats == None): 
-        allfidstats = OrderedDict()
+        allfidstats = FiducialStatCollection()
         
     for vag_props in propslist:                    
         # Grab the rest that are named by row and column 
@@ -139,11 +165,8 @@ def collate_fiducials_by_row_and_column(propslist, allfidstats = None):
                 current_fid = fids[rowindex][colindex]
                 
                 standardized_fid_name = "A" + str(rowindex) + "L" + str(colindex)
-            
-                if (not (standardized_fid_name in allfidstats)): 
-                    allfidstats[standardized_fid_name] = fiducial_statistics(standardized_fid_name)
                     
-                allfidstats[standardized_fid_name].add_fiducial(current_fid)
+                allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid)
                     
     return allfidstats
 
@@ -151,11 +174,8 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
     ''' Iterate over propslist, gathering the edge fiducials from them all and collating.
     Fills statslist with the results and returns it.'''
     
-    LEFT_EDGE_PREFIX="Left_Edge_"
-    RIGHT_EDGE_PREFIX="Right_Edge_"
-    
     if (allfidstats == None): 
-        allfidstats = OrderedDict()
+        allfidstats = FiducialStatCollection()
             
     for vag_props in propslist:
         # Grab the edges from the subset which are named by row and column 
@@ -163,52 +183,60 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
         
         for rowindex in range(1,len(fids)):
             colindex = None
-            start_found = False
-            end_found = False
+            start_index = None
+            end_index = None
             
             # Count up from the left side of the row to find the left edge
             for colindex in range(1, len(fids[rowindex])):
                                 
                 current_fid = fids[rowindex][colindex]
-                if ((not start_found) and (not current_fid == None)):
-                    start_found = True
+                if ((start_index == None) and (current_fid != None)):
+                    start_index = colindex
                     standardized_fid_name = LEFT_EDGE_PREFIX + str(rowindex)
                     
-                    if (not (standardized_fid_name in allfidstats)): 
-                        allfidstats[standardized_fid_name] = fiducial_statistics(standardized_fid_name)
-                    
-                    allfidstats[standardized_fid_name].add_fiducial(current_fid)
-        
-                if start_found: break
+                    if COMPUTE_EDGES: allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid)   
+                        
+                if (start_index != None): break
         
             # Count down from the right side of the row to find the right edge
             
-            # Temporarily reverse the row ...
-            fids[rowindex].reverse()
-            for colindex in range(1, len(fids[rowindex])):
+            fids[rowindex].reverse()  # Temporarily reverse the row ...
+            
+            for colindex in range(0, len(fids[rowindex])):
                 
                 current_fid = fids[rowindex][colindex]
                 
-                if ((not end_found) and (not current_fid == None)):
-                    end_found = True
+                if ((end_index == None) and (current_fid != None)):
+                    end_index = -1 * colindex
                     standardized_fid_name = RIGHT_EDGE_PREFIX + str(rowindex)
                     
-                    if (not (standardized_fid_name in allfidstats)): 
-                        allfidstats[standardized_fid_name] = fiducial_statistics(standardized_fid_name)
-                    
-                    allfidstats[standardized_fid_name].add_fiducial(current_fid)
-        
-                if end_found: break
+                    if COMPUTE_EDGES: allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid) 
+                            
+                if (end_index != None): break
             
             # ... then put the row back into order
             fids[rowindex].reverse()
+            
+            if ((start_index != None) and (end_index != None)):
+                # Find the middle of the list between start and end.  Because end is counted from the *end* of the row and is expressed as a negative,
+                # we need to average start_index and (end_index + length)
+                # e.g. if start_index is 0, the list is 5 items long [0..4], and end_index is -1, mid_index should be (0 + -1 + 5)/2 = 2.
+                mid_index = (start_index + len(fids[rowindex]) + end_index)/2
+                mid_index = int(round(mid_index))
+                
+                print("Start: " + str(start_index) + " Mid: " + str(mid_index) + " End: " + str(end_index + len(fids[rowindex])))
+                
+                standardized_fid_name = CENTER_PREFIX + str(rowindex)    
+                current_fid = fids[rowindex][mid_index]   
+                
+                if (COMPUTE_CENTER): allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid) 
                 
     return allfidstats
 
 def print_results(allfidstats):
     
-    for statname in allfidstats:
-        stat = allfidstats[statname]
+    for fidname in allfidstats.get_all_stats():
+        stat = allfidstats.get_stats_for_name(fidname)
         print("================")
         print("Statistics for " + stat._fid_name)
         print("Mean fiducial: " + stat._averaged_fid.to_string())
@@ -235,31 +263,30 @@ if __name__ == '__main__':
         # Gather the reference point fiducials to start
         allfidstats = collate_fiducials_reference_points(propslist)
 
-        if (COMPUTE_EDGES): 
+        # Then collate edge points and/or center points if desired
+        if (COMPUTE_EDGES or COMPUTE_CENTER): 
             collate_fiducials_by_edges(propslist, allfidstats)
         
-        if (COMPUTE_POINTS_BY_NAME):
+        # Then collate each individual point by name if desired
+        if (COMPUTE_ALL_INDIVIDUAL_POINTS):
             collate_fiducials_by_row_and_column(propslist, allfidstats)
         
-        # Iterate over our collated fiducial stats using their standardized names, and compute some values. 
-        for fidname in allfidstats:
-            fidstats = allfidstats[fidname]
-            fidstats.compute_statistics()
-        
         averagedisplay = VaginalDisplay("Averaged fiducials", COLOR_STRAT)
-       
-        for fidname in allfidstats:
-            fidstats = allfidstats[fidname]
-            averagedisplay._fiducial_points[fidname] = fidstats._averaged_fid
+                
+        # Iterate over our collated fiducial stats using their standardized names, and compute some values. 
+        for fidname in allfidstats.get_all_stats():
+            fidstats = allfidstats.get_stats_for_name(fidname)
+            fidstats.compute_statistics()
             
+            averagedisplay._fiducial_points[fidname] = fidstats._averaged_fid
             # print("Adding to the average display:" + averagedisplay._fiducial_points[fidname].to_string())
         
         averagedisplay.compute_properties()
         avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
         
         if (GRAPH_STD_DEV):
-            for fidname in allfidstats:
-                fidstats = allfidstats[fidname]
+            for fidname in allfidstats.get_all_stats():
+                fidstats = allfidstats.get_stats_for_name(fidname)
                 avg_fid = fidstats._averaged_fid
                 
                 center_x = avg_fid.coords[COORDS.X]
@@ -290,6 +317,8 @@ if __name__ == '__main__':
                 end_coords=[center_x, center_y, max_z]
                 add_line_to_graph(avg_graph, start_coords, end_coords, "lightblue")
                 
+                # Add an ellipsoid to the graph
+                # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
         
         print_results(allfidstats)
         
