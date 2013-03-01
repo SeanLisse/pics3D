@@ -4,6 +4,7 @@ from Fiducials import COORDS
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
+import numpy as np
 
 # Default color for pelvic points
 DEFAULT_COLOR=[0.5,0.5,0.75]
@@ -67,6 +68,18 @@ def add_legend_to_graph(graph, minlabel, maxlabel, mincolor, maxcolor):
     
     graph._ax.legend([minline,maxline], [minlabel,maxlabel], numpoints=2, loc="lower right")
     
+def add_ellipsoid_to_graph(graph, center_coords, x_diam, y_diam, z_diam): 
+    ''' Ellipsoid code from http://matplotlib.org/examples/mplot3d/surface3d_demo2.html'''
+    
+    u = np.linspace(0, 2 * np.pi, 100)
+    v = np.linspace(0, np.pi, 100)
+
+    x = center_coords[COORDS.X] + x_diam * np.outer(np.cos(u), np.sin(v))
+    y = center_coords[COORDS.Y] + y_diam * np.outer(np.sin(u), np.sin(v))
+    z = center_coords[COORDS.Z] + z_diam * np.outer(np.ones(np.size(u)), np.cos(v))
+    graph._ax.plot_surface(x, y, z,  rstride=4, cstride=4, color='b')
+     
+    
 def set_graph_boundaries(graph, min_x, max_x, min_y, max_y, min_z, max_z):
     
     # HACK HACK HACK
@@ -82,5 +95,6 @@ def set_graph_boundaries(graph, min_x, max_x, min_y, max_y, min_z, max_z):
     
     add_scatterpoint_to_graph(graph,"FakePoint", max_x, min_y, max_z)
     add_scatterpoint_to_graph(graph,"FakePoint", max_x, max_y, max_z)
+
 
     
