@@ -25,7 +25,7 @@ from GraphColoring import COLORIZATION_OPTIONS
 COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 
 # Should we compute edge points?
-COMPUTE_EDGES = False
+COMPUTE_EDGES = True
 
 # What about the mid-sagittal section?
 COMPUTE_CENTER = True
