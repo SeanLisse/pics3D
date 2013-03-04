@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # Author: Sean Lisse
-# This code is designed to load in a set of fiducials from a directory tree and normalize them to the PICS system, analyze them mathematically, then display the results.
+# This code is designed to load in a set of fiducials from command-line arguments and normalize them to the PICS system, analyze them mathematically, then display the results.
 
 # Python base library imports
 from collections import OrderedDict
@@ -18,7 +18,7 @@ from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 # Graph drawing imports 
 from VaginalProperties import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
-from Graphing import show_all_graphs, add_line_to_graph #, add_ellipsoid_to_graph
+from Graphing import show_all_graphs, add_line_to_graph3D #, add_ellipsoid_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
 
 # CONSTANTS
@@ -81,7 +81,7 @@ class FiducialStatistics():
             y_avg = mean(ylist)
             z_avg = mean(zlist)            
             
-            self._averaged_fid = fiducial(fidname, float(x_avg), float(y_avg), float(z_avg)) 
+            self._averaged_fid = fiducial(self._fid_name, float(x_avg), float(y_avg), float(z_avg)) 
             
             self._fid_std_dev_x = std_dev(xlist)
             self._fid_std_dev_y = std_dev(ylist)
@@ -111,7 +111,7 @@ def load_vaginal_properties(filenames):
     ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
     
     propslist = []
-    for i in range(1,len(filenames)):
+    for i in range(0,len(filenames)):
         filename = filenames[i]
                     
         vag_props = VaginalProperties(filename)        
@@ -224,7 +224,7 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
                 mid_index = (start_index + len(fids[rowindex]) + end_index)/2
                 mid_index = int(round(mid_index))
                 
-                print("Start: " + str(start_index) + " Mid: " + str(mid_index) + " End: " + str(end_index + len(fids[rowindex])))
+                #print("Start: " + str(start_index) + " Mid: " + str(mid_index) + " End: " + str(end_index + len(fids[rowindex])))
                 
                 standardized_fid_name = CENTER_PREFIX + str(rowindex)    
                 current_fid = fids[rowindex][mid_index]   
@@ -232,6 +232,27 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
                 if (COMPUTE_CENTER): allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid) 
                 
     return allfidstats
+
+def get_stats_and_display_from_properties(display_name, inputlist):
+    ''' Takes a list of vaginal properties and returns a VaginalDisplay. '''
+    
+    statscollection = collate_fiducials_reference_points(inputlist)
+    if (COMPUTE_EDGES or COMPUTE_CENTER): 
+        collate_fiducials_by_edges(inputlist, statscollection)
+    if (COMPUTE_ALL_INDIVIDUAL_POINTS):
+        collate_fiducials_by_row_and_column(inputlist, statscollection)
+
+    display = VaginalDisplay(display_name, COLOR_STRAT)        
+    # Iterate over our collated fiducial stats using their standardized names, and compute some values. 
+    for fidname in statscollection.get_all_stats():
+        stats = statscollection.get_stats_for_name(fidname)
+        stats.compute_statistics()
+        
+        display._fiducial_points[fidname] = stats._averaged_fid
+
+    display.compute_properties()
+    
+    return [statscollection,display]
 
 def print_results(allfidstats):
     
@@ -258,30 +279,11 @@ if __name__ == '__main__':
     if len(argv) < 2: 
         debugprint("Need to supply at least one mrml file name argument.",debug_levels.ERROR)
     else:
-        propslist = load_vaginal_properties(argv)  
+        # ignore the argv[0], as it's just the filename of this python file.
+        propslist = load_vaginal_properties(argv[1:])  
 
-        # Gather the reference point fiducials to start
-        allfidstats = collate_fiducials_reference_points(propslist)
+        [allfidstats, averagedisplay] = get_stats_and_display_from_properties("Computed fiducials", propslist)
 
-        # Then collate edge points and/or center points if desired
-        if (COMPUTE_EDGES or COMPUTE_CENTER): 
-            collate_fiducials_by_edges(propslist, allfidstats)
-        
-        # Then collate each individual point by name if desired
-        if (COMPUTE_ALL_INDIVIDUAL_POINTS):
-            collate_fiducials_by_row_and_column(propslist, allfidstats)
-        
-        averagedisplay = VaginalDisplay("Averaged fiducials", COLOR_STRAT)
-                
-        # Iterate over our collated fiducial stats using their standardized names, and compute some values. 
-        for fidname in allfidstats.get_all_stats():
-            fidstats = allfidstats.get_stats_for_name(fidname)
-            fidstats.compute_statistics()
-            
-            averagedisplay._fiducial_points[fidname] = fidstats._averaged_fid
-            # print("Adding to the average display:" + averagedisplay._fiducial_points[fidname].to_string())
-        
-        averagedisplay.compute_properties()
         avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
         
         if (GRAPH_STD_DEV):
@@ -305,17 +307,17 @@ if __name__ == '__main__':
                 # Draw a line through the average point from min to max for x
                 start_coords=[min_x, center_y, center_z]
                 end_coords=[max_x, center_y, center_z]
-                add_line_to_graph(avg_graph, start_coords, end_coords, "pink")
+                add_line_to_graph3D(avg_graph, start_coords, end_coords, "pink")
                 
                 # Draw a line through the average point from min to max for y
                 start_coords=[center_x, min_y, center_z]
                 end_coords=[center_x, max_y, center_z]
-                add_line_to_graph(avg_graph, start_coords, end_coords, "lightgreen")
+                add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightgreen")
                 
                 # Draw a line through the average point from min to max for z
                 start_coords=[center_x, center_y, min_z]
                 end_coords=[center_x, center_y, max_z]
-                add_line_to_graph(avg_graph, start_coords, end_coords, "lightblue")
+                add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightblue")
                 
                 # Add an ellipsoid to the graph
                 # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
