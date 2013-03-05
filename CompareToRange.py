@@ -10,14 +10,18 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
 from ComputeStatistics import FiducialStatCollection, STD_DEV_GRAPH_MULTIPLIER
-from Fiducials import COORDS
+from Fiducials import COORDS, REFERENCE_POINT_NAMES
 
 # Graph drawing imports 
 from Graphing import show_all_graphs, PelvicGraph2D
 from GraphColoring import calibrate_colorization_strategy_fn
 
 # CONSTANTS
+REFERENCE_POINT_BAR_COLOR="#AABBAA"
+BAR_COLOR = "#EEEEEE"
+POINT_COLOR = "#000000"
 COORD_TO_GRAPH=COORDS.Z
+
 
 def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
 
@@ -31,19 +35,18 @@ def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
     
     fid_length = len(fid_list)
     graph._ax.set_xlim(0,fid_length)
-    graph._ax.set_ylim(-50,200)
+    graph._ax.set_ylim(-50,150)
     
     stat_list = rangestats.get_all_stats()
     
-    x_index = -1
-    x_labels = []
+    # Start with a blank point at 0 index so our first datapoint isn't right on the edge of the graph.
+    x_index = 0
+    x_labels = [""] 
     
     for key in fid_list.iterkeys():
         
         x_index += 1
         x_labels.append(key)
-        
-        
 
         # Draw the "error bar" on the graph in light grey
         if (key in stat_list):
@@ -62,13 +65,18 @@ def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
             min_val = avg_val - (STD_DEV_GRAPH_MULTIPLIER * stdev)
             max_val = avg_val + (STD_DEV_GRAPH_MULTIPLIER * stdev)
             
-            graph._ax.broken_barh([(x_index-.5,1)], (min_val, max_val), facecolors='lightgray')
+            if (key in REFERENCE_POINT_NAMES):
+                barcolor = REFERENCE_POINT_BAR_COLOR
+            else: 
+                barcolor = BAR_COLOR
+                
+            graph._ax.broken_barh([(x_index-.5,1)], (min_val, max_val), facecolors=barcolor)
         
         # Draw the fiducial as a black dot.
         fid = fid_list[key]
-        graph._ax.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color="black")
+        graph._ax.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
         
-    graph._ax.set_xticks(range(0, x_index))   
+    graph._ax.set_xticks(range(0, x_index + 2)) # Add an extra space on the end so our last point isn't on the edge of the graph.   
     label_obj = graph._ax.set_xticklabels(x_labels)       
 
     plt.setp(label_obj, rotation=45, fontsize=8)
@@ -88,7 +96,7 @@ if __name__ == '__main__':
     setdebuglevel(debug_levels.BASIC_DEBUG) 
     
     if len(argv) < 3: 
-        debugprint("Need to supply at least one mrml file name argument and at least one to compare it against.",debug_levels.ERROR)
+        print("Need to supply at least one mrml file name argument and at least one to compare it against.")
     else:
         # ignore argv[0], as it's just the filename of this python file.
 
@@ -100,6 +108,6 @@ if __name__ == '__main__':
         rangelist = load_vaginal_properties(argv[2:])
         [rangestats, rangedisplay] = get_stats_and_display_from_properties("Range", rangelist)
      
-        graph = create_2D_comparison_graph(None, "Range Comparison", propsdisplay, rangestats)
+        graph = create_2D_comparison_graph(None, argv[1] + " Range Comparison", propsdisplay, rangestats)
         
     show_all_graphs()
