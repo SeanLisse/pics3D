@@ -75,8 +75,13 @@ def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
         # Draw the fiducial as a black dot.
         fid = fid_list[key]
         graph._ax.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
+    
+    # Add an extra space on the end so our last point isn't on the edge of the graph.
+    x_index += 2
+    x_labels.append("")
+    x_labels.append("")
         
-    graph._ax.set_xticks(range(0, x_index + 2)) # Add an extra space on the end so our last point isn't on the edge of the graph.   
+    graph._ax.set_xticks(range(0, x_index + 2))    
     label_obj = graph._ax.set_xticklabels(x_labels)       
 
     plt.setp(label_obj, rotation=45, fontsize=8)
