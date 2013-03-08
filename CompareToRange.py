@@ -35,7 +35,7 @@ def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
     
     fid_length = len(fid_list)
     graph._ax.set_xlim(0,fid_length)
-    graph._ax.set_ylim(-50,150)
+    graph._ax.set_ylim(-50,100)
     
     stat_list = rangestats.get_all_stats()
     
@@ -69,8 +69,14 @@ def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
                 barcolor = REFERENCE_POINT_BAR_COLOR
             else: 
                 barcolor = BAR_COLOR
-                
-            graph._ax.broken_barh([(x_index-.5,1)], (min_val, max_val), facecolors=barcolor)
+
+            # Draw the range
+            graph._ax.broken_barh([(x_index-0.5,1)], (min_val, max_val - min_val), facecolors=barcolor)
+            
+            # Draw the average val
+            graph._ax.broken_barh([(x_index-0.5,1)], (avg_val, 0), facecolors=barcolor)
+            
+            # print("Stats for " + key + ": avg " + str(avg_val) + ", stdev " + str(stdev) + ", min " + str(min_val) + ", max " + str(max_val))
         
         # Draw the fiducial as a black dot.
         fid = fid_list[key]
@@ -81,7 +87,7 @@ def create_2D_comparison_graph(graph, graphname, exemplardisplay, rangestats):
     x_labels.append("")
     x_labels.append("")
         
-    graph._ax.set_xticks(range(0, x_index + 2))    
+    graph._ax.set_xticks(range(0, x_index))    
     label_obj = graph._ax.set_xticklabels(x_labels)       
 
     plt.setp(label_obj, rotation=45, fontsize=8)
