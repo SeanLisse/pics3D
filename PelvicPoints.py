@@ -6,7 +6,9 @@
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # My custom domain imports
-from VaginalProperties import VaginalDisplay
+from VaginalDisplay import VaginalDisplay
+
+# Graphing custom imports
 from Graphing import add_fiducials_to_graph3D, add_line_to_graph3D, add_scatterpoint_to_graph3D
 from Graphing import add_legend_to_graph3D, set_graph_boundaries3D, show_all_graphs, PelvicGraph3D
 from GraphColoring import calibrate_colorization_strategy_fn, fraction_color
@@ -15,7 +17,7 @@ from GraphColoring import calibrate_colorization_strategy_fn, fraction_color
 from Fiducials import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
-PAD_GRAPH=True
+PAD_GRAPH=False
 
 def create_pelvic_points_graph(graph, vagdisplay, graphname):
 

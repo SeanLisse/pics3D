@@ -11,17 +11,17 @@ from xml.parsers import expat
 from Utilities import debugprint
 from Utilities import debug_levels
 
-from Fiducials import fiducial
+from Fiducials import Fiducial
 
 FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
 FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
 FIDUCIAL_NAME_ATTR_NAME = "name"
 
 def load_fiducials_from_mrml(filename, fiducial_list):
-    ''' Load a fiducial from an mrml file. '''
+    ''' Load a Fiducial from an mrml file. '''
     
     def start_element(nodename, attrs):
-        ''' Internal helper for loading fiducial xml nodes from Slicer4 MRML files'''
+        ''' Internal helper for loading Fiducial xml nodes from Slicer4 MRML files'''
         # debugprint("Checking XML element: " + nodename, debug_levels.DETAILED_DEBUG)
     
         if (nodename == FIDUCIAL_XML_NODE_NAME):
@@ -31,8 +31,8 @@ def load_fiducials_from_mrml(filename, fiducial_list):
             # debugprint("Coordstring is: " + coordstring, debug_levels.DETAILED_DEBUG)
             x,y,z = coordstring.split(" ")
         
-            debugprint("Creating fiducial from XML: " + name + "," + x + "," + y + "," + z, debug_levels.DETAILED_DEBUG)
-            fiducial_list[name] = fiducial(name,float(x),float(y),float(z))
+            debugprint("Creating Fiducial from XML: " + name + "," + x + "," + y + "," + z, debug_levels.DETAILED_DEBUG)
+            fiducial_list[name] = Fiducial(name,float(x),float(y),float(z))
     
     debugprint("Loading fiducials from MRML file: " + filename, debug_levels.BASIC_DEBUG)
     

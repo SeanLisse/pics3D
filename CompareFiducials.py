@@ -6,7 +6,7 @@
 from Fiducials import vector_from_fiducials, COORDS, get_fiducial_list_by_row_and_column
 from VectorMath import magnitude 
 from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
-from VaginalProperties import VaginalDisplay
+from VaginalDisplay import VaginalDisplay
 from Graphing import show_all_graphs, add_line_to_graph3D
 from GraphColoring import COLORIZATION_OPTIONS
 from PelvicPoints import create_pelvic_points_graph

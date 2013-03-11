@@ -32,7 +32,7 @@ class PelvicGraph3D(object):
         
         plt.title(name)
 
-def default_color_fn(fiducial): 
+def default_color_fn(Fiducial): 
     ''' Default coloration function. Clone this and alter it to customize your coloration when graphing. '''
     return DEFAULT_COLOR
 
@@ -53,11 +53,11 @@ def add_fiducials_to_graph3D(graph, vagprops, color_fn = default_color_fn):
     
     fid_list = vagprops._fiducial_points
     
-    ''' Add all fiducials in the dictionary fid_list to the graph.  Color code using the function color_fn which takes a fiducial as an argument. '''
+    ''' Add all fiducials in the dictionary fid_list to the graph.  Color code using the function color_fn which takes a Fiducial as an argument. '''
     for key in fid_list.iterkeys():
         
         fid = fid_list[key]
-        debugprint("Adding fiducial to graph: " + fid.to_string(), debug_levels.DETAILED_DEBUG)
+        debugprint("Adding Fiducial to graph: " + fid.to_string(), debug_levels.DETAILED_DEBUG)
         add_scatterpoint_to_graph3D(graph, fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid, vagprops))
         
 def add_legend_to_graph3D(graph, minlabel, maxlabel, mincolor, maxcolor):

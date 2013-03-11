@@ -16,15 +16,15 @@ INTER_ISCHIAL_SPINE_NAME="IIS"
 
 REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME}
 
-# This is the pattern used to match fiducial names and parse out the row number (from apex, A) and column number (from left, L).
+# This is the pattern used to match Fiducial names and parse out the row number (from apex, A) and column number (from left, L).
 # We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
 INDEX_PATTERN='A(\d+)L(\d+)'
 
-class fiducial:
+class Fiducial:
     name = ""
     coords = []
     
-    ''' Represents a Slicer fiducial point, with name, x, y, and z values. '''
+    ''' Represents a Slicer Fiducial point, with name, x, y, and z values. '''
     def __init__(self,_name, _x,_y,_z): 
         self.name = _name
         self.coords = numpy.zeros((3))
@@ -32,6 +32,8 @@ class fiducial:
         self.coords[COORDS.X] = float(_x)
         self.coords[COORDS.Y] = float(_y)
         self.coords[COORDS.Z] = float(_z)
+        
+        self.paravaginal_gap = None
         
     def to_string(self):
         if (self == None): return "[None]"
@@ -63,14 +65,14 @@ def print_all_fiducials(fiducial_list):
 def recenter_fiducials(new_origin, points_to_recenter):
     ''' Given a point which will be the new coordinate origin (i.e. new 0,0,0), translate all points so that it is made so. '''
     
-    recenter_vector = vector_from_fiducials(new_origin, fiducial("origin",0,0,0))
+    recenter_vector = vector_from_fiducials(new_origin, Fiducial("origin",0,0,0))
     
     for key in points_to_recenter.iterkeys():
         fid = points_to_recenter[key]
         fid.coords = fid.coords + recenter_vector
         
 def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
-    ''' Given a new set of axes expressed in the *old* coordinate system, rotate the fiducial points so that they now lie along the new axes. ''' 
+    ''' Given a new set of axes expressed in the *old* coordinate system, rotate the Fiducial points so that they now lie along the new axes. ''' 
     
     ROUGHLY_ZERO=0.05 #Fudge factor used in verifying that axes are indeed orthogonal
     
@@ -118,11 +120,11 @@ def reorient_fiducials(new_x_axis, new_y_axis, new_z_axis, points_to_reorient):
         debugprint("Becomes: " + str(fid.coords), debug_levels.DETAILED_DEBUG)
         
 def get_fiducial_row_and_column(fid_point):
-    ''' Parse a fiducial point's name to find out what its row and column are.  
+    ''' Parse a Fiducial point's name to find out what its row and column are.  
     Returns a [row, column] tuple.  E.g. if the point is A1L1, returns [1,1].
     Returns [None, None] if it cannot find them.'''
      
-    # Grab the regular expressions library "re" so we can use it to parse fiducial names
+    # Grab the regular expressions library "re" so we can use it to parse Fiducial names
     import re
        
     # Ignore reference points

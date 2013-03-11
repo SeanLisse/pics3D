@@ -8,7 +8,7 @@ from Utilities import debugprint
 from Utilities import debug_levels
 # import VectorMath
 
-from Fiducials import fiducial
+from Fiducials import Fiducial
 
 from os import path
 from os import walk
@@ -49,7 +49,7 @@ def load_fiducials_from_dir(dirname = curdir):
 				
 
 def load_fiducial_from_file(filename):
-	''' Load a fiducial point from a file (usually .acsv format) '''
+	''' Load a Fiducial point from a file (usually .acsv format) '''
 	
 	if not(path.isfile(filename)): 
 		raise ValueError("Error: " + filename + " is not a valid file name.")
@@ -94,7 +94,7 @@ def load_fiducial_from_file(filename):
 			debugprint("Unknown Error attempting to set coordinates from file " + filename + ".",debug_levels.ERRORS)
 			return(None)
 		else:			
-			return fiducial(name,x,y,z)			
+			return Fiducial(name,x,y,z)			
 
 #####################
 ### DEFAULT MAIN PROC
