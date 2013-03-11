@@ -11,7 +11,7 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials, COORDS
-from VaginalProperties import VaginalDisplay
+from VaginalDisplay import VaginalDisplay
 from VectorMath import magnitude, normalize, orthogonalize
 from Graphing import show_all_graphs
 from PelvicPoints import create_pelvic_points_graph
@@ -29,9 +29,11 @@ DESIRED_SCIPP_ANGLE = -0.593411946
 #
 # WARNING WARNING - IF THIS IS TRUE, THEN ALL MEASUREMENTS BECOME RELATIVE AND ARE NO LONGER ABSOLUTE VALUES!!!
 SCALE_BY_SCIPP_LINE=False
+SCALE_BY_IIS_LINE=False
 
 # If scaling is desired, to what length should we normalize the SCIPP line? 
 SCIPP_SCALE_LENGTH=1
+IIS_SCALE_LENGTH=1
 
 # Which axes go where.
 # In "lisse" encoding, "X" increases to the patient's left, 
@@ -47,7 +49,7 @@ SCIPP_SCALE_LENGTH=1
 # "Z" increases to the patient's right.
 # 
 # In ALL of the above, we adjust the anterior-posterior axis to attempt to corect pelvic inclination to true "standing" position.
-AXIS_CODING_OPTIONS = enum('lisse','pics3d', 'pseudojcs')
+AXIS_CODING_OPTIONS = enum('lisse','pics3d')
 AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 
 def lisse_axes_matrix_fn(fiducial_points):
@@ -210,6 +212,32 @@ def pics_normalize_to_SCIPP_line(vag_props):
     for fid in fid_points:
         fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, scale_matrix)
 
+def pics_normalize_to_ischial_spine_width(vag_props):
+    ''' Scale all points along the inter-ischial spine line and about the origin, so that the width of the pelvis is normalized. '''
+    
+    fid_points = vag_props._fiducial_points
+    
+    IIS_line = vector_from_fiducials(fid_points[RIGHT_ISCHIAL_SPINE_NAME], fid_points[LEFT_ISCHIAL_SPINE_NAME])
+    
+    scale_factor = IIS_SCALE_LENGTH/magnitude(IIS_line)
+    
+    if(AXIS_CODING == AXIS_CODING_OPTIONS.lisse):
+        # Scale along the 'x' axis, which is L<->R.
+        scale_matrix = matrix([[scale_factor,0,0,0],
+                              [0,1,0,0],
+                              [0,0,1,0],
+                              [0,0,0,0]])
+        
+    if(AXIS_CODING == AXIS_CODING_OPTIONS.pics3d):
+        # Scale along the 'Z' axis, which is L<->R.
+        scale_matrix = matrix([[1,0,0,0],
+                              [0,1,0,0],
+                              [0,0,scale_factor,0],
+                              [0,0,0,0]])
+     
+    for fid in fid_points:
+        fid_points[fid].coords = transform_coords_by_matrix(fid_points[fid].coords, scale_matrix)
+
 def pics_recenter_and_reorient(vag_props):
     ''' Rotate, translate, and (someday perhaps) scale all of our fiducial points to fit the PICS reference system. ''' 
 
@@ -235,6 +263,10 @@ def pics_recenter_and_reorient(vag_props):
 
     if SCALE_BY_SCIPP_LINE:
         pics_normalize_to_SCIPP_line(vag_props)
+        
+    if SCALE_BY_IIS_LINE:
+        pics_normalize_to_ischial_spine_width(vag_props)
+        
 
 def pics_verify(vag_props):
     
