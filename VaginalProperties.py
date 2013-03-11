@@ -9,13 +9,12 @@ from numpy import Infinity, abs
 from Utilities import debug_levels, debugprint
 
 # My custom function imports
-from Fiducials import fiducial, vector_from_fiducials, get_fiducial_row_and_column
+from Fiducials import Fiducial, vector_from_fiducials, get_fiducial_row_and_column
 from MRMLSweep import load_fiducials_from_mrml
-from VectorMath import vector_magnitude_sum, magnitude
+from VectorMath import vector_magnitude_sum, magnitude, perpendicular_component
 
 # Constants
 from Fiducials import COORDS, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
-from GraphColoring import DEFAULT_COLORIZATION_STRATEGY
 
 class VaginalProperties(object):
     ''' This class is used to store information about the bony pelvis and pelvic floor of a particular woman, as determined by imaging. '''
@@ -57,7 +56,7 @@ class VaginalProperties(object):
         self._name = name
         
         if (fiducials == None):
-            # Create a dictionary to contain our fiducial points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
+            # Create a dictionary to contain our Fiducial points.  Each point will be indexed by name, and will be a 3-tuple of X,Y,Z values.
             self._fiducial_points = collections.OrderedDict()
         else: 
             self._fiducial_points = fiducials        
@@ -72,7 +71,7 @@ class VaginalProperties(object):
     def compute_properties(self):
         ''' Compute the physical properties of the pelvic floor. '''
         
-        ### Here we encode and graph by minimum distance from one of the P->IS lines.        
+        # Compute some basic properties of the pelvic floor based on bony landmarks    
         if (self._fiducial_points.has_key(PUBIC_SYMPHYSIS_NAME) 
             and self._fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) 
             and self._fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)):
@@ -86,9 +85,11 @@ class VaginalProperties(object):
             self._Right_PIS_Vector = vector_from_fiducials(self._Pubic_Symphysis, self._Right_IS)
         
             IIS_coords = (self._Left_IS.coords + self._Right_IS.coords)/2
-            self._IIS = fiducial(INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z])
+            self._IIS = Fiducial(INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z])
             
             self._fiducial_points[INTER_ISCHIAL_SPINE_NAME] = self._IIS
+            
+            
     
         else:
             debugprint("Error!  Cannot find one of the points named: " 
@@ -101,8 +102,13 @@ class VaginalProperties(object):
         else:
             debugprint("Error!  Cannot find the point named: "
                        + SC_JOINT_NAME, debug_levels.ERRORS)
+        
+        # Compute paravaginal gap distances
+        for key in self._fiducial_points.iterkeys():
+            fid= self._fiducial_points[key]
+            fid.paravaginal_gap = get_paravaginal_gap_distance(fid, self)
               
-        # Iterate through the fiducial points and gather those that have a row and column number into "rows"
+        # Iterate through the Fiducial points and gather those that have a row and column number into "rows"
         for key in self._fiducial_points.iterkeys():
             
             rownum,colnum = get_fiducial_row_and_column(self._fiducial_points[key])
@@ -122,9 +128,10 @@ class VaginalProperties(object):
                 self._rows[int(rowindex)].append([])
         
             fid = self._fiducial_points[key]
+            
             self._rows[rowindex][colindex] = fid
         
-        # Iterate over all the fiducial points and collect them into a sequence of point-to-point vectors for each row 
+        # Iterate over all the Fiducial points and collect them into a sequence of point-to-point vectors for each row 
         for rowindex in range(0,len(self._rows)):
         
             columns = self._rows[rowindex]
@@ -172,8 +179,11 @@ class VaginalProperties(object):
         retstring += ("Right Ischial Spine: " + self._Right_IS.to_string() + "\n")
         retstring += ("Sacrococcygeal Joint: " + self._SC_Joint.to_string() + "\n")
         
+        SCIPP_distance = magnitude(vector_from_fiducials(self._Pubic_Symphysis, self._SC_Joint))
+        retstring += ("Length of SCIPP Line: " + str(SCIPP_distance) + "\n")
+        
         IIS_distance = magnitude(vector_from_fiducials(self._Left_IS, self._Right_IS))
-        retstring += ("Distance from L_IS to R_IS: " + str(IIS_distance))
+        retstring += ("Distance from L_IS to R_IS: " + str(IIS_distance) + "\n")
         
         retstring += ("Vaginal Width Table: \n")
         
@@ -181,21 +191,18 @@ class VaginalProperties(object):
             retstring += "    Row # " + str(i+1) + ": " + str(self._vagwidths[i]) + "\n"
         
         return retstring
-
-class VaginalDisplay(VaginalProperties):
- 
-    # What strategy should we use to display this vagina?
-    _color_strategy = None
-    
-    # Vaginal width list (indexed by fiducial rows)
-    _vagrowcolors = None
-    
-    def __init__(self, name, color_strat = DEFAULT_COLORIZATION_STRATEGY ):
-        VaginalProperties.__init__(self, name)
-        
-        self._color_strategy = color_strat
-        
-        self._vagrowcolors=[]
  
            
+def get_paravaginal_gap_distance(Fiducial, vagproperties):
+        
+    fid_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, Fiducial)
+        
+    L_PIS_distance = abs(magnitude(perpendicular_component(vagproperties._Left_PIS_Vector, fid_vector)))
+    R_PIS_distance = abs(magnitude(perpendicular_component(vagproperties._Right_PIS_Vector, fid_vector)))
     
+    if (L_PIS_distance <= R_PIS_distance):
+        chosen_PIS_distance = L_PIS_distance
+    else:
+        chosen_PIS_distance = R_PIS_distance
+        
+    return chosen_PIS_distance

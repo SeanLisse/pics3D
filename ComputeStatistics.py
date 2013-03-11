@@ -12,11 +12,13 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from VaginalProperties import VaginalProperties
-from Fiducials import fiducial, get_fiducial_list_by_row_and_column, COORDS, REFERENCE_POINT_NAMES
+from Fiducials import Fiducial, get_fiducial_list_by_row_and_column
+from Fiducials import COORDS, REFERENCE_POINT_NAMES
+from VaginalProperties import get_paravaginal_gap_distance
 from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 
 # Graph drawing imports 
-from VaginalProperties import VaginalDisplay
+from VaginalDisplay import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
 from Graphing import show_all_graphs, add_line_to_graph3D #, add_ellipsoid_to_graph
 from GraphColoring import COLORIZATION_OPTIONS
@@ -36,7 +38,7 @@ COMPUTE_ALL_INDIVIDUAL_POINTS = False
 # Should we draw std_dev error bars?
 GRAPH_STD_DEV = True
 # How long should they be?  length = std_dev * graph_multiplier.
-STD_DEV_GRAPH_MULTIPLIER=2
+STD_DEV_GRAPH_MULTIPLIER = 2
 
 # String constants for constructing standard names
 LEFT_EDGE_PREFIX="Left_Edge_"
@@ -44,7 +46,7 @@ RIGHT_EDGE_PREFIX="Right_Edge_"
 CENTER_PREFIX="Center_"
 
 class FiducialStatistics():
-    ''' This is a class that collects statistical information about a particular fiducial point. '''
+    ''' This is a class that collects statistical information about a particular Fiducial point. '''
     
     def __init__(self,name):
         self._fid_name = name
@@ -54,8 +56,11 @@ class FiducialStatistics():
         self._fid_std_dev_y=None
         self._fid_std_dev_z=None
         
-    def add_fiducial(self, fiducial):
-        self._fid_collated_list.append(fiducial)
+        self._averaged_paravag_gap=None
+        self._fid_paravag_gap_std_dev=None
+        
+    def add_fiducial(self, Fiducial):
+        self._fid_collated_list.append(Fiducial)
         
     def compute_statistics(self): 
             
@@ -67,6 +72,8 @@ class FiducialStatistics():
             ylist = []
             zlist = []
             
+            paravaginal_gap_list = []
+            
             # Sum the values of X, Y, and Z for over the list
             for current_fid_index in range(0, len(self._fid_collated_list)):
                 current_fid = self._fid_collated_list[current_fid_index]
@@ -76,27 +83,33 @@ class FiducialStatistics():
                 xlist.append(current_fid.coords[COORDS.X])
                 ylist.append(current_fid.coords[COORDS.Y])
                 zlist.append(current_fid.coords[COORDS.Z])
+                
+                paravaginal_gap_list.append(current_fid.paravaginal_gap)
 
             x_avg = mean(xlist)
             y_avg = mean(ylist)
             z_avg = mean(zlist)            
             
-            self._averaged_fid = fiducial(self._fid_name, float(x_avg), float(y_avg), float(z_avg)) 
+            
+            self._averaged_fid = Fiducial(self._fid_name, float(x_avg), float(y_avg), float(z_avg)) 
             
             self._fid_std_dev_x = std_dev(xlist)
             self._fid_std_dev_y = std_dev(ylist)
             self._fid_std_dev_z = std_dev(zlist)
+            
+            self._averaged_paravag_gap = mean(paravaginal_gap_list)
+            self._fid_paravag_gap_std_dev = std_dev(paravaginal_gap_list)
 
 class FiducialStatCollection():
     ''' A self-maintaining list of FiducialStatistics '''
     def __init__(self):
         self._statlist = OrderedDict()
         
-    def add_fiducial_by_name(self, fiducialname, fiducial):
+    def add_fiducial_by_name(self, fiducialname, Fiducial):
         if (not fiducialname in self._statlist):
             self._statlist[fiducialname] = FiducialStatistics(fiducialname)
          
-        self._statlist[fiducialname].add_fiducial(fiducial)
+        self._statlist[fiducialname].add_fiducial(Fiducial)
     
     def get_all_stats(self):
         return self._statlist
@@ -125,6 +138,7 @@ def load_vaginal_properties(filenames):
         
     return propslist
 
+
 def collate_fiducials_reference_points(propslist, allfidstats = None):
     ''' Iterate over all gathered sets of vaginal properties, gathering the specially named reference point fiducials from them all and collating.
     Fills statslist with the results and returns it.'''
@@ -138,7 +152,7 @@ def collate_fiducials_reference_points(propslist, allfidstats = None):
         for fidname in REFERENCE_POINT_NAMES:
             
             if (not fidname in vag_props._fiducial_points):
-                debugprint("WARNING: Cannot find reference point fiducial named: " + fidname + "in vaginal properties " + vag_props.name, debug_levels.ERROR)        
+                debugprint("WARNING: Cannot find reference point Fiducial named: " + fidname + "in vaginal properties " + vag_props.name, debug_levels.ERROR)        
             else: 
                 current_fid = vag_props._fiducial_points[fidname]
                
@@ -243,7 +257,7 @@ def get_stats_and_display_from_properties(display_name, inputlist):
         collate_fiducials_by_row_and_column(inputlist, statscollection)
 
     display = VaginalDisplay(display_name, COLOR_STRAT)        
-    # Iterate over our collated fiducial stats using their standardized names, and compute some values. 
+    # Iterate over our collated Fiducial stats using their standardized names, and compute some values. 
     for fidname in statscollection.get_all_stats():
         stats = statscollection.get_stats_for_name(fidname)
         stats.compute_statistics()
@@ -260,7 +274,7 @@ def print_results(allfidstats):
         stat = allfidstats.get_stats_for_name(fidname)
         print("================")
         print("Statistics for " + stat._fid_name)
-        print("Mean fiducial: " + stat._averaged_fid.to_string())
+        print("Mean Fiducial: " + stat._averaged_fid.to_string())
         print("X std dev: " + str(stat._fid_std_dev_x))
         print("Y std dev: " + str(stat._fid_std_dev_y))
         print("Z std dev: " + str(stat._fid_std_dev_z))
