@@ -9,32 +9,14 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
-from ComputeStatistics import STD_DEV_GRAPH_MULTIPLIER
-from Fiducials import COORDS, REFERENCE_POINT_NAMES
+from Options import COORDS, REFERENCE_POINT_NAMES
 
-# Graph drawing imports 
+# Graph control imports
 from Graphing import show_all_graphs, generate_magic_subplot_number
 
-# CONSTANTS
-REFERENCE_POINT_BAR_COLOR="#AABBAA"
-BAR_COLOR = "#EEEEEE"
-POINT_COLOR = "#000000"
-COORD_TO_GRAPH=COORDS.Z
-
-# Maximum and minimum Y axis values on our coordinates graph
-GRAPH_MAX_MM = 100
-GRAPH_MIN_MM = -50
-
-# Maximum and minimum Y axis values on our paravaginal gap graph
-PARAVAG_MAX_MM = 100
-PARAVAG_MIN_MM = -10
-
-# Which graphs should we generate?
-SHOW_COORDINATE_GRAPH = True
-SHOW_PARAVAG_GRAPH = True
-
-# Which points should we include in our graphed display?
-SHOW_REFERENCE_POINTS = True
+from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS, PARAVAG_MIN_MM, PARAVAG_MAX_MM, GRAPH_MIN_MM, GRAPH_MAX_MM
+from Options import SHOW_PARAVAG_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
+from Options import REFERENCE_POINT_BAR_COLOR, BAR_COLOR, POINT_COLOR
 
 def filter_vagprops_for_graphing(exemplardisplay):
     ''' Trim out any fiducial points that we do *not* want to show. '''
@@ -232,7 +214,6 @@ if __name__ == '__main__':
     if SHOW_COORDINATE_GRAPH: num_graphs += 1
     if SHOW_PARAVAG_GRAPH: num_graphs += 1
             
-    
     if (SHOW_COORDINATE_GRAPH):
         graph_index += 1
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)

@@ -1,13 +1,16 @@
-from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do not remove this line!
+#! /usr/bin/env python
+# Author: Sean Lisse
+# This code is designed to load in a set of fiducials from command-line arguments and normalize them to the PICS system, analyze them mathematically, then display the results.
+
+from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do NOT remove this line!
 import matplotlib.pyplot as plt
 from Fiducials import COORDS
+
+from Options import DEFAULT_COLOR
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
 import numpy as np
-
-# Default color for pelvic points
-DEFAULT_COLOR=[0.5,0.5,0.75]
 
 class PelvicGraph2D(object):
     def __init__(self, name="Fiducials", x_axis_name='X', y_axis_name='Y'):

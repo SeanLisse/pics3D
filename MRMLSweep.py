@@ -4,18 +4,16 @@
 
 # Tested on /home/slisse/working/MRI_data/Reproducing_Larsen/138/Slicer4-Scene.mrml
 
+# System imports
 from os import path
-
 from xml.parsers import expat
 
-from Utilities import debugprint
-from Utilities import debug_levels
+# Generic custom imports 
+from Utilities import debugprint, debug_levels
 
+# Domain specific custom imports
 from Fiducials import Fiducial
-
-FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
-FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
-FIDUCIAL_NAME_ATTR_NAME = "name"
+from Options import FIDUCIAL_XML_NODE_NAME, FIDUCIAL_COORD_ATTR_NAME, FIDUCIAL_NAME_ATTR_NAME
 
 def load_fiducials_from_mrml(filename, fiducial_list):
     ''' Load a Fiducial from an mrml file. '''

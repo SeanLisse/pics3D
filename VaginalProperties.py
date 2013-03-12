@@ -14,7 +14,8 @@ from MRMLSweep import load_fiducials_from_mrml
 from VectorMath import vector_magnitude_sum, magnitude, perpendicular_component
 
 # Constants
-from Fiducials import COORDS, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
+from Options import COORDS
+from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
 
 class VaginalProperties(object):
     ''' This class is used to store information about the bony pelvis and pelvic floor of a particular woman, as determined by imaging. '''
@@ -193,9 +194,10 @@ class VaginalProperties(object):
         return retstring
  
            
-def get_paravaginal_gap_distance(Fiducial, vagproperties):
+def get_paravaginal_gap_distance(fiducial, vagproperties):
+    ''' Compute the distance from "fiducial" to the nearest Pubis->Ischial Spine line, aka the "Paravaginal Gap Distance".'''
         
-    fid_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, Fiducial)
+    fid_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, fiducial)
         
     L_PIS_distance = abs(magnitude(perpendicular_component(vagproperties._Left_PIS_Vector, fid_vector)))
     R_PIS_distance = abs(magnitude(perpendicular_component(vagproperties._Right_PIS_Vector, fid_vector)))

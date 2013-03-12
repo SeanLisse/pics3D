@@ -13,38 +13,15 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 # Domain specific custom imports
 from VaginalProperties import VaginalProperties
 from Fiducials import Fiducial, get_fiducial_list_by_row_and_column
-from Fiducials import COORDS, REFERENCE_POINT_NAMES
-from VaginalProperties import get_paravaginal_gap_distance
 from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
+from Options import COORDS, REFERENCE_POINT_NAMES, LEFT_EDGE_PREFIX, RIGHT_EDGE_PREFIX, CENTER_PREFIX
+from Options import COMPUTE_EDGES, COMPUTE_CENTER, COMPUTE_ALL_INDIVIDUAL_POINTS, STD_DEV_GRAPH_MULTIPLIER
 
 # Graph drawing imports 
 from VaginalDisplay import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
 from Graphing import show_all_graphs, add_line_to_graph3D #, add_ellipsoid_to_graph
-from GraphColoring import COLORIZATION_OPTIONS
-
-# CONSTANTS
-COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
-
-# Should we include points on the edges of the structure?
-COMPUTE_EDGES = True
-
-# What about the mid-sagittal section?
-COMPUTE_CENTER = True
-
-# Should we include all points by name?
-COMPUTE_ALL_INDIVIDUAL_POINTS = False
-
-# Should we draw std_dev error bars?
-GRAPH_STD_DEV = True
-# How long should they be?  length = std_dev * graph_multiplier.
-STD_DEV_GRAPH_MULTIPLIER = 2
-
-
-# String constants for constructing standard names
-LEFT_EDGE_PREFIX="Left_Edge_"
-RIGHT_EDGE_PREFIX="Right_Edge_"
-CENTER_PREFIX="Center_"
+from Options import COLOR_STRAT
 
 class FiducialStatistics():
     ''' This is a class that collects statistical information about a particular Fiducial point. '''
@@ -303,41 +280,40 @@ if __name__ == '__main__':
 
         avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
         
-        if (GRAPH_STD_DEV):
-            for fidname in allfidstats.get_all_stats():
-                fidstats = allfidstats.get_stats_for_name(fidname)
-                avg_fid = fidstats._averaged_fid
-                
-                center_x = avg_fid.coords[COORDS.X]
-                center_y = avg_fid.coords[COORDS.Y]
-                center_z = avg_fid.coords[COORDS.Z]
-                
-                max_x = center_x + (fidstats._fid_std_dev_x * STD_DEV_GRAPH_MULTIPLIER)
-                min_x = center_x - (fidstats._fid_std_dev_x * STD_DEV_GRAPH_MULTIPLIER)
-                
-                max_y = center_y + (fidstats._fid_std_dev_y * STD_DEV_GRAPH_MULTIPLIER)
-                min_y = center_y - (fidstats._fid_std_dev_y * STD_DEV_GRAPH_MULTIPLIER)
-                
-                max_z = center_z + (fidstats._fid_std_dev_z * STD_DEV_GRAPH_MULTIPLIER)
-                min_z = center_z - (fidstats._fid_std_dev_z * STD_DEV_GRAPH_MULTIPLIER)
-                
-                # Draw a line through the average point from min to max for x
-                start_coords=[min_x, center_y, center_z]
-                end_coords=[max_x, center_y, center_z]
-                add_line_to_graph3D(avg_graph, start_coords, end_coords, "pink")
-                
-                # Draw a line through the average point from min to max for y
-                start_coords=[center_x, min_y, center_z]
-                end_coords=[center_x, max_y, center_z]
-                add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightgreen")
-                
-                # Draw a line through the average point from min to max for z
-                start_coords=[center_x, center_y, min_z]
-                end_coords=[center_x, center_y, max_z]
-                add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightblue")
-                
-                # Add an ellipsoid to the graph
-                # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
+        for fidname in allfidstats.get_all_stats():
+            fidstats = allfidstats.get_stats_for_name(fidname)
+            avg_fid = fidstats._averaged_fid
+            
+            center_x = avg_fid.coords[COORDS.X]
+            center_y = avg_fid.coords[COORDS.Y]
+            center_z = avg_fid.coords[COORDS.Z]
+            
+            max_x = center_x + (fidstats._fid_std_dev_x * STD_DEV_GRAPH_MULTIPLIER)
+            min_x = center_x - (fidstats._fid_std_dev_x * STD_DEV_GRAPH_MULTIPLIER)
+            
+            max_y = center_y + (fidstats._fid_std_dev_y * STD_DEV_GRAPH_MULTIPLIER)
+            min_y = center_y - (fidstats._fid_std_dev_y * STD_DEV_GRAPH_MULTIPLIER)
+            
+            max_z = center_z + (fidstats._fid_std_dev_z * STD_DEV_GRAPH_MULTIPLIER)
+            min_z = center_z - (fidstats._fid_std_dev_z * STD_DEV_GRAPH_MULTIPLIER)
+            
+            # Draw a line through the average point from min to max for x
+            start_coords=[min_x, center_y, center_z]
+            end_coords=[max_x, center_y, center_z]
+            add_line_to_graph3D(avg_graph, start_coords, end_coords, "pink")
+            
+            # Draw a line through the average point from min to max for y
+            start_coords=[center_x, min_y, center_z]
+            end_coords=[center_x, max_y, center_z]
+            add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightgreen")
+            
+            # Draw a line through the average point from min to max for z
+            start_coords=[center_x, center_y, min_z]
+            end_coords=[center_x, center_y, max_z]
+            add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightblue")
+            
+            # Add an ellipsoid to the graph
+            # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
         
         print_results(allfidstats)
         

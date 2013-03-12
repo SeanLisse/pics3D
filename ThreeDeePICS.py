@@ -10,47 +10,17 @@ from Utilities import enum
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
-from Fiducials import vector_from_fiducials, COORDS
+from Fiducials import vector_from_fiducials 
 from VaginalDisplay import VaginalDisplay
 from VectorMath import magnitude, normalize, orthogonalize
 from Graphing import show_all_graphs
 from PelvicPoints import create_pelvic_points_graph
 
-#Constants
-from Fiducials import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
-from GraphColoring import COLORIZATION_OPTIONS
-
-COLOR_STRAT = COLORIZATION_OPTIONS.WIDTH
-
-# (34 degrees above horizontal is 0.5934 in radians)
-DESIRED_SCIPP_ANGLE = -0.593411946
-
-# Scale all points so that the SCIPP LINE LENGTH is equal to SCIPP_SCALE_LENGTH?
-#
-# WARNING WARNING - IF THIS IS TRUE, THEN ALL MEASUREMENTS BECOME RELATIVE AND ARE NO LONGER ABSOLUTE VALUES!!!
-SCALE_BY_SCIPP_LINE=False
-SCALE_BY_IIS_LINE=False
-
-# If scaling is desired, to what length should we normalize the SCIPP line? 
-SCIPP_SCALE_LENGTH=1
-IIS_SCALE_LENGTH=1
-
-# Which axes go where.
-# In "lisse" encoding, "X" increases to the patient's left, 
-# "Y" increases to the patient's posterior, and 
-# "Z" increases to the patient's superior.
-#
-# In "pics3d" encoding, "X" increases to the patient's posterior, 
-# "Y" increases to the patient's superior, 
-# and "Z" increases to the patient's left.
-# 
-# In "pseudo-JCS" encoding, that "X" increases to the patient's anterior, 
-# "Y" increases to the patient's superior, and 
-# "Z" increases to the patient's right.
-# 
-# In ALL of the above, we adjust the anterior-posterior axis to attempt to corect pelvic inclination to true "standing" position.
-AXIS_CODING_OPTIONS = enum('lisse','pics3d')
-AXIS_CODING = AXIS_CODING_OPTIONS.lisse
+# Constants
+from Options import COORDS, DESIRED_SCIPP_ANGLE, AXIS_CODING, AXIS_CODING_OPTIONS
+from Options import SCALE_BY_SCIPP_LINE, SCALE_BY_IIS_LINE, SCIPP_SCALE_LENGTH, IIS_SCALE_LENGTH
+from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
+from Options import COLOR_STRAT
 
 def lisse_axes_matrix_fn(fiducial_points):
     # In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior.

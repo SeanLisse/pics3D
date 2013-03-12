@@ -7,7 +7,7 @@
 from numpy import Infinity, abs
 
 # Nonspecific imports
-from Utilities import debug_levels, debugprint, enum
+from Utilities import debug_levels, debugprint
 
 # My custom function imports
 from Fiducials import vector_from_fiducials, get_fiducial_row_and_column
@@ -15,12 +15,8 @@ from VectorMath import perpendicular_component, magnitude
 from VaginalProperties import get_paravaginal_gap_distance
 
 # Constants
-from Fiducials import COORDS, REFERENCE_POINT_NAMES
-
-COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH', 'SEQUENTIAL')
-DEFAULT_COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.XYZ
-
-REFERENCE_POINT_COLOR = [0,0,0]
+from Options import COORDS, REFERENCE_POINT_NAMES
+from Options import REFERENCE_POINT_COLOR, SEQ_COLOR_FN_STEP_SIZE, COLORIZATION_OPTIONS
 
 # PIS Colorization globals (careful, multideclaration!)
 PIS_distance_min = x_min = y_min = z_min = Infinity
@@ -28,7 +24,6 @@ PIS_distance_max = x_max = y_max = z_max = -1 * Infinity
 
 # Globals used for sequential_color_fn
 seq_color_fn_counter = 0
-SEQ_COLOR_FN_STEP_SIZE = 0.1
 
 def xyz_color_calibration(fiducial_list):
     ''' Given a list of fiducials, gather their maximum and minimum 3D extents in the x, y, and z coordinates.

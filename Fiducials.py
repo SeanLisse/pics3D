@@ -4,21 +4,9 @@
 
 import numpy
 from VectorMath import normalize, magnitude, perpendicular_component
-from Utilities import enum, debugprint, debug_levels
+from Utilities import debugprint, debug_levels
 
-COORDS=enum('X','Y','Z')
-
-PUBIC_SYMPHYSIS_NAME="PS"
-SC_JOINT_NAME="SCJ"
-LEFT_ISCHIAL_SPINE_NAME="L_IS"
-RIGHT_ISCHIAL_SPINE_NAME="R_IS"
-INTER_ISCHIAL_SPINE_NAME="IIS"
-
-REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME}
-
-# This is the pattern used to match Fiducial names and parse out the row number (from apex, A) and column number (from left, L).
-# We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
-INDEX_PATTERN='A(\d+)L(\d+)'
+from Options import INDEX_PATTERN, REFERENCE_POINT_NAMES, COORDS
 
 class Fiducial:
     name = ""

@@ -14,7 +14,7 @@ from Graphing import add_legend_to_graph3D, set_graph_boundaries3D, show_all_gra
 from GraphColoring import calibrate_colorization_strategy_fn, fraction_color
 
 # Constants
-from Fiducials import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME
+from Options import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
 PAD_GRAPH=False
@@ -82,9 +82,9 @@ if __name__ == '__main__':
     
         debugprint('Now starting pelvic points program',debug_levels.BASIC_DEBUG)
         
-        vag_props = VaginalDisplay()        
+        vag_props = VaginalDisplay(filename)        
         vag_props.initialize_from_MRML(filename)
-        vag_props._graph = create_pelvic_points_graph(vag_props._graph, vag_props, filename)
+        graph = create_pelvic_points_graph(None, vag_props, filename)
         
         show_all_graphs()
             
