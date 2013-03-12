@@ -6,7 +6,7 @@ import collections
 from numpy import Infinity, abs
 
 # Basic utilities
-from Utilities import debug_levels, debugprint
+from Utilities import debug_levels, debugprint, rad_to_degrees
 
 # My custom function imports
 from Fiducials import Fiducial, vector_from_fiducials, get_fiducial_row_and_column
@@ -52,6 +52,10 @@ class VaginalProperties(object):
     _globalvagwidthmin = Infinity
     _globalvagwidthmax = -1 * Infinity
     
+    # Amount of rotation that has been performed from raw radiographic image to current data
+    _pelvic_tilt_correction_angle_about_LR_axis = None
+    _pelvic_tilt_correction_angle_about_AP_axis = None
+    
     def __init__(self, name, fiducials = None):
         
         self._name = name
@@ -89,8 +93,6 @@ class VaginalProperties(object):
             self._IIS = Fiducial(INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z])
             
             self._fiducial_points[INTER_ISCHIAL_SPINE_NAME] = self._IIS
-            
-            
     
         else:
             debugprint("Error!  Cannot find one of the points named: " 
@@ -185,6 +187,12 @@ class VaginalProperties(object):
         
         IIS_distance = magnitude(vector_from_fiducials(self._Left_IS, self._Right_IS))
         retstring += ("Distance from L_IS to R_IS: " + str(IIS_distance) + "\n")
+        
+        if (rad_to_degrees(self._pelvic_tilt_correction_angle_about_LR_axis != None)): 
+            retstring += ("Correction angle about LR axis:" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_LR_axis)) + " degrees\n")
+        
+        if (rad_to_degrees(self._pelvic_tilt_correction_angle_about_AP_axis != None)):
+            retstring += ("Correction angle about AP axis:" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_AP_axis)) + " degrees\n")
         
         retstring += ("Vaginal Width Table: \n")
         
