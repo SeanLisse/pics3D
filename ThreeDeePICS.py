@@ -3,16 +3,15 @@
 # This code is designed to load in a set of fiducials from a directory tree and normalize them to the PICS system, then display the results.
 
 # Built in library imports
-from numpy import arctan, sin, cos, pi, matrix, array
+from numpy import arctan, sin, cos, matrix, array
 
 # Generic custom imports 
-from Utilities import enum
-from Utilities import setdebuglevel, debug_levels, debugprint
+from Utilities import setdebuglevel, debug_levels, debugprint, rad_to_degrees
 
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials 
 from VaginalDisplay import VaginalDisplay
-from VectorMath import magnitude, normalize, orthogonalize
+from VectorMath import magnitude, normalize, orthogonalize, get_angle_between
 from Graphing import show_all_graphs
 from PelvicPoints import create_pelvic_points_graph
 
@@ -22,16 +21,16 @@ from Options import SCALE_BY_SCIPP_LINE, SCALE_BY_IIS_LINE, SCIPP_SCALE_LENGTH, 
 from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
 from Options import COLOR_STRAT
 
-def lisse_axes_matrix_fn(fiducial_points):
-    # In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior.
+def lisse_axes_matrix_fn(vag_props):
+    ''' In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior. '''
 
     # We need to create a "transformation matrix".  
     # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
     # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
-    new_x_axis = pics_get_LR_axis(fiducial_points)
-    new_y_axis = pics_get_AP_axis(fiducial_points)
-    new_z_axis = pics_get_IS_axis(fiducial_points)
-    
+    new_x_axis = pics_get_LR_axis(vag_props)
+    new_y_axis = pics_get_AP_axis(vag_props)
+    new_z_axis = pics_get_IS_axis(vag_props)
+        
     # Since our coordinates will come to us as vectors in [X,Y,Z] format, each column of our transformation matrix will 
     # decide one of our new coordinates' elements - first column will be new x, second new y, third new z.
     # To make the matrix math work, the fourth column will be all zeros.  
@@ -45,15 +44,15 @@ def lisse_axes_matrix_fn(fiducial_points):
     
     return matrix([row1, row2, row3, row4])
 
-def pics3d_axes_matrix_fn(fiducial_points):
+def pics3d_axes_matrix_fn(vag_props):
     # In "pics3d" encoding, "X" increases to the patient's posterior, "Y" increases to the patient's superior, and "Z" increases to the patient's left.
 
     # We need to create a "transformation matrix".  
     # When we multiply a coordinate vector by this matrix, it will give us our coordinate under the new system.
     # To do this, we need to decide upon the new x/y/z axes, then build a matrix from their coordinates and the coordinates of the new origin.
-    new_x_axis = pics_get_AP_axis(fiducial_points)
-    new_y_axis = pics_get_IS_axis(fiducial_points)
-    new_z_axis = pics_get_LR_axis(fiducial_points)
+    new_x_axis = pics_get_AP_axis(vag_props)
+    new_y_axis = pics_get_IS_axis(vag_props)
+    new_z_axis = pics_get_LR_axis(vag_props)
     
     # Since our coordinates will come to us as vectors in [X,Y,Z] format, each column of our transformation matrix will 
     # decide one of our new coordinates' elements - first column will be new x, second new y, third new z.
@@ -68,6 +67,18 @@ def pics3d_axes_matrix_fn(fiducial_points):
     
     return matrix([row1, row2, row3, row4])
 
+def set_pelvic_tilt_correction_info(vag_props):
+    
+    # Encoding from Slicer: RAS (X = Right, Y = Anterior, Z = Superior)    
+    LR_axis_vector = [-1,0,0] # our axis vector X increases to the *left*
+    AP_axis_vector = [0,-1,0] # our axis vector Y increases *posteriorly*
+
+    # Compare those 'standard' radiologic coordinate axes with the coordinate axes computed from our fiducial points.
+    LR_rot_angle = get_angle_between(LR_axis_vector, pics_get_LR_axis(vag_props))
+    AP_rot_angle = get_angle_between(AP_axis_vector, pics_get_AP_axis(vag_props))
+    
+    vag_props._pelvic_tilt_correction_angle_about_LR_axis = LR_rot_angle
+    vag_props._pelvic_tilt_correction_angle_about_AP_axis = AP_rot_angle
 
 def pics_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using PICS methodology (i.e. recenter on the pubic symphysis). '''
@@ -86,16 +97,24 @@ def pics_get_SCIPP_line(fiducial_points):
     
     return vector_from_fiducials(fiducial_points[PUBIC_SYMPHYSIS_NAME], fiducial_points[SC_JOINT_NAME])
 
-def pics_get_LR_axis(fiducial_points):
+def pics_get_LR_axis(vag_props):
+    
+    fiducial_points = vag_props._fiducial_points
+    
     ''' Find the new Left<->Right axis, which is simply a normalized version of the line between the ischial spines. '''
     if not(fiducial_points.has_key(LEFT_ISCHIAL_SPINE_NAME) and fiducial_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)): 
         raise ValueError("Cannot find left and right ischial spines, so cannot set PICS x axis.")
     else: 
-        return normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_NAME]))
+        
+        new_axis = normalize(vector_from_fiducials(fiducial_points[RIGHT_ISCHIAL_SPINE_NAME], fiducial_points[LEFT_ISCHIAL_SPINE_NAME]))
+        
+        return new_axis
 
 # TODO - fix me to rotate properly around the X axis, as possible...
-def pics_get_AP_axis(fiducial_points):
+def pics_get_AP_axis(vag_props):
     ''' Find the new Anterior<->Posterior axis, which will be the SCIPP line rotated caudally 34 degrees around the pubic symphysis.'''
+    
+    fiducial_points = vag_props._fiducial_points
     
     SCIPP_line = normalize(pics_get_SCIPP_line(fiducial_points))
     
@@ -107,8 +126,8 @@ def pics_get_AP_axis(fiducial_points):
    
     angle_adjustment = DESIRED_SCIPP_ANGLE - SCIPP_angle_from_horiz
     
-    debugprint("SCIPP AP to IS angle is " + str(SCIPP_angle_from_horiz * 180 / pi), debug_levels.DETAILED_DEBUG)
-    debugprint("Adjustment AP to IS angle is " + str(angle_adjustment * 180 / pi), debug_levels.DETAILED_DEBUG)
+    debugprint("SCIPP AP to IS angle is " + str(rad_to_degrees(SCIPP_angle_from_horiz)), debug_levels.DETAILED_DEBUG)
+    debugprint("Adjustment AP to IS angle is " + str(rad_to_degrees(angle_adjustment)), debug_levels.DETAILED_DEBUG)
                          
     # ... then build in the correction.
     # Notice that in order to rotate the SCIPP line *up*, we have to rotate our reference system (aka new y) *down*, 
@@ -123,10 +142,10 @@ def pics_get_AP_axis(fiducial_points):
       
     return new_AP_vector
 
-def pics_get_IS_axis(fiducial_points):
+def pics_get_IS_axis(vag_props):
     ''' Find the new Inferior<->Superior axis, which is orthogonal to the new x and y axes.  Depends on those axes being definable without reference to the z axis.'''
     
-    return orthogonalize(pics_get_LR_axis(fiducial_points), pics_get_AP_axis(fiducial_points))
+    return orthogonalize(pics_get_LR_axis(vag_props), pics_get_AP_axis(vag_props))
 
 def transform_coords_by_matrix(coords, matrix):
     ''' Given a transformation matrix and a set of coordinates, return the coordinates transformed by the matrix. '''
@@ -142,10 +161,10 @@ def pics_generate_transformation_matrix(vag_props):
     fiducial_points = vag_props._fiducial_points
 
     if (AXIS_CODING == AXIS_CODING_OPTIONS.lisse):
-        transform_matrix=lisse_axes_matrix_fn(fiducial_points)
+        transform_matrix=lisse_axes_matrix_fn(vag_props)
 
     if (AXIS_CODING == AXIS_CODING_OPTIONS.pics3d):
-        transform_matrix=pics3d_axes_matrix_fn(fiducial_points)
+        transform_matrix=pics3d_axes_matrix_fn(vag_props)
         
     # To find out how much to translate each old point to the new coordinate system,
     # we find the vector from the old origin (0,0,0) to the new origin.
@@ -226,6 +245,8 @@ def pics_recenter_and_reorient(vag_props):
               + " in file " + filename)   
         return
 
+    set_pelvic_tilt_correction_info(vag_props)
+
     transformation_matrix = pics_generate_transformation_matrix(vag_props)
  
     for fid in fid_points:
@@ -249,8 +270,8 @@ def pics_verify(vag_props):
     # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
     SCIPP_angle_from_horiz = arctan(SCIPP_line[COORDS.Z]/SCIPP_line[COORDS.Y])
     
-    debugprint("Final SCIPP angle from horizontal is: " + str(SCIPP_angle_from_horiz * 180 /pi ) 
-               + " degrees and should be: " + str(DESIRED_SCIPP_ANGLE * 180 / pi) + " degrees", debug_levels.DETAILED_DEBUG)
+    debugprint("Final SCIPP angle from horizontal is: " + str(rad_to_degrees(SCIPP_angle_from_horiz)) 
+               + " degrees and should be: " + str(rad_to_degrees(DESIRED_SCIPP_ANGLE)) + " degrees", debug_levels.DETAILED_DEBUG)
     
 
 
@@ -274,7 +295,7 @@ if __name__ == '__main__':
         for i in range(1,len(argv)):
             filename = argv[i]
         
-            debugprint('Now starting PICS pelvic points program',debug_levels.BASIC_DEBUG)
+            debugprint('Now starting PICS pelvic points program',debug_levels.DETAILED_DEBUG)
                         
             vag_props = VaginalDisplay(filename, COLOR_STRAT)        
             vag_props.initialize_from_MRML(filename)
@@ -289,4 +310,4 @@ if __name__ == '__main__':
                             
         show_all_graphs()
             
-        debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)
+        debugprint('Now leaving pelvic points program',debug_levels.DETAILED_DEBUG)
