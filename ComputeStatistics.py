@@ -259,28 +259,11 @@ def print_results(allfidstats):
         print("Mean paravaginal gap: " + str(stat._averaged_paravag_gap))
         print("Paravaginal gap std dev: " + str(stat._fid_paravag_gap_std_dev)) 
         print("================")
-        
-#####################
-### DEFAULT MAIN PROC
-#####################  
 
-if __name__ == '__main__':
-        
-    from sys import argv
-     
-    setdebuglevel(debug_levels.BASIC_DEBUG) 
+def add_errorbars_to_graph(graph, fiducialstats):
+    ''' Annotate the graph with standard deviation error bars. '''
     
-    if len(argv) < 2: 
-        debugprint("Need to supply at least one mrml file name argument.",debug_levels.ERROR)
-    else:
-        # ignore the argv[0], as it's just the filename of this python file.
-        propslist = load_vaginal_properties(argv[1:])  
-
-        [allfidstats, averagedisplay] = get_stats_and_display_from_properties("Computed fiducials", propslist)
-
-        avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
-        
-        for fidname in allfidstats.get_all_stats():
+    for fidname in allfidstats.get_all_stats():
             fidstats = allfidstats.get_stats_for_name(fidname)
             avg_fid = fidstats._averaged_fid
             
@@ -314,6 +297,29 @@ if __name__ == '__main__':
             
             # Add an ellipsoid to the graph
             # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
+            
+            
+#####################
+### DEFAULT MAIN PROC
+#####################  
+
+if __name__ == '__main__':
+        
+    from sys import argv
+     
+    setdebuglevel(debug_levels.BASIC_DEBUG) 
+    
+    if len(argv) < 2: 
+        debugprint("Need to supply at least one mrml file name argument.",debug_levels.ERROR)
+    else:
+        # ignore the argv[0], as it's just the filename of this python file.
+        propslist = load_vaginal_properties(argv[1:])  
+
+        [allfidstats, averagedisplay] = get_stats_and_display_from_properties("Computed fiducials", propslist)
+
+        avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
+        
+        add_errorbars_to_graph(avg_graph, allfidstats)
         
         print_results(allfidstats)
         
