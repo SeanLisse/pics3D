@@ -36,6 +36,17 @@ def default_color_fn(Fiducial):
     ''' Default coloration function. Clone this and alter it to customize your coloration when graphing. '''
     return DEFAULT_COLOR
 
+def generate_magic_subplot_number(total_graphs, current_graph_index):
+    ''' Generate a magic number to feed to the add_subplot routine, telling it how many graphs to make room for and which graph this is. '''
+    
+    if ((total_graphs > 9) or (current_graph_index > 9)):
+        debugprint("ERROR - Cannot make more than 9 subplots!", debug_levels.ERROR) 
+        return None
+    
+    magic_subplot_number = (100 * total_graphs) + 10 + current_graph_index
+     
+    return magic_subplot_number
+
 def show_all_graphs():
     ''' Display the graph.  Call this after adding all scatterpoints to it. '''
     plt.show()
