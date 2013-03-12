@@ -26,19 +26,20 @@ from GraphColoring import COLORIZATION_OPTIONS
 # CONSTANTS
 COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 
-# Should we compute edge points?
+# Should we include points on the edges of the structure?
 COMPUTE_EDGES = True
 
 # What about the mid-sagittal section?
 COMPUTE_CENTER = True
 
-# Should we directly compare points by name?
+# Should we include all points by name?
 COMPUTE_ALL_INDIVIDUAL_POINTS = False
 
 # Should we draw std_dev error bars?
 GRAPH_STD_DEV = True
 # How long should they be?  length = std_dev * graph_multiplier.
 STD_DEV_GRAPH_MULTIPLIER = 2
+
 
 # String constants for constructing standard names
 LEFT_EDGE_PREFIX="Left_Edge_"
@@ -252,9 +253,9 @@ def get_stats_and_display_from_properties(display_name, inputlist):
     
     statscollection = collate_fiducials_reference_points(inputlist)
     if (COMPUTE_EDGES or COMPUTE_CENTER): 
-        collate_fiducials_by_edges(inputlist, statscollection)
+        statscollection = collate_fiducials_by_edges(inputlist, statscollection)
     if (COMPUTE_ALL_INDIVIDUAL_POINTS):
-        collate_fiducials_by_row_and_column(inputlist, statscollection)
+        statscollection = collate_fiducials_by_row_and_column(inputlist, statscollection)
 
     display = VaginalDisplay(display_name, COLOR_STRAT)        
     # Iterate over our collated Fiducial stats using their standardized names, and compute some values. 
@@ -278,6 +279,8 @@ def print_results(allfidstats):
         print("X std dev: " + str(stat._fid_std_dev_x))
         print("Y std dev: " + str(stat._fid_std_dev_y))
         print("Z std dev: " + str(stat._fid_std_dev_z))
+        print("Mean paravaginal gap: " + str(stat._averaged_paravag_gap))
+        print("Paravaginal gap std dev: " + str(stat._fid_paravag_gap_std_dev)) 
         print("================")
         
 #####################
