@@ -75,6 +75,19 @@ def orthogonalize(reference_vector, comparison_vector):
     result = numpy.cross(reference_vector, comparison_vector)
     return result
 
+def get_angle_between(reference_vector, comparison_vector):
+    ''' Given two vectors, compute (the absolute value of) the angle between them. '''
+    
+    normalized_ref = normalize(reference_vector)
+    normalized_compare = normalize(comparison_vector)
+    
+#    print("Normalized ref: " + str(normalized_ref))
+#    print("Normalized comparison: " + str(normalized_compare))
+    
+    result = numpy.arccos(numpy.dot(normalized_ref, normalized_compare))
+    
+    return result
+
 ####################################
 ### DEFAULT MAIN PROC (UNIT TESTING)
 ####################################
