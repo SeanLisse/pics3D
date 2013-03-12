@@ -14,6 +14,7 @@ COORDS=enum('X','Y','Z')
 INDEX_PATTERN='A(\d+)L(\d+)'
 
 # Constants to look for when loading fiducials from an MRML file.
+# SLICER4 version
 FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
 FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
 FIDUCIAL_NAME_ATTR_NAME = "name"
