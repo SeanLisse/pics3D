@@ -2,6 +2,8 @@
 # Author: Sean Lisse
 # Collection of utility scripts
 
+from numpy import pi
+
 # Enum definition borrowed from the internet.  Thank you internet.
 def enum(*sequential, **named):
     ''' Custom enumerator creator - 
@@ -34,4 +36,7 @@ def setdebuglevel(level):
     
     # Seems to be broken, so this is currently a no-op
     debug_level = level
+
+def rad_to_degrees(radians):
     
+    return(radians*180 /pi)
