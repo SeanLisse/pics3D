@@ -36,14 +36,14 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
     R_IS_coords = vagdisplay._Right_IS.coords
     
     # Display the P_IS lines on the graph as well
-    add_line_to_graph3D(graph, PS_coords, L_IS_coords , "black")
-    add_line_to_graph3D(graph, PS_coords, R_IS_coords, "black")
+    # add_line_to_graph3D(graph, PS_coords, L_IS_coords , "black")
+    # add_line_to_graph3D(graph, PS_coords, R_IS_coords, "black")
     
     IIS_coords = vagdisplay._IIS.coords
     add_scatterpoint_to_graph3D(graph, INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z], "black")
     
-    if(fid_points.has_key(SC_JOINT_NAME)):
-        add_line_to_graph3D(graph, PS_coords, fid_points[SC_JOINT_NAME].coords, "black")
+#    if(fid_points.has_key(SC_JOINT_NAME)):
+#        add_line_to_graph3D(graph, PS_coords, fid_points[SC_JOINT_NAME].coords, "black")
     
     if PAD_GRAPH:
         # Pad the graph to keep all graphs at equal scale for comparison
