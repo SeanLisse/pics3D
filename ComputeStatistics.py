@@ -39,8 +39,9 @@ class FiducialStatistics():
         
     def add_fiducial(self, Fiducial):
         self._fid_collated_list.append(Fiducial)
+        self.update_statistics()
         
-    def compute_statistics(self): 
+    def update_statistics(self): 
             
             debugprint("Computing statistics for " + self._fid_name, debug_levels.DETAILED_DEBUG)
             
@@ -81,22 +82,85 @@ class FiducialStatistics():
 class FiducialStatCollection():
     ''' A self-maintaining list of FiducialStatistics '''
     def __init__(self):
-        self._statlist = OrderedDict()
+        self._statsdict = OrderedDict()
         
     def add_fiducial_by_name(self, fiducialname, Fiducial):
-        if (not fiducialname in self._statlist):
-            self._statlist[fiducialname] = FiducialStatistics(fiducialname)
+        if (not fiducialname in self._statsdict):
+            self._statsdict[fiducialname] = FiducialStatistics(fiducialname)
          
-        self._statlist[fiducialname].add_fiducial(Fiducial)
+        self._statsdict[fiducialname].add_fiducial(Fiducial)
     
     def get_all_stats(self):
-        return self._statlist
+        return self._statsdict
          
     def get_stats_for_name(self, fiducialname):
-        if (not fiducialname in self._statlist): 
+        if (not fiducialname in self._statsdict): 
             return None
         else:
-            return self._statlist[fiducialname]
+            return self._statsdict[fiducialname]
+
+class VaginalPropertyStatistics():
+    ''' This is a class that collects statistical information about a collection of vaginalproperties objects. '''
+    
+    _propslist = None # A list of [name,VaginalProperties] pairs
+    
+    _fidstatcollection = None # A collection of fiducial statistics summarizing all of the values from propslist
+    
+    _vagwidthlists = None # An array of lists, each of which collects values for one row across all vaginalproperties
+    _vagwidthmeanslist = None # An array of values, each of which is a mean for one of the rows in vagwidthlists.
+    _vagwidthstddevlist = None # An array of values, each of which is a std dev for one of the rows in vagwidthlists.
+    
+    def __init__(self):
+        self._propslist = []
+        self._fidstatcollection = FiducialStatCollection()
+        self._vagwidthlists = []  
+    
+    def update_statistics(self):
+        
+        total_vaginal_rows = len(self._vagwidthlists)
+        
+        self._vagwidthmeanslist = []
+        self._vagwidthstddevlist = []
+        
+        for widthindex in range(0,total_vaginal_rows):
+            current_row_width_list = self._vagwidthlists[widthindex]
+            row_mean = mean(current_row_width_list)
+            row_std_dev = std_dev(current_row_width_list)
+            
+            self._vagwidthmeanslist.append(row_mean)
+            self._vagwidthstddevlist.append(row_std_dev)         
+        
+    def add_vaginalproperties(self, vagprops):
+        self._propslist.append([vagprops._name, vagprops])
+        
+        fids = vagprops._fiducial_points
+        
+        widthindex = 0
+        
+        # Collate vaginal width values from this set of vaginal properties
+        for item in vagprops._vagwidths:
+            
+            if (len(self._vagwidthlists) <= widthindex):
+                self._vagwidthlists.append([])
+            
+            if (self._vagwidthlists[widthindex] == None):
+                self._vagwidthlists[widthindex] = []
+            
+            # Add the width to the list
+            self._vagwidthlists[widthindex].append(item)
+    
+            widthindex += 1
+            
+        for key in fids.iterkeys():
+            fid = fids[key]
+            
+            self._fidstatcollection.add_fiducial_by_name(key, fid)
+            
+        self.update_statistics()
+    
+    def add_vaginalproperties_from_list(self, propslist):
+        for item in propslist:
+            self.add_vaginalproperties(item)
 
 def load_vaginal_properties(filenames):
     ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
@@ -228,6 +292,10 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
 def get_stats_and_display_from_properties(display_name, inputlist):
     ''' Takes a list of vaginal properties and returns a VaginalDisplay. '''
     
+    propstats = VaginalPropertyStatistics()
+        
+    propstats.add_vaginalproperties_from_list(inputlist)
+    
     statscollection = collate_fiducials_reference_points(inputlist)
     if (COMPUTE_EDGES or COMPUTE_CENTER): 
         statscollection = collate_fiducials_by_edges(inputlist, statscollection)
@@ -238,15 +306,28 @@ def get_stats_and_display_from_properties(display_name, inputlist):
     # Iterate over our collated Fiducial stats using their standardized names, and compute some values. 
     for fidname in statscollection.get_all_stats():
         stats = statscollection.get_stats_for_name(fidname)
-        stats.compute_statistics()
         
         display._fiducial_points[fidname] = stats._averaged_fid
 
     display.compute_properties()
     
-    return [statscollection,display]
+    return [propstats, statscollection,display]
 
-def print_results(allfidstats):
+def print_results(propstats, allfidstats):
+    
+    print("================")
+    print("Vaginal Property Statistics for all sets of vaginas... ")
+    print("Vaginal Width List:")
+    
+    rowcount = 0
+    while (rowcount < len(propstats._vagwidthlists)):
+        widthlist = propstats._vagwidthlists[rowcount]
+        rowcount += 1 # Done here so the displayed row # makes sense
+        print("Row # " + str(rowcount) 
+              + ", mean: " +  str(mean(widthlist)) 
+              + ", std dev: " + str(std_dev(widthlist)))
+              
+    print("================")
     
     for fidname in allfidstats.get_all_stats():
         stat = allfidstats.get_stats_for_name(fidname)
@@ -259,6 +340,8 @@ def print_results(allfidstats):
         print("Mean paravaginal gap: " + str(stat._averaged_paravag_gap))
         print("Paravaginal gap std dev: " + str(stat._fid_paravag_gap_std_dev)) 
         print("================")
+     
+    print("================")
 
 def add_errorbars_to_graph(graph, fiducialstats):
     ''' Annotate the graph with standard deviation error bars. '''
@@ -283,17 +366,17 @@ def add_errorbars_to_graph(graph, fiducialstats):
             # Draw a line through the average point from min to max for x
             start_coords=[min_x, center_y, center_z]
             end_coords=[max_x, center_y, center_z]
-            add_line_to_graph3D(avg_graph, start_coords, end_coords, "pink")
+            add_line_to_graph3D(graph, start_coords, end_coords, "pink")
             
             # Draw a line through the average point from min to max for y
             start_coords=[center_x, min_y, center_z]
             end_coords=[center_x, max_y, center_z]
-            add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightgreen")
+            add_line_to_graph3D(graph, start_coords, end_coords, "lightgreen")
             
             # Draw a line through the average point from min to max for z
             start_coords=[center_x, center_y, min_z]
             end_coords=[center_x, center_y, max_z]
-            add_line_to_graph3D(avg_graph, start_coords, end_coords, "lightblue")
+            add_line_to_graph3D(graph, start_coords, end_coords, "lightblue")
             
             # Add an ellipsoid to the graph
             # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
@@ -313,15 +396,15 @@ if __name__ == '__main__':
         debugprint("Need to supply at least one mrml file name argument.",debug_levels.ERROR)
     else:
         # ignore the argv[0], as it's just the filename of this python file.
-        propslist = load_vaginal_properties(argv[1:])  
+        propslist = load_vaginal_properties(argv[1:])
 
-        [allfidstats, averagedisplay] = get_stats_and_display_from_properties("Computed fiducials", propslist)
+        [propstats, allfidstats, averagedisplay] = get_stats_and_display_from_properties("Computed fiducials", propslist)
 
         avg_graph = create_pelvic_points_graph(None, averagedisplay, "Computed Statistics")
         
         add_errorbars_to_graph(avg_graph, allfidstats)
         
-        print_results(allfidstats)
+        print_results(propstats, allfidstats)
         
         show_all_graphs()
         # TODO: Print out statistics and properties in some ordered form, here
