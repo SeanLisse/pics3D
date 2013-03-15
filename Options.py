@@ -100,7 +100,7 @@ REFERENCE_POINT_COLOR = [0,0,0]
 SEQ_COLOR_FN_STEP_SIZE = 0.1
 
 # CONSTANTS
-COLOR_STRAT = COLORIZATION_OPTIONS.WIDTH
+COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 
 # *****************************************************************
 # Detailed Graphing options
@@ -122,6 +122,7 @@ PARAVAG_MIN_MM = -10
 # Which graphs should we generate?
 SHOW_COORDINATE_GRAPH = True
 SHOW_PARAVAG_GRAPH = True
+SHOW_WIDTH_GRAPH = True
 
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = True
