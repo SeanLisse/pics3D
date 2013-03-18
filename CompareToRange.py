@@ -5,6 +5,7 @@
 
 # Generic custom imports 
 import matplotlib.pyplot as plt
+from pylab import boxplot
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
@@ -36,7 +37,7 @@ def filter_vagprops_for_graphing(exemplardisplay):
       
     return key_list
 
-def create_2D_paravaginal_graph(graph, graphname, exemplar_key_list, exemplar_props, rangestats):
+def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, rangestats):
     ''' Create a graph that displays the "paravaginal gap" distance (i.e. the distance from that point to the closest P-> IS line) 
     for each fiducial in exemplarlist, and compares that distance to the computed range from rangestats. '''
     
@@ -44,143 +45,87 @@ def create_2D_paravaginal_graph(graph, graphname, exemplar_key_list, exemplar_pr
         debugprint("No graph given! ",debug_levels.ERROR)
         return
     
-    stat_list = rangestats.get_all_stats()
-    
-    fid_length = len(exemplar_key_list)
-    graph.set_xlim(0,fid_length)
-    graph.set_ylim(PARAVAG_MIN_MM, PARAVAG_MAX_MM)
-    
-    # Start with a blank point at 0 index so our first datapoint isn't right on the edge of the graph.
+    x_labels = []
     x_index = 0
-    x_labels = [""] 
+    boxplot_list = []
     
-    for key in exemplar_key_list:
+    stat_list = rangestats.get_all_stats()
         
-        x_index += 1
+    for key in exemplar_key_list:
         x_labels.append(key)
+        x_index += 1
 
-        # Draw the "error bar" on the graph in light grey
+        paravag_value_list = []    
+        
         if (key in stat_list):
             stat = stat_list[key]
-        else: 
-            stat = None
-              
-        if (stat != None): 
-            avg_val = stat._averaged_paravag_gap
-            
-            stdev = stat._fid_paravag_gap_std_dev
-            
-            min_val = avg_val - (STD_DEV_GRAPH_MULTIPLIER * stdev)
-            max_val = avg_val + (STD_DEV_GRAPH_MULTIPLIER * stdev)
-            
-            if (key in REFERENCE_POINT_NAMES):
-                barcolor = REFERENCE_POINT_BAR_COLOR
-            else: 
-                barcolor = BAR_COLOR
-
-            # Draw the range
-            graph.broken_barh([(x_index-0.5,1)], (min_val, max_val - min_val), facecolors=barcolor)
-            
-            # Draw the average val
-            graph.broken_barh([(x_index-0.5,1)], (avg_val, 0), facecolors=barcolor)
-            
-            # print("Stats for " + key + ": avg " + str(avg_val) + ", stdev " + str(stdev) + ", min " + str(min_val) + ", max " + str(max_val))
+            for fid in stat._fid_collated_list:
+                paravag_value_list.append(fid.paravaginal_gap)
+                 
+        boxplot_list.append(paravag_value_list)
         
         # Draw the fiducial as a black dot.
         fid = exemplar_props._fiducial_points[key]
         graph.scatter(x_index, fid.paravaginal_gap, marker='o', label=key, color=POINT_COLOR)
-        
-    # Add an extra space on the end so our last point isn't on the edge of the graph.
-    x_index += 2
-    x_labels.append("")
-    x_labels.append("")
-        
-    graph.set_xticks(range(0, x_index))    
-    label_obj = graph.set_xticklabels(x_labels)
-    graph.set_xlabel("Fiducial Point")
+                
+    graph.boxplot(boxplot_list)
     
-    graph.set_ylabel("Paravaginal Gap")       
-
-    plt.setp(label_obj, rotation=45, fontsize=8)
-
+    graph.set_ylim(PARAVAG_MIN_MM, PARAVAG_MAX_MM)
+    
+    graph.set_ylabel("Paravaginal Gap (mm)")
+    
     graph.grid(True)
-
+    
+    label_obj = graph.set_xticklabels(x_labels)
+    plt.setp(label_obj, rotation=60, fontsize=10)
+    
     return graph   
 
-def create_2D_comparison_graph(graph, graphname, exemplar_key_list, exemplar_props, rangestats):
+def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangestats):
     ''' Add all fiducials in key_list to the graph.  Info from rangestats appears as bars,  Info from exemplar_props as points.'''
         
     if (graph == None):
         debugprint("No graph given! ",debug_levels.ERROR)
         return
-      
-    fid_length = len(exemplar_key_list)
-    graph.set_xlim(0,fid_length)
-    graph.set_ylim(GRAPH_MIN_MM, GRAPH_MAX_MM)
+    
+    x_labels = []
+    x_index = 0
+    boxplot_list = []
     
     stat_list = rangestats.get_all_stats()
-    
-    # Start with a blank point at 0 index so our first datapoint isn't right on the edge of the graph.
-    x_index = 0
-    x_labels = [""] 
-    
-    for key in exemplar_key_list:
         
-        x_index += 1
+    for key in exemplar_key_list:
         x_labels.append(key)
+        x_index += 1
 
-        # Draw the "error bar" on the graph in light grey
+        paravag_value_list = []    
+        
         if (key in stat_list):
             stat = stat_list[key]
-        else: 
-            stat = None
-              
-        if (stat != None): 
-            avg_val = stat._averaged_fid.coords[COORD_TO_GRAPH]
-            
-            stdev = None
-            if [COORD_TO_GRAPH == COORDS.X]: stdev = stat._fid_std_dev_x
-            if [COORD_TO_GRAPH == COORDS.Y]: stdev = stat._fid_std_dev_y
-            if [COORD_TO_GRAPH == COORDS.Z]: stdev = stat._fid_std_dev_z
-            
-            min_val = avg_val - (STD_DEV_GRAPH_MULTIPLIER * stdev)
-            max_val = avg_val + (STD_DEV_GRAPH_MULTIPLIER * stdev)
-            
-            if (key in REFERENCE_POINT_NAMES):
-                barcolor = REFERENCE_POINT_BAR_COLOR
-            else: 
-                barcolor = BAR_COLOR
-
-            # Draw the range
-            graph.broken_barh([(x_index-0.5,1)], (min_val, max_val - min_val), facecolors=barcolor)
-            
-            # Draw the average val
-            graph.broken_barh([(x_index-0.5,1)], (avg_val, 0), facecolors=barcolor)
-            
-            # print("Stats for " + key + ": avg " + str(avg_val) + ", stdev " + str(stdev) + ", min " + str(min_val) + ", max " + str(max_val))
+            for fid in stat._fid_collated_list:
+                paravag_value_list.append(fid.coords[COORD_TO_GRAPH])
+                 
+        boxplot_list.append(paravag_value_list)
         
         # Draw the fiducial as a black dot.
         fid = exemplar_props._fiducial_points[key]
         graph.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
+                
+    graph.boxplot(boxplot_list)
     
-    # Add an extra space on the end so our last point isn't on the edge of the graph.
-    x_index += 2
-    x_labels.append("")
-    x_labels.append("")
-        
-    graph.set_xticks(range(0, x_index))    
-    label_obj = graph.set_xticklabels(x_labels)       
-    graph.set_xlabel("Fiducial Point")
-
-    graph.set_ylabel("Superior-Inferior Axis")
-
-    plt.setp(label_obj, rotation=45, fontsize=8)
-
+    graph.set_ylim(PARAVAG_MIN_MM, PARAVAG_MAX_MM)
+    
+    graph.set_ylabel("Inferior->Superior axis (mm)")
+    
     graph.grid(True)
+    
+    label_obj = graph.set_xticklabels(x_labels)
+    plt.setp(label_obj, rotation=60, fontsize=10)
 
-    return graph   
+    return graph        
+         
 
-def create_2D_width_graph(graph, graphname, exemplar_vagprop_stats, range_vagprop_stats): 
+def create_2D_width_graph(graph, exemplar_vagprop_stats, range_vagprop_stats): 
     
     # Rowcount is going to be the array index (e.g. 0..6).
     rowcount = len(exemplar_vagprop_stats._vagwidthlists)
@@ -189,19 +134,22 @@ def create_2D_width_graph(graph, graphname, exemplar_vagprop_stats, range_vagpro
     widthmax = max(range_vagprop_stats._vagwidthmeanslist)
     maxdev = max(range_vagprop_stats._vagwidthstddevlist)
     
-    graphmin = widthmin - STD_DEV_GRAPH_MULTIPLIER * maxdev
-    graphmax = widthmax + STD_DEV_GRAPH_MULTIPLIER * maxdev
+    graphmin = widthmin - STD_DEV_GRAPH_MULTIPLIER * maxdev - 10
+    graphmax = widthmax + STD_DEV_GRAPH_MULTIPLIER * maxdev + 10
     
     graph.set_xlim(0,rowcount + 1)
-    graph.set_xticks(range(0, rowcount + 1))
+    
+    # Create "backwards counting" tick labels 
+    xticklabels = [""]
     graph.set_xlabel("Row")
     
     graph.set_ylim(graphmin, graphmax)
     graph.set_ylabel("Width")
 
-    for rowindex in range(0,rowcount):
+    for rowindex in range(rowcount - 1, -1, -1):
         
         user_displayable_index = rowindex + 1
+        xticklabels.append(str(user_displayable_index))
                 
         range_avg_val = range_vagprop_stats._vagwidthmeanslist[rowindex]
         range_stddev = range_vagprop_stats._vagwidthstddevlist[rowindex]
@@ -260,20 +208,20 @@ if __name__ == '__main__':
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)
         graph = fig.add_subplot(magic_subplot_number)
         
-        create_2D_comparison_graph(graph, argv[1] + " Range Comparison", filtered_props_name_list, propsdisplay, rangefidstats)
+        create_2D_coordinate_graph(graph, filtered_props_name_list, propsdisplay, rangefidstats)
     
     if (SHOW_PARAVAG_GRAPH):
         graph_index += 1
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)
         graph = fig.add_subplot(magic_subplot_number)
         
-        create_2D_paravaginal_graph(graph, argv[1] + " Paravaginal Comparison", filtered_props_name_list, propsdisplay, rangefidstats)
+        create_2D_paravaginal_graph(graph, filtered_props_name_list, propsdisplay, rangefidstats)
     
     if (SHOW_WIDTH_GRAPH):
         graph_index += 1
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)
         graph = fig.add_subplot(magic_subplot_number)
         
-        create_2D_width_graph(graph, argv[1] + " Width Comparison", propstats, rangestats)
+        create_2D_width_graph(graph, propstats, rangestats)
     
     if (num_graphs > 0): show_all_graphs()
