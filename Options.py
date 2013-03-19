@@ -111,6 +111,8 @@ COLOR_STRAT = COLORIZATION_OPTIONS.WIDTH
 # Detailed Graphing options
 # *****************************************************************
 
+GRAPH_TITLE = "OPALII 219 Characteristics"
+GRAPH_BACKGROUND_COLOR="#DDDDDD"
 REFERENCE_POINT_BAR_COLOR="#AABBAA"
 BAR_COLOR = "#EEEEEE"
 POINT_COLOR = "#000000"
@@ -122,12 +124,16 @@ COORDINATE_GRAPH_MIN_MM = -50
 
 # Maximum and minimum Y axis values on our paravaginal gap graph
 PARAVAG_GRAPH_MAX_MM = 100
-PARAVAG_GRAPH_MIN_MM = -10
+PARAVAG_GRAPH_MIN_MM = -50
 
 # Which graphs should we generate?
 SHOW_COORDINATE_GRAPH = True
 SHOW_PARAVAG_GRAPH = True
-SHOW_WIDTH_GRAPH = True
+SHOW_WIDTH_GRAPH = False
+
+# Which data should we show on the graphs?
+SHOW_INDIVIDUAL_VALUES = True
+SHOW_RANGE_VALUES = True
 
 # Should we draw P_IS lines?
 SHOW_P_IS = False

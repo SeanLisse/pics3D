@@ -17,7 +17,8 @@ from Graphing import show_all_graphs, generate_magic_subplot_number
 
 from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS, PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM, COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
-from Options import REFERENCE_POINT_BAR_COLOR, BAR_COLOR, POINT_COLOR
+from Options import GRAPH_TITLE, GRAPH_BACKGROUND_COLOR, REFERENCE_POINT_BAR_COLOR, BAR_COLOR, POINT_COLOR
+from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
 
 def filter_vagprops_for_graphing(exemplardisplay):
     ''' Trim out any fiducial points that we do *not* want to show. '''
@@ -36,50 +37,6 @@ def filter_vagprops_for_graphing(exemplardisplay):
         key_list.insert(0, key)
       
     return key_list
-
-def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, rangestats):
-    ''' Create a graph that displays the "paravaginal gap" distance (i.e. the distance from that point to the closest P-> IS line) 
-    for each fiducial in exemplarlist, and compares that distance to the computed range from rangestats. '''
-    
-    if (graph == None):
-        debugprint("No graph given! ",debug_levels.ERROR)
-        return
-    
-    x_labels = []
-    x_index = 0
-    boxplot_list = []
-    
-    stat_list = rangestats.get_all_stats()
-        
-    for key in exemplar_key_list:
-        x_labels.append(key)
-        x_index += 1
-
-        paravag_value_list = []    
-        
-        if (key in stat_list):
-            stat = stat_list[key]
-            for fid in stat._fid_collated_list:
-                paravag_value_list.append(fid.paravaginal_gap)
-                 
-        boxplot_list.append(paravag_value_list)
-        
-        # Draw the fiducial as a black dot.
-        fid = exemplar_props._fiducial_points[key]
-        graph.scatter(x_index, fid.paravaginal_gap, marker='o', label=key, color=POINT_COLOR)
-                
-    graph.boxplot(boxplot_list)
-    
-    graph.set_ylim(PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM)
-    
-    graph.set_ylabel("Paravaginal Gap (mm)")
-    
-    graph.grid(True)
-    
-    label_obj = graph.set_xticklabels(x_labels)
-    plt.setp(label_obj, rotation=60, fontsize=10)
-    
-    return graph   
 
 def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangestats):
     ''' Add all fiducials in key_list to the graph.  Info from rangestats appears as bars,  Info from exemplar_props as points.'''
@@ -109,11 +66,12 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
         
         # Draw the fiducial as a black dot.
         fid = exemplar_props._fiducial_points[key]
-        graph.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
-                
-    graph.boxplot(boxplot_list)
+        
+        if SHOW_INDIVIDUAL_VALUES: 
+            graph.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
     
-    graph.set_ylim(COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM)
+    if SHOW_RANGE_VALUES:     
+        graph.boxplot(boxplot_list)
     
     graph.set_ylabel("Inferior->Superior axis (mm)")
     
@@ -123,7 +81,51 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
     plt.setp(label_obj, rotation=60, fontsize=10)
 
     return graph        
-         
+      
+def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, rangestats):
+    ''' Create a graph that displays the "paravaginal gap" distance (i.e. the distance from that point to the closest P-> IS line) 
+    for each fiducial in exemplarlist, and compares that distance to the computed range from rangestats. '''
+    
+    if (graph == None):
+        debugprint("No graph given! ",debug_levels.ERROR)
+        return
+    
+    x_labels = []
+    x_index = 0
+    boxplot_list = []
+    
+    stat_list = rangestats.get_all_stats()
+        
+    for key in exemplar_key_list:
+        x_labels.append(key)
+        x_index += 1
+
+        paravag_value_list = [ None ]    
+        
+        if (key in stat_list):
+            stat = stat_list[key]
+            for fid in stat._fid_collated_list:
+                paravag_value_list.append(fid.paravaginal_gap)
+                 
+        boxplot_list.append(paravag_value_list)
+        
+        # Draw the fiducial as a black dot.
+        fid = exemplar_props._fiducial_points[key]
+        
+        if SHOW_INDIVIDUAL_VALUES:
+            graph.scatter(x_index, fid.paravaginal_gap, marker='o', label=key, color=POINT_COLOR)
+    
+    if SHOW_RANGE_VALUES:            
+        graph.boxplot(boxplot_list)
+    
+    graph.set_ylabel("Paravaginal Gap (mm)")
+    
+    graph.grid(True)
+    
+    label_obj = graph.set_xticklabels(x_labels)
+    plt.setp(label_obj, rotation=60, fontsize=10)
+    
+    return graph   
 
 def create_2D_width_graph(graph, exemplar_vagprop_stats, range_vagprop_stats): 
     
@@ -140,7 +142,7 @@ def create_2D_width_graph(graph, exemplar_vagprop_stats, range_vagprop_stats):
     graph.set_xlim(0,rowcount + 1)
     
     # Create "backwards counting" tick labels 
-    xticklabels = [""]
+    xticklabels = ["", "Hiatus", "6", "5", "4", "3", "External Os", "Post. Fornix"]
     graph.set_xlabel("Row")
     
     graph.set_ylim(graphmin, graphmax)
@@ -149,7 +151,7 @@ def create_2D_width_graph(graph, exemplar_vagprop_stats, range_vagprop_stats):
     for rowindex in range(rowcount - 1, -1, -1):
         
         user_displayable_index = rowindex + 1
-        xticklabels.append(str(user_displayable_index))
+        # xticklabels.append(str(user_displayable_index))
                 
         range_avg_val = range_vagprop_stats._vagwidthmeanslist[rowindex]
         range_stddev = range_vagprop_stats._vagwidthstddevlist[rowindex]
@@ -166,6 +168,8 @@ def create_2D_width_graph(graph, exemplar_vagprop_stats, range_vagprop_stats):
         exemplar_avg_val = exemplar_vagprop_stats._vagwidthmeanslist[rowindex]
         graph.scatter(user_displayable_index, exemplar_avg_val, marker='o', color=POINT_COLOR)
 
+
+    graph.setxticklabels(xticklabels)
     graph.grid(True)
 
 #####################
@@ -192,7 +196,7 @@ if __name__ == '__main__':
     rangelist = load_vaginal_properties(argv[2:])
     [rangestats, rangefidstats, rangedisplay] = get_stats_and_display_from_properties("Range", rangelist)
  
-    fig = plt.figure()
+    fig = plt.figure(facecolor = GRAPH_BACKGROUND_COLOR)
     
     filtered_props_name_list = filter_vagprops_for_graphing(propsdisplay)
     
@@ -207,14 +211,14 @@ if __name__ == '__main__':
         graph_index += 1
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)
         graph = fig.add_subplot(magic_subplot_number)
-        
+
         create_2D_coordinate_graph(graph, filtered_props_name_list, propsdisplay, rangefidstats)
     
     if (SHOW_PARAVAG_GRAPH):
         graph_index += 1
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)
         graph = fig.add_subplot(magic_subplot_number)
-        
+
         create_2D_paravaginal_graph(graph, filtered_props_name_list, propsdisplay, rangefidstats)
     
     if (SHOW_WIDTH_GRAPH):
@@ -224,4 +228,7 @@ if __name__ == '__main__':
         
         create_2D_width_graph(graph, propstats, rangestats)
     
-    if (num_graphs > 0): show_all_graphs()
+    
+    plt.suptitle(GRAPH_TITLE)
+    if (num_graphs > 0): 
+        show_all_graphs()
