@@ -11,7 +11,7 @@ COORDS=enum('X','Y','Z')
 
 # This is the pattern used to match Fiducial names and parse out the row number (from apex, A) and column number (from left, L).
 # We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
-INDEX_PATTERN='A(\d+)L(\d+)'
+INDEX_PATTERN='[Aa](\d+)[Ll](\d+)'
 
 # Constants to look for when loading fiducials from an MRML file.
 # SLICER4 version
@@ -20,6 +20,8 @@ FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
 FIDUCIAL_NAME_ATTR_NAME = "name"
 
 # ********** OK TO CHANGE CAREFULLY BELOW HERE. ************
+
+COMMAND_LINE_SEPARATOR_STRING="--"
 
 # *****************************************************************
 # Pelvic anatomy and naming options 
@@ -75,7 +77,7 @@ AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 # *****************************************************************
 
 # Should we compute statistics for points on the edges of the structure?
-COMPUTE_EDGES = True
+COMPUTE_EDGES = False
 # What about statistics for the mid-sagittal section?
 COMPUTE_CENTER = False
 # Should we compute statistics for all points by name?
@@ -120,10 +122,10 @@ PARAVAG_MAX_MM = 100
 PARAVAG_MIN_MM = -10
 
 # Which graphs should we generate?
-SHOW_COORDINATE_GRAPH = True
+SHOW_COORDINATE_GRAPH = False
 SHOW_PARAVAG_GRAPH = True
-SHOW_WIDTH_GRAPH = True
+SHOW_WIDTH_GRAPH = False
 
 # Which points should we include in our graphed display?
-SHOW_REFERENCE_POINTS = True
+SHOW_REFERENCE_POINTS = False
 
