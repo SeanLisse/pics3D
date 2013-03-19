@@ -121,7 +121,8 @@ def get_fiducial_row_and_column(fid_point):
 
     searchresults = re.search(INDEX_PATTERN, fid_point.name)
     
-    if (searchresults == None): return [None, None]
+    if (searchresults == None): 
+        return [None, None]
     
     rownum = searchresults.groups()[0] # the first group we grab should be the number after the 'A', so the row number.
     colnum = searchresults.groups()[1] # The second group we grab should be the number after the 'L', so the column number.
@@ -135,7 +136,7 @@ def get_fiducial_list_by_row_and_column(fids):
     # Columns go from leftmost (L1) to rightmost (e.g. L10).
     
     # The below two dictionaries will be indexed by row (e.g. leftmostpoints[1] will be the leftmost point in row 1). 
-    rows = list()
+    rows = []
     
     # print ("Created rows: " + str(rows))
     
