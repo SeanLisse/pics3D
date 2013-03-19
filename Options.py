@@ -34,7 +34,10 @@ LEFT_ISCHIAL_SPINE_NAME="L_IS"
 RIGHT_ISCHIAL_SPINE_NAME="R_IS"
 INTER_ISCHIAL_SPINE_NAME="IIS"
 REFERENCE_POINT_NAMES={PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME, LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME} # Removed INTER_ISCHIAL_SPINE_NAME for now to clean up graph
- 
+
+# Should we compute and display the inter-ischial-spine point?
+CREATE_IIS = False
+
 # String constants for constructing standard names
 LEFT_EDGE_PREFIX="L_"
 RIGHT_EDGE_PREFIX="R_"
@@ -77,7 +80,7 @@ AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 # *****************************************************************
 
 # Should we compute statistics for points on the edges of the structure?
-COMPUTE_EDGES = False
+COMPUTE_EDGES = True
 # What about statistics for the mid-sagittal section?
 COMPUTE_CENTER = False
 # Should we compute statistics for all points by name?
@@ -125,6 +128,9 @@ PARAVAG_MIN_MM = -10
 SHOW_COORDINATE_GRAPH = False
 SHOW_PARAVAG_GRAPH = True
 SHOW_WIDTH_GRAPH = False
+
+# Should we draw P_IS lines?
+SHOW_P_IS = False
 
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = False
