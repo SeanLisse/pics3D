@@ -14,7 +14,7 @@ from MRMLSweep import load_fiducials_from_mrml
 from VectorMath import vector_magnitude_sum, magnitude, perpendicular_component
 
 # Constants
-from Options import COORDS
+from Options import COORDS, CREATE_IIS
 from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
 
 class VaginalProperties(object):
@@ -89,10 +89,10 @@ class VaginalProperties(object):
             self._Left_PIS_Vector = vector_from_fiducials(self._Pubic_Symphysis, self._Left_IS)
             self._Right_PIS_Vector = vector_from_fiducials(self._Pubic_Symphysis, self._Right_IS)
         
-            IIS_coords = (self._Left_IS.coords + self._Right_IS.coords)/2
-            self._IIS = Fiducial(INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z])
-            
-            self._fiducial_points[INTER_ISCHIAL_SPINE_NAME] = self._IIS
+            if CREATE_IIS:
+                IIS_coords = (self._Left_IS.coords + self._Right_IS.coords)/2
+                self._IIS = Fiducial(INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z])
+                self._fiducial_points[INTER_ISCHIAL_SPINE_NAME] = self._IIS
     
         else:
             debugprint("Error!  Cannot find one of the points named: " 
