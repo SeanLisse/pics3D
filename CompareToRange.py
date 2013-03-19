@@ -15,7 +15,7 @@ from Options import COORDS, REFERENCE_POINT_NAMES
 # Graph control imports
 from Graphing import show_all_graphs, generate_magic_subplot_number
 
-from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS, PARAVAG_MIN_MM, PARAVAG_MAX_MM, GRAPH_MIN_MM, GRAPH_MAX_MM
+from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS, PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM, COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
 from Options import REFERENCE_POINT_BAR_COLOR, BAR_COLOR, POINT_COLOR
 
@@ -70,7 +70,7 @@ def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, ranges
                 
     graph.boxplot(boxplot_list)
     
-    graph.set_ylim(PARAVAG_MIN_MM, PARAVAG_MAX_MM)
+    graph.set_ylim(PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM)
     
     graph.set_ylabel("Paravaginal Gap (mm)")
     
@@ -113,7 +113,7 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
                 
     graph.boxplot(boxplot_list)
     
-    graph.set_ylim(PARAVAG_MIN_MM, PARAVAG_MAX_MM)
+    graph.set_ylim(COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM)
     
     graph.set_ylabel("Inferior->Superior axis (mm)")
     

@@ -117,17 +117,17 @@ POINT_COLOR = "#000000"
 COORD_TO_GRAPH=COORDS.Z
 
 # Maximum and minimum Y axis values on our coordinates graph
-GRAPH_MAX_MM = 100
-GRAPH_MIN_MM = -50
+COORDINATE_GRAPH_MAX_MM = 100
+COORDINATE_GRAPH_MIN_MM = -50
 
 # Maximum and minimum Y axis values on our paravaginal gap graph
-PARAVAG_MAX_MM = 100
-PARAVAG_MIN_MM = -10
+PARAVAG_GRAPH_MAX_MM = 100
+PARAVAG_GRAPH_MIN_MM = -10
 
 # Which graphs should we generate?
-SHOW_COORDINATE_GRAPH = False
+SHOW_COORDINATE_GRAPH = True
 SHOW_PARAVAG_GRAPH = True
-SHOW_WIDTH_GRAPH = False
+SHOW_WIDTH_GRAPH = True
 
 # Should we draw P_IS lines?
 SHOW_P_IS = False
