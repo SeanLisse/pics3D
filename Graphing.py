@@ -4,9 +4,8 @@
 
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do NOT remove this line!
 import matplotlib.pyplot as plt
-from Fiducials import COORDS
 
-from Options import DEFAULT_COLOR
+from Options import DEFAULT_COLOR, COORDS
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
