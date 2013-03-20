@@ -20,7 +20,7 @@ from Options import COMPUTE_EDGES, COMPUTE_CENTER, COMPUTE_ALL_INDIVIDUAL_POINTS
 # Graph drawing imports 
 from VaginalDisplay import VaginalDisplay
 from PelvicPoints import create_pelvic_points_graph
-from Graphing import show_all_graphs, add_line_to_graph3D #, add_ellipsoid_to_graph
+from Graphing import show_all_graphs, add_line_to_graph3D
 from Options import COLOR_STRAT
 
 class FiducialStatistics():
@@ -122,10 +122,10 @@ class VaginalPropertyStatistics():
         self._vagwidthmeanslist = []
         self._vagwidthstddevlist = []
         
-        for widthindex in range(0,total_vaginal_rows):
-            current_row_width_list = self._vagwidthlists[widthindex]
-            row_mean = mean(current_row_width_list)
-            row_std_dev = std_dev(current_row_width_list)
+        for widthlist in self._vagwidthlists:
+            
+            row_mean = mean(widthlist)
+            row_std_dev = std_dev(widthlist)
             
             self._vagwidthmeanslist.append(row_mean)
             self._vagwidthstddevlist.append(row_std_dev)         
@@ -308,6 +308,10 @@ def get_stats_and_display_from_properties(display_name, inputlist):
         stats = statscollection.get_stats_for_name(fidname)
         
         display._fiducial_points[fidname] = stats._averaged_fid
+       
+
+    for widthmean in propstats._vagwidthmeanslist:
+        display._vagwidths.append(widthmean)
 
     display.compute_properties()
     
@@ -377,9 +381,6 @@ def add_errorbars_to_graph(graph, fiducialstats):
             start_coords=[center_x, center_y, min_z]
             end_coords=[center_x, center_y, max_z]
             add_line_to_graph3D(graph, start_coords, end_coords, "lightblue")
-            
-            # Add an ellipsoid to the graph
-            # add_ellipsoid_to_graph(avg_graph, [center_x, center_y, center_z], max_x - min_x, max_y - min_y, max_z - min_z)
             
             
 #####################
