@@ -111,7 +111,7 @@ COLOR_STRAT = COLORIZATION_OPTIONS.WIDTH
 # Detailed Graphing options
 # *****************************************************************
 
-GRAPH_TITLE = "OPALII 219 Characteristics"
+GRAPH_TITLE = "PICS3D Graphing"
 GRAPH_BACKGROUND_COLOR="#DDDDDD"
 REFERENCE_POINT_BAR_COLOR="#AABBAA"
 BAR_COLOR = "#EEEEEE"
@@ -126,10 +126,14 @@ COORDINATE_GRAPH_MIN_MM = -50
 PARAVAG_GRAPH_MAX_MM = 100
 PARAVAG_GRAPH_MIN_MM = -50
 
+# Maximum and minimum Y axis values on our width graph
+WIDTH_GRAPH_MIN_MM = 0
+WIDTH_GRAPH_MAX_MM = 70
+
 # Which graphs should we generate?
 SHOW_COORDINATE_GRAPH = True
 SHOW_PARAVAG_GRAPH = True
-SHOW_WIDTH_GRAPH = False
+SHOW_WIDTH_GRAPH = True
 
 # Which data should we show on the graphs?
 SHOW_INDIVIDUAL_VALUES = True

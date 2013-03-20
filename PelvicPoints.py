@@ -44,9 +44,6 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
         IIS_coords = vagdisplay._IIS.coords
         add_scatterpoint_to_graph3D(graph, INTER_ISCHIAL_SPINE_NAME, IIS_coords[COORDS.X], IIS_coords[COORDS.Y], IIS_coords[COORDS.Z], "black")
     
-#    if(fid_points.has_key(SC_JOINT_NAME)):
-#        add_line_to_graph3D(graph, PS_coords, fid_points[SC_JOINT_NAME].coords, "black")
-    
     if PAD_GRAPH:
         # Pad the graph to keep all graphs at equal scale for comparison
         GRAPH_PADDING=100
@@ -64,6 +61,7 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
 #                        "Maximum Distance: " + str(round(minmax_distances[1],1)) + "mm",
 #                        fraction_color(minmax_distances[0], minmax_distances[0], minmax_distances[1]), 
 #                        fraction_color(minmax_distances[1], minmax_distances[0], minmax_distances[1]))
+    
     
     return graph   
 
@@ -93,5 +91,4 @@ if __name__ == '__main__':
         
         show_all_graphs()
         
-            
         debugprint('Now leaving pelvic points program',debug_levels.BASIC_DEBUG)

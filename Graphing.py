@@ -5,7 +5,7 @@
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do NOT remove this line!
 import matplotlib.pyplot as plt
 
-from Options import DEFAULT_COLOR, COORDS
+from Options import DEFAULT_COLOR, COORDS, GRAPH_TITLE
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
@@ -51,6 +51,8 @@ def generate_magic_subplot_number(total_graphs, current_graph_index):
 
 def show_all_graphs():
     ''' Display the graph.  Call this after adding all scatterpoints to it. '''
+    
+    plt.suptitle(GRAPH_TITLE)
     plt.show()
 
 def add_scatterpoint_to_graph3D(graph, name, x, y, z, newcolor="black"):

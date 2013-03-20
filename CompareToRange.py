@@ -218,7 +218,5 @@ if __name__ == '__main__':
         
         create_2D_width_graph(graph, propsdisplay, rangestats)
     
-    
-    plt.suptitle(GRAPH_TITLE)
     if (num_graphs > 0): 
         show_all_graphs()
