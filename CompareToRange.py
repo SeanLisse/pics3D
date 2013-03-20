@@ -15,13 +15,14 @@ from Options import COORDS, REFERENCE_POINT_NAMES
 # Graph control imports
 from Graphing import show_all_graphs, generate_magic_subplot_number
 
-from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS, PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM, COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM
+from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS 
+from Options import COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM, PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM, WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM 
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
 from Options import GRAPH_TITLE, GRAPH_BACKGROUND_COLOR, REFERENCE_POINT_BAR_COLOR, BAR_COLOR, POINT_COLOR
 from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
 
 def filter_vagprops_for_graphing(exemplardisplay):
-    ''' Trim out any fiducial points that we do *not* want to show. '''
+    ''' Given a VaginalProperties object, returns a subset of keys for its fiducial points that we will want to graph. '''
     
     fid_dict = exemplardisplay._fiducial_points
     
@@ -127,49 +128,38 @@ def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, ranges
     
     return graph   
 
-def create_2D_width_graph(graph, exemplar_vagprop_stats, range_vagprop_stats): 
-    
-    # Rowcount is going to be the array index (e.g. 0..6).
-    rowcount = len(exemplar_vagprop_stats._vagwidthlists)
+def create_2D_width_graph(graph, exemplar_vagprops, range_vagprop_stats): 
     
     widthmin = min(range_vagprop_stats._vagwidthmeanslist)
     widthmax = max(range_vagprop_stats._vagwidthmeanslist)
     maxdev = max(range_vagprop_stats._vagwidthstddevlist)
     
-    graphmin = widthmin - STD_DEV_GRAPH_MULTIPLIER * maxdev - 10
-    graphmax = widthmax + STD_DEV_GRAPH_MULTIPLIER * maxdev + 10
-    
-    graph.set_xlim(0,rowcount + 1)
+    graphmin = WIDTH_GRAPH_MIN_MM
+    graphmax = WIDTH_GRAPH_MAX_MM
     
     # Create "backwards counting" tick labels 
-    xticklabels = ["", "Hiatus", "6", "5", "4", "3", "External Os", "Post. Fornix"]
-    graph.set_xlabel("Row")
+    xticklabels = ["Hiatus", "6", "5", "4", "3", "Os", "Fornix"]
+    graph.set_xlabel("Row #")
     
     graph.set_ylim(graphmin, graphmax)
     graph.set_ylabel("Width")
 
-    for rowindex in range(rowcount - 1, -1, -1):
-        
-        user_displayable_index = rowindex + 1
-        # xticklabels.append(str(user_displayable_index))
-                
-        range_avg_val = range_vagprop_stats._vagwidthmeanslist[rowindex]
-        range_stddev = range_vagprop_stats._vagwidthstddevlist[rowindex]
-        min_val = range_avg_val - STD_DEV_GRAPH_MULTIPLIER * range_stddev
-        max_val = range_avg_val + STD_DEV_GRAPH_MULTIPLIER * range_stddev
-         
-        # Draw the min and max from range stats
-        graph.broken_barh([(user_displayable_index-0.5,1)], (min_val, max_val - min_val), facecolors=BAR_COLOR)
-            
-        # Draw the average from range stats
-        graph.broken_barh([(user_displayable_index-0.5,1)], (range_avg_val, 0), facecolors=BAR_COLOR)
+    rev_range_widthlists = range_vagprop_stats._vagwidthlists[:] #Copy operator
+    rev_range_widthlists.reverse()
 
-        # Draw the point from exemplar stats
-        exemplar_avg_val = exemplar_vagprop_stats._vagwidthmeanslist[rowindex]
-        graph.scatter(user_displayable_index, exemplar_avg_val, marker='o', color=POINT_COLOR)
+    graph.boxplot(rev_range_widthlists) # Graph from lowest row to highest, as convention dictates vaginal hiatus be on the left
+    
+    rowcount = 0
+    
+    rev_ex_vagwidths = exemplar_vagprops._vagwidths[:] #Copy operator
+    rev_ex_vagwidths.reverse() # Graph from lowest row to highest, as convention dictates vaginal hiatus be on the left
+    
+    for exemplar_width in rev_ex_vagwidths:
+        rowcount +=1 
+        if SHOW_INDIVIDUAL_VALUES:
+            graph.scatter(rowcount, exemplar_width, marker='o', color=POINT_COLOR)
 
-
-    graph.setxticklabels(xticklabels)
+    graph.set_xticklabels(xticklabels)
     graph.grid(True)
 
 #####################
@@ -190,7 +180,7 @@ if __name__ == '__main__':
 
     # List of fiducial stats representing a single vagina, to be compared to the range.
     propslist = load_vaginal_properties(argv[1:2])
-    [propstats, fidstats, propsdisplay] = get_stats_and_display_from_properties("Comparator", propslist)
+    [propstats, fidstats, propsdisplay] = get_stats_and_display_from_properties("Exemplar", propslist)
     
     # List of fiducial stats representing a range to compare that single one against. 
     rangelist = load_vaginal_properties(argv[2:])
@@ -226,7 +216,7 @@ if __name__ == '__main__':
         magic_subplot_number = generate_magic_subplot_number(num_graphs, graph_index)
         graph = fig.add_subplot(magic_subplot_number)
         
-        create_2D_width_graph(graph, propstats, rangestats)
+        create_2D_width_graph(graph, propsdisplay, rangestats)
     
     
     plt.suptitle(GRAPH_TITLE)
