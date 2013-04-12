@@ -10,15 +10,15 @@ from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
-from Options import COORDS, REFERENCE_POINT_NAMES
+from Options import REFERENCE_POINT_NAMES
 
 # Graph control imports
 from Graphing import show_all_graphs, generate_magic_subplot_number
 
-from Options import STD_DEV_GRAPH_MULTIPLIER, SHOW_REFERENCE_POINTS 
+from Options import SHOW_REFERENCE_POINTS 
 from Options import COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM, PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM, WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM 
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
-from Options import GRAPH_TITLE, GRAPH_BACKGROUND_COLOR, REFERENCE_POINT_BAR_COLOR, BAR_COLOR, POINT_COLOR
+from Options import GRAPH_TITLE, GRAPH_BACKGROUND_COLOR, POINT_COLOR
 from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
 
 def filter_vagprops_for_graphing(exemplardisplay):
@@ -74,7 +74,7 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
     if SHOW_RANGE_VALUES:     
         graph.boxplot(boxplot_list)
     
-    graph.set_ylabel("Inferior->Superior axis (mm)")
+    graph.set_ylabel("Height (mm)")
     
     graph.grid(True)
     
@@ -129,10 +129,6 @@ def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, ranges
     return graph   
 
 def create_2D_width_graph(graph, exemplar_vagprops, range_vagprop_stats): 
-    
-    widthmin = min(range_vagprop_stats._vagwidthmeanslist)
-    widthmax = max(range_vagprop_stats._vagwidthmeanslist)
-    maxdev = max(range_vagprop_stats._vagwidthstddevlist)
     
     graphmin = WIDTH_GRAPH_MIN_MM
     graphmax = WIDTH_GRAPH_MAX_MM
