@@ -37,8 +37,8 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
     
     # Display the P_IS lines on the graph as well
     if SHOW_P_IS:
-        add_line_to_graph3D(graph, PS_coords, L_IS_coords , "black")
-        add_line_to_graph3D(graph, PS_coords, R_IS_coords, "black")
+        add_line_to_graph3D(graph, PS_coords, L_IS_coords , "grey")
+        add_line_to_graph3D(graph, PS_coords, R_IS_coords, "grey")
     
     if CREATE_IIS:
         IIS_coords = vagdisplay._IIS.coords
