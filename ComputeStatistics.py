@@ -8,7 +8,7 @@ from numpy import std as std_dev
 from numpy import mean
 
 # Generic custom imports 
-from Utilities import setdebuglevel, debug_levels, debugprint
+from Utilities import setdebuglevel, debug_levels, debugprint, rad_to_degrees
 
 # Domain specific custom imports
 from VaginalProperties import VaginalProperties
@@ -110,14 +110,20 @@ class VaginalPropertyStatistics():
     _vagwidthmeanslist = None # An array of values, each of which is a mean for one of the rows in vagwidthlists.
     _vagwidthstddevlist = None # An array of values, each of which is a std dev for one of the rows in vagwidthlists.
     
+    _pitch_correction_list = None
+    _roll_correction_list = None
+    _yaw_correction_list = None
+    
     def __init__(self):
         self._propslist = []
         self._fidstatcollection = FiducialStatCollection()
         self._vagwidthlists = []  
     
+        self._pitch_correction_list = []
+        self._roll_correction_list = []
+        self._yaw_correction_list = []
+    
     def update_statistics(self):
-        
-        total_vaginal_rows = len(self._vagwidthlists)
         
         self._vagwidthmeanslist = []
         self._vagwidthstddevlist = []
@@ -128,7 +134,8 @@ class VaginalPropertyStatistics():
             row_std_dev = std_dev(widthlist)
             
             self._vagwidthmeanslist.append(row_mean)
-            self._vagwidthstddevlist.append(row_std_dev)         
+            self._vagwidthstddevlist.append(row_std_dev)
+               
         
     def add_vaginalproperties(self, vagprops):
         self._propslist.append([vagprops._name, vagprops])
@@ -155,6 +162,10 @@ class VaginalPropertyStatistics():
             fid = fids[key]
             
             self._fidstatcollection.add_fiducial_by_name(key, fid)
+            
+        self._pitch_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_LR_axis))
+        self._roll_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_AP_axis))
+        self._yaw_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_IS_axis))
             
         self.update_statistics()
     
@@ -331,6 +342,12 @@ def print_results(propstats, allfidstats):
               + ", mean: " +  str(mean(widthlist)) 
               + ", std dev: " + str(std_dev(widthlist)))
               
+    print("================")
+    
+    print("Pitch Correction Angle mean: " + str(mean(propstats._pitch_correction_list)))
+    print("Roll Correction Angle mean: " + str(mean(propstats._roll_correction_list)))
+    print("Yaw Correction Angle mean: " + str(mean(propstats._yaw_correction_list)))
+    
     print("================")
     
     for fidname in allfidstats.get_all_stats():
