@@ -72,13 +72,16 @@ def set_pelvic_tilt_correction_info(vag_props):
     # Encoding from Slicer: RAS (X = Right, Y = Anterior, Z = Superior)    
     LR_axis_vector = [-1,0,0] # our axis vector X increases to the *left*
     AP_axis_vector = [0,-1,0] # our axis vector Y increases *posteriorly*
+    IS_axis_vector = [0,0,1] # our axis vector Z increases *superiorly*
 
     # Compare those 'standard' radiologic coordinate axes with the coordinate axes computed from our fiducial points.
     LR_rot_angle = get_angle_between(LR_axis_vector, pics_get_LR_axis(vag_props))
     AP_rot_angle = get_angle_between(AP_axis_vector, pics_get_AP_axis(vag_props))
+    IS_rot_angle = get_angle_between(IS_axis_vector, pics_get_IS_axis(vag_props))
     
     vag_props._pelvic_tilt_correction_angle_about_LR_axis = LR_rot_angle
     vag_props._pelvic_tilt_correction_angle_about_AP_axis = AP_rot_angle
+    vag_props._pelvic_tilt_correction_angle_about_IS_axis = IS_rot_angle
 
 def pics_get_new_origin(fiducial_points):
     ''' Find the new origin of our coordinate system using PICS methodology (i.e. recenter on the pubic symphysis). '''

@@ -55,6 +55,7 @@ class VaginalProperties(object):
     # Amount of rotation that has been performed from raw radiographic image to current data
     _pelvic_tilt_correction_angle_about_LR_axis = None
     _pelvic_tilt_correction_angle_about_AP_axis = None
+    _pelvic_tilt_correction_angle_about_IS_axis = None
     
     def __init__(self, name, fiducials = None):
         
@@ -189,10 +190,13 @@ class VaginalProperties(object):
         retstring += ("Distance from L_IS to R_IS: " + str(IIS_distance) + "\n")
         
         if (rad_to_degrees(self._pelvic_tilt_correction_angle_about_LR_axis != None)): 
-            retstring += ("Correction angle about LR axis:" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_LR_axis)) + " degrees\n")
+            retstring += ("Correction angle about LR axis ('pitch'):" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_LR_axis)) + " degrees\n")
         
         if (rad_to_degrees(self._pelvic_tilt_correction_angle_about_AP_axis != None)):
-            retstring += ("Correction angle about AP axis:" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_AP_axis)) + " degrees\n")
+            retstring += ("Correction angle about AP axis ('roll'):" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_AP_axis)) + " degrees\n")
+        
+        if (rad_to_degrees(self._pelvic_tilt_correction_angle_about_IS_axis != None)):
+            retstring += ("Correction angle about IS axis ('yaw'):" + str(rad_to_degrees(self._pelvic_tilt_correction_angle_about_IS_axis)) + " degrees\n")
         
         retstring += ("Vaginal Width Table: \n")
         
