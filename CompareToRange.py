@@ -5,7 +5,7 @@
 
 # Generic custom imports 
 import matplotlib.pyplot as plt
-from pylab import boxplot
+# from pylab import boxplot
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
@@ -28,14 +28,17 @@ def filter_vagprops_for_graphing(exemplardisplay):
     
     key_list = []
     
-    # Make fid_list a reversed and filtered copy of fid_dict
+    # Make fid_list a reverse-sorted and filtered copy of fid_dict
     for key in fid_dict.iterkeys():
         
         if (fid_dict[key]) == None: continue
         
         if ((key in REFERENCE_POINT_NAMES) and (not SHOW_REFERENCE_POINTS)): continue
         
-        key_list.insert(0, key)
+        key_list.append(key)
+      
+    key_list.sort()
+    key_list.reverse() 
       
     return key_list
 
