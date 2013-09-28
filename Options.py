@@ -139,7 +139,7 @@ SHOW_INDIVIDUAL_VALUES = True
 SHOW_RANGE_VALUES = True
 
 # Should we draw P_IS lines?
-SHOW_P_IS = True
+SHOW_P_IS = False
 
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = False
