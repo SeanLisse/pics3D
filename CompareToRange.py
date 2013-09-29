@@ -16,9 +16,9 @@ from Options import REFERENCE_POINT_NAMES
 from Graphing import show_all_graphs, generate_magic_subplot_number
 
 from Options import SHOW_REFERENCE_POINTS 
-from Options import COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM, PARAVAG_GRAPH_MIN_MM, PARAVAG_GRAPH_MAX_MM, WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM 
+from Options import WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM 
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
-from Options import GRAPH_TITLE, GRAPH_BACKGROUND_COLOR, POINT_COLOR
+from Options import GRAPH_BACKGROUND_COLOR, POINT_COLOR
 from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
 
 def filter_vagprops_for_graphing(exemplardisplay):
