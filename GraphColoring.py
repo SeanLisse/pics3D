@@ -5,6 +5,7 @@
 
 # Built-in imports
 from numpy import Infinity, abs
+from matplotlib.pyplot import setp
 
 # Nonspecific imports
 from Utilities import debug_levels, debugprint
@@ -261,3 +262,18 @@ def calibrate_colorization_strategy_fn(vagdisplay):
         minmax_distances = [-1 * Infinity,Infinity]
         
     return color_fn, minmax_distances
+
+# function for setting the colors of box plots pairs - 
+# code thanks to Molly at Stack Overflow: http://stackoverflow.com/questions/16592222/matplotlib-group-boxplots
+def set_boxplot_colors(bp, boxcolor, x_index):
+    
+#   print("x_index: " + str(x_index))
+   
+    setp(bp['boxes'][x_index], color=boxcolor)
+    setp(bp['caps'][x_index * 2], color=boxcolor)
+    setp(bp['caps'][x_index * 2 + 1], color=boxcolor)
+    setp(bp['whiskers'][x_index * 2], color=boxcolor)
+    setp(bp['whiskers'][x_index * 2 + 1], color=boxcolor)
+    setp(bp['fliers'][x_index * 2], color=boxcolor)
+    setp(bp['fliers'][x_index * 2 + 1], color=boxcolor)
+    setp(bp['medians'][x_index], color='black')
