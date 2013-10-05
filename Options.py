@@ -105,7 +105,7 @@ REFERENCE_POINT_COLOR = [0,0,0]
 SEQ_COLOR_FN_STEP_SIZE = 0.1
 
 # CONSTANTS
-COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
+COLOR_STRAT = COLORIZATION_OPTIONS.Z
 
 # *****************************************************************
 # Detailed Graphing options
