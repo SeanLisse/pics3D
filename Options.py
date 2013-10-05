@@ -71,7 +71,7 @@ IIS_SCALE_LENGTH=1
 # "Y" increases to the patient's superior, and 
 # "Z" increases to the patient's right.
 # 
-# In ALL of the above, we adjust the anterior-posterior axis to attempt to corect pelvic inclination to true "standing" position.
+# In ALL of the above, we adjust the anterior-posterior axis to attempt to correct pelvic inclination to true "standing" position.
 AXIS_CODING_OPTIONS = enum('lisse','pics3d')
 AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 
@@ -144,3 +144,9 @@ SHOW_P_IS = False
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = False
 
+# *****************************************************************
+#  Additional Range Comparison Graphing Options
+# *****************************************************************
+
+RANGE_ONE_COLOR = 'darkred'
+RANGE_TWO_COLOR = 'darkblue'
