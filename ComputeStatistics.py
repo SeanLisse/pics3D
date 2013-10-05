@@ -63,12 +63,12 @@ class FiducialStatistics():
                 ylist.append(current_fid.coords[COORDS.Y])
                 zlist.append(current_fid.coords[COORDS.Z])
                 
-                paravaginal_gap_list.append(current_fid.paravaginal_gap)
+                if (current_fid.paravaginal_gap != None): 
+                    paravaginal_gap_list.append(current_fid.paravaginal_gap)
 
             x_avg = mean(xlist)
             y_avg = mean(ylist)
             z_avg = mean(zlist)            
-            
             
             self._averaged_fid = Fiducial(self._fid_name, float(x_avg), float(y_avg), float(z_avg)) 
             
@@ -76,8 +76,12 @@ class FiducialStatistics():
             self._fid_std_dev_y = std_dev(ylist)
             self._fid_std_dev_z = std_dev(zlist)
             
-            self._averaged_paravag_gap = mean(paravaginal_gap_list)
-            self._fid_paravag_gap_std_dev = std_dev(paravaginal_gap_list)
+            if (len(paravaginal_gap_list) == 0):
+                self._averaged_paravag_gap = 0
+                self._fid_paravag_gap_std_dev = 0
+            else:
+                self._averaged_paravag_gap = mean(paravaginal_gap_list)
+                self._fid_paravag_gap_std_dev = std_dev(paravaginal_gap_list)
 
 class FiducialStatCollection():
     ''' A self-maintaining list of FiducialStatistics '''
