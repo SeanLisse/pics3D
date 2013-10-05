@@ -5,7 +5,7 @@
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do NOT remove this line!
 import matplotlib.pyplot as plt
 
-from Options import DEFAULT_COLOR, COORDS, GRAPH_TITLE
+from Options import DEFAULT_COLOR, COORDS, GRAPH_TITLE, REFERENCE_POINT_NAMES, SHOW_REFERENCE_POINTS
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
@@ -33,6 +33,27 @@ class PelvicGraph3D(object):
         self._ax.set_zlabel('Z')
         
         plt.title(name)
+
+def filter_vagprops_for_graphing(exemplardisplay):
+    ''' Given a VaginalProperties object, returns a subset of keys for its fiducial points that we will want to graph. '''
+    
+    fid_dict = exemplardisplay._fiducial_points
+    
+    key_list = []
+    
+    # Make fid_list a reverse-sorted and filtered copy of fid_dict
+    for key in fid_dict.iterkeys():
+        
+        if (fid_dict[key]) == None: continue
+        
+        if ((key in REFERENCE_POINT_NAMES) and (not SHOW_REFERENCE_POINTS)): continue
+        
+        key_list.append(key)
+      
+    key_list.sort()
+    key_list.reverse() 
+      
+    return key_list
 
 def default_color_fn(Fiducial): 
     ''' Default coloration function. Clone this and alter it to customize your coloration when graphing. '''

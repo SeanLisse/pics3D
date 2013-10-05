@@ -4,13 +4,14 @@
 # Graphically compare the *first* set of fiducials to the range of the *rest* of the sets, and display the results.
 
 # Generic custom imports 
+import numpy as np
 import matplotlib.pyplot as plt
 # from pylab import boxplot
 from Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
-from Options import REFERENCE_POINT_NAMES
+from Graphing import filter_vagprops_for_graphing
 
 # Graph control imports
 from Graphing import show_all_graphs, generate_magic_subplot_number
@@ -20,27 +21,7 @@ from Options import WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
 from Options import GRAPH_BACKGROUND_COLOR, POINT_COLOR
 from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
-
-def filter_vagprops_for_graphing(exemplardisplay):
-    ''' Given a VaginalProperties object, returns a subset of keys for its fiducial points that we will want to graph. '''
-    
-    fid_dict = exemplardisplay._fiducial_points
-    
-    key_list = []
-    
-    # Make fid_list a reverse-sorted and filtered copy of fid_dict
-    for key in fid_dict.iterkeys():
-        
-        if (fid_dict[key]) == None: continue
-        
-        if ((key in REFERENCE_POINT_NAMES) and (not SHOW_REFERENCE_POINTS)): continue
-        
-        key_list.append(key)
-      
-    key_list.sort()
-    key_list.reverse() 
-      
-    return key_list
+from Options import COORDS
 
 def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangestats):
     ''' Add all fiducials in key_list to the graph.  Info from rangestats appears as bars,  Info from exemplar_props as points.'''
@@ -195,6 +176,7 @@ if __name__ == '__main__':
     if SHOW_COORDINATE_GRAPH: num_graphs += 1
     if SHOW_PARAVAG_GRAPH: num_graphs += 1
     if SHOW_WIDTH_GRAPH: num_graphs +=1
+    
             
     if (SHOW_COORDINATE_GRAPH):
         graph_index += 1
@@ -216,6 +198,6 @@ if __name__ == '__main__':
         graph = fig.add_subplot(magic_subplot_number)
         
         create_2D_width_graph(graph, propsdisplay, rangestats)
-    
+     
     if (num_graphs > 0): 
         show_all_graphs()
