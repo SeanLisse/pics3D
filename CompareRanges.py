@@ -51,6 +51,7 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
         
         print("xtick_index = " + str(xtick_index))
         bp = graph.boxplot([stats1_z_list, stats2_z_list], 
+                           sym = 'rs',
                            positions = [xtick_index, xtick_index + 1],
                            widths = 0.8)
         
@@ -71,8 +72,11 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
     
     axes.set_ylim(COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM)
     
-    # Add a horizontal grid to the plot, but make it very light in color
-    # so we can use it for reading data values but not be distracting
+    # Add a vertical grid to the plot
+#     axes.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+#               alpha=0.5)
+    
+    # Add a horizontal grid to the plot
     axes.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
               alpha=0.5)
     
