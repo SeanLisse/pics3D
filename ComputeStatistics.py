@@ -15,7 +15,7 @@ from VaginalProperties import VaginalProperties
 from Fiducials import Fiducial, get_fiducial_list_by_row_and_column
 from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
 from Options import COORDS, REFERENCE_POINT_NAMES, LEFT_EDGE_PREFIX, RIGHT_EDGE_PREFIX, CENTER_PREFIX
-from Options import COMPUTE_EDGES, COMPUTE_CENTER, COMPUTE_ALL_INDIVIDUAL_POINTS, STD_DEV_GRAPH_MULTIPLIER
+from Options import COMPUTE_LEFT_EDGES, COMPUTE_RIGHT_EDGES, COMPUTE_CENTER, COMPUTE_ALL_INDIVIDUAL_POINTS, STD_DEV_GRAPH_MULTIPLIER
 
 # Graph drawing imports 
 from VaginalDisplay import VaginalDisplay
@@ -265,7 +265,7 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
                     start_index = colindex
                     standardized_fid_name = LEFT_EDGE_PREFIX + str(rowindex)
                     
-                    if COMPUTE_EDGES: allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid)   
+                    if COMPUTE_LEFT_EDGES: allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid)   
                         
                 if (start_index != None): break
         
@@ -281,7 +281,7 @@ def collate_fiducials_by_edges(propslist, allfidstats = None):
                     end_index = -1 * colindex
                     standardized_fid_name = RIGHT_EDGE_PREFIX + str(rowindex)
                     
-                    if COMPUTE_EDGES: allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid) 
+                    if COMPUTE_RIGHT_EDGES: allfidstats.add_fiducial_by_name(standardized_fid_name, current_fid) 
                             
                 if (end_index != None): break
             
@@ -312,7 +312,7 @@ def get_stats_and_display_from_properties(display_name, inputlist):
     propstats.add_vaginalproperties_from_list(inputlist)
     
     statscollection = collate_fiducials_reference_points(inputlist)
-    if (COMPUTE_EDGES or COMPUTE_CENTER): 
+    if (COMPUTE_RIGHT_EDGES or COMPUTE_LEFT_EDGES or COMPUTE_CENTER): 
         statscollection = collate_fiducials_by_edges(inputlist, statscollection)
     if (COMPUTE_ALL_INDIVIDUAL_POINTS):
         statscollection = collate_fiducials_by_row_and_column(inputlist, statscollection)

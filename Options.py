@@ -80,7 +80,8 @@ AXIS_CODING = AXIS_CODING_OPTIONS.lisse
 # *****************************************************************
 
 # Should we compute statistics for points on the edges of the structure?
-COMPUTE_EDGES = True
+COMPUTE_LEFT_EDGES = True
+COMPUTE_RIGHT_EDGES = False
 # What about statistics for the mid-sagittal section?
 COMPUTE_CENTER = False
 # Should we compute statistics for all points by name?
@@ -131,8 +132,8 @@ WIDTH_GRAPH_MAX_MM = 70
 
 # Which graphs should we generate?
 SHOW_COORDINATE_GRAPH = True
-SHOW_PARAVAG_GRAPH = True
-SHOW_WIDTH_GRAPH = True
+SHOW_PARAVAG_GRAPH = False
+SHOW_WIDTH_GRAPH = False
 
 # Which data should we show on the graphs?
 SHOW_INDIVIDUAL_VALUES = True
