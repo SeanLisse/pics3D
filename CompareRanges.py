@@ -51,7 +51,7 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
         
         print("xtick_index = " + str(xtick_index))
         bp = graph.boxplot([stats1_z_list, stats2_z_list], 
-                           sym = 'rs',
+                           sym = 'rx',
                            positions = [xtick_index, xtick_index + 1],
                            widths = 0.8)
         
