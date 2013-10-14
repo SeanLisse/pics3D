@@ -58,12 +58,16 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
     if SHOW_RANGE_VALUES:     
         graph.boxplot(boxplot_list)
     
-    graph.set_ylabel("Height (mm)")
+    # graph.set_ylabel("Height (mm)")
     
-    graph.grid(True)
+    # graph.grid(True)
     
     label_obj = graph.set_xticklabels(x_labels)
     plt.setp(label_obj, rotation=60, fontsize=10)
+    
+    # Add a horizontal grid to the plot
+    graph.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+              alpha=0.5)
 
     return graph        
       
@@ -101,7 +105,9 @@ def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, ranges
             graph.scatter(x_index, fid.paravaginal_gap, marker='o', label=key, color=POINT_COLOR)
     
     if SHOW_RANGE_VALUES:            
-        graph.boxplot(boxplot_list)
+        graph.boxplot(boxplot_list,
+                      sym = 'rx',
+                      widths = 0.8)
     
     graph.set_ylabel("Paravaginal Gap (mm)")
     
@@ -127,7 +133,14 @@ def create_2D_width_graph(graph, exemplar_vagprops, range_vagprop_stats):
     rev_range_widthlists = range_vagprop_stats._vagwidthlists[:] #Copy operator
     rev_range_widthlists.reverse()
 
-    graph.boxplot(rev_range_widthlists) # Graph from lowest row to highest, as convention dictates vaginal hiatus be on the left
+    # Graph from lowest row to highest, as convention dictates vaginal hiatus be on the left
+    graph.boxplot(rev_range_widthlists,
+                           sym = 'rx',
+                           widths = 0.8) 
+    
+    # Add a horizontal grid to the plot
+    graph.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+              alpha=0.5)
     
     rowcount = 0
     
