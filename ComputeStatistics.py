@@ -349,8 +349,11 @@ def print_results(propstats, allfidstats):
     print("================")
     
     print("Pitch Correction Angle mean: " + str(mean(propstats._pitch_correction_list)))
+    print("Pitch Correction Angle stdev: " + str(std_dev(propstats._pitch_correction_list)))
     print("Roll Correction Angle mean: " + str(mean(propstats._roll_correction_list)))
+    print("Roll Correction Angle stdev: " + str(std_dev(propstats._roll_correction_list)))
     print("Yaw Correction Angle mean: " + str(mean(propstats._yaw_correction_list)))
+    print("Yaw Correction Angle stdev: " + str(std_dev(propstats._yaw_correction_list)))
     
     print("================")
     
