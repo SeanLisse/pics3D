@@ -3,6 +3,7 @@
 # This code contains all user-editable options for the PICS3D code.
 
 from Utilities import enum
+from pylab import rcParams
 
 # ******** DO NOT CHANGE THIS SECTION. ********
 
@@ -20,8 +21,6 @@ FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
 FIDUCIAL_NAME_ATTR_NAME = "name"
 
 # ********** OK TO CHANGE CAREFULLY BELOW HERE. ************
-
-COMMAND_LINE_SEPARATOR_STRING="--"
 
 # *****************************************************************
 # Pelvic anatomy and naming options 
@@ -55,8 +54,8 @@ SCALE_BY_SCIPP_LINE=False
 SCALE_BY_IIS_LINE=False
 
 # If scaling is desired, to what length should we normalize the SCIPP line? 
-SCIPP_SCALE_LENGTH=1
-IIS_SCALE_LENGTH=1
+SCIPP_SCALE_LENGTH=100
+IIS_SCALE_LENGTH=100
 
 # Which axes go where.
 # In "lisse" encoding, "X" increases to the patient's left, 
@@ -93,6 +92,11 @@ STD_DEV_GRAPH_MULTIPLIER = 2
 # *****************************************************************
 # Basic Graphing options
 # *****************************************************************
+
+# Set the size of the graph in inches
+GRAPH_HEIGHT = 10
+GRAPH_WIDTH = 5
+rcParams['figure.figsize'] = GRAPH_HEIGHT, GRAPH_WIDTH
 
 COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH', 'SEQUENTIAL')
 DEFAULT_COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.SEQUENTIAL
