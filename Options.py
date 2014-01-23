@@ -5,7 +5,9 @@
 from Utilities import enum
 from pylab import rcParams
 
-# ******** DO NOT CHANGE THIS SECTION. ********
+# *****************************************************************
+# ******** DO NOT CHANGE ANYTHING IN THIS SECTION!         ********
+# *****************************************************************
 
 # Coordinate enumeration - basically equates [X] to [0], [Y] to [1] and [Z] to [2].
 COORDS=enum('X','Y','Z')
@@ -14,13 +16,28 @@ COORDS=enum('X','Y','Z')
 # We want to find the part of the string that starts with an A followed by some numerals, then an L followed by some numerals.
 INDEX_PATTERN='[Aa](\d+)[Ll](\d+)'
 
-# Constants to look for when loading fiducials from an MRML file.
-# SLICER4 version
-FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
-FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
-FIDUCIAL_NAME_ATTR_NAME = "name"
+##### Constants to look for when loading fiducials from an MRML file.
+# SLICER 4.0-4.2 version
+SLICER4_2_FIDUCIAL_XML_NODE_NAME = "AnnotationFiducials"
+SLICER4_2_FIDUCIAL_COORD_ATTR_NAME = "ctrlPtsCoord"
+SLICER4_2_FIDUCIAL_NAME_ATTR_NAME = "name"
 
+##### Constants to look for when loading fiducials from an MRML file.
+# SLICER 4.3+ version
+SLICER4_3_FIDUCIAL_XML_NODE_NAME = "MarkupsFiducialStorage"
+SLICER4_3_FIDUCIAL_CSV_FILENAME_ATTR_NAME = "fileName"
+
+# And v4.3 constants to describe the order in which our X,Y,Z, and NAME values are coming from the fiducial CSV files:
+SLICER4_3_CSV_NAME_INDEX=11
+SLICER4_3_CSV_X_INDEX=1
+SLICER4_3_CSV_Y_INDEX=2
+SLICER4_3_CSV_Z_INDEX=3
+
+# *****************************************************************
 # ********** OK TO CHANGE CAREFULLY BELOW HERE. ************
+# *****************************************************************
+
+
 
 # *****************************************************************
 # Pelvic anatomy and naming options 

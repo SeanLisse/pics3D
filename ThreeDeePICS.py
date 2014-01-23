@@ -6,7 +6,8 @@
 from numpy import arctan, sin, cos, matrix, array
 
 # Generic custom imports 
-from Utilities import setdebuglevel, debug_levels, debugprint, rad_to_degrees
+import Utilities
+from Utilities import debug_levels, debugprint, rad_to_degrees
 
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials 
@@ -285,8 +286,8 @@ def pics_verify(vag_props):
 if __name__ == '__main__':
         
     from sys import argv
-     
-    setdebuglevel(debug_levels.BASIC_DEBUG) 
+             
+    Utilities.setdebuglevel(debug_levels.DETAILED_DEBUG)
     
     if len(argv) < 2: 
         print "Need to supply mrml file name argument."

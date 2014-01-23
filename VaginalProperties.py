@@ -10,7 +10,7 @@ from Utilities import debug_levels, debugprint, rad_to_degrees
 
 # My custom function imports
 from Fiducials import Fiducial, vector_from_fiducials, get_fiducial_row_and_column
-from MRMLSweep import load_fiducials_from_mrml
+from MRMLSweep import load_fiducials_from_mrml_slicer_v_4_2, load_fiducials_from_mrml_slicer_v_4_3
 from VectorMath import vector_magnitude_sum, magnitude, perpendicular_component
 
 # Constants
@@ -169,8 +169,9 @@ class VaginalProperties(object):
                 self._globalvagwidthmax = self._vagwidths[rowindex]
             
     def initialize_from_MRML(self, filename):
-        ''' Load a set of fiducials from an MRML file.'''
-        load_fiducials_from_mrml(filename, self._fiducial_points)
+        ''' Load a set of fiducials from an MRML file.  Try both version 4.2 and version 4.3 formats.'''
+        load_fiducials_from_mrml_slicer_v_4_2(filename, self._fiducial_points)
+        load_fiducials_from_mrml_slicer_v_4_3(filename, self._fiducial_points)
         self.compute_properties() 
 
     def to_string(self):
