@@ -243,7 +243,7 @@ def collate_fiducials_by_row_and_column(propslist, allfidstats = None):
 
 def collate_fiducials_by_edges(propslist, allfidstats = None):
     ''' Iterate over propslist, gathering the edge fiducials from them all and collating.
-    Fills statslist with the results and returns it.'''
+    Fills allfidstats with the results and returns it.'''
     
     if (allfidstats == None): 
         allfidstats = FiducialStatCollection()
