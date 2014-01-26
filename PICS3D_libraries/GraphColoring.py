@@ -16,8 +16,8 @@ from VectorMath import perpendicular_component, magnitude
 from VaginalProperties import get_paravaginal_gap_distance
 
 # Constants
-from Options import COORDS, REFERENCE_POINT_NAMES
-from Options import REFERENCE_POINT_COLOR, SEQ_COLOR_FN_STEP_SIZE, COLORIZATION_OPTIONS
+from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES
+from PICS3D_executable.Options import REFERENCE_POINT_COLOR, SEQ_COLOR_FN_STEP_SIZE, COLORIZATION_OPTIONS
 
 # PIS Colorization globals (careful, multideclaration!)
 PIS_distance_min = x_min = y_min = z_min = Infinity
