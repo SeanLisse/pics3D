@@ -30,12 +30,9 @@ def setdebuglevel(level):
     ''' Set the current debug_level '''
     global debug_level
     
-    print("Debug level is: " + str(debug_level))
-    print("Setting debug to " + str(level))
-    
-    # Seems to be broken, so this is currently a no-op
+    #print("Debug level is: " + str(debug_level))
     debug_level = level
-    print("Debug level is now: " + str(debug_level))
+    #print("Debug level is now: " + str(debug_level))
 
 
 def rad_to_degrees(radians):
