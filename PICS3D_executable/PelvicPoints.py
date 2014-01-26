@@ -3,18 +3,20 @@
 # This code is designed to load in a set of fiducials from a directory tree and perform some math upon them, then display the results.
 
 # Nonspecific imports
-from Utilities import setdebuglevel, debug_levels, debugprint
+from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
 
 # My custom domain imports
-from VaginalDisplay import VaginalDisplay
+from PICS3D_libraries.VaginalDisplay import VaginalDisplay
 
 # Graphing custom imports
-from Graphing import add_fiducials_to_graph3D, add_line_to_graph3D, add_scatterpoint_to_graph3D
-from Graphing import add_legend_to_graph3D, set_graph_boundaries3D, show_all_graphs, PelvicGraph3D
-from GraphColoring import calibrate_colorization_strategy_fn, fraction_color
+from PICS3D_libraries.Graphing import add_fiducials_to_graph3D, add_line_to_graph3D, add_scatterpoint_to_graph3D
+from PICS3D_libraries.Graphing import add_legend_to_graph3D, set_graph_boundaries3D, show_all_graphs, PelvicGraph3D
+from PICS3D_libraries.GraphColoring import calibrate_colorization_strategy_fn, fraction_color
 
 # Constants
-from Options import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME, CREATE_IIS, SHOW_P_IS
+from PICS3D_libraries.Options import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME, CREATE_IIS
+from PICS3D_executable.Options import SHOW_P_IS
+
 from Options import COLOR_STRAT
 
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.

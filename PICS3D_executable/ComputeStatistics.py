@@ -8,20 +8,22 @@ from numpy import std as std_dev
 from numpy import mean
 
 # Generic custom imports 
-from Utilities import setdebuglevel, debug_levels, debugprint, rad_to_degrees
+from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint, rad_to_degrees
 
 # Domain specific custom imports
-from VaginalProperties import VaginalProperties
-from Fiducials import Fiducial, get_fiducial_list_by_row_and_column
-from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
-from Options import COORDS, REFERENCE_POINT_NAMES, LEFT_EDGE_PREFIX, RIGHT_EDGE_PREFIX, CENTER_PREFIX
+from PICS3D_libraries.VaginalProperties import VaginalProperties
+from PICS3D_libraries.Fiducials import Fiducial, get_fiducial_list_by_row_and_column
+from PICS3D_libraries.PICSMath import pics_recenter_and_reorient, pics_verify
+from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES, LEFT_EDGE_PREFIX, RIGHT_EDGE_PREFIX, CENTER_PREFIX
+
+# Executable options
 from Options import COMPUTE_LEFT_EDGES, COMPUTE_RIGHT_EDGES, COMPUTE_CENTER, COMPUTE_ALL_INDIVIDUAL_POINTS, STD_DEV_GRAPH_MULTIPLIER
+from Options import COLOR_STRAT
 
 # Graph drawing imports 
-from VaginalDisplay import VaginalDisplay
+from PICS3D_libraries.VaginalDisplay import VaginalDisplay
+from PICS3D_libraries.Graphing import show_all_graphs, add_line_to_graph3D
 from PelvicPoints import create_pelvic_points_graph
-from Graphing import show_all_graphs, add_line_to_graph3D
-from Options import COLOR_STRAT
 
 class FiducialStatistics():
     ''' This is a class that collects statistical information about a particular Fiducial point. '''

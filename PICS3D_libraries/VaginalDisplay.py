@@ -3,7 +3,7 @@
 # Define a class to encapsulate a vagina and its display method
 
 from VaginalProperties import VaginalProperties
-from Options import DEFAULT_COLORIZATION_STRATEGY
+from PICS3D_executable.Options import DEFAULT_COLORIZATION_STRATEGY
 
 class VaginalDisplay(VaginalProperties):
  

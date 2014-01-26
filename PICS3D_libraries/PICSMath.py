@@ -1,26 +1,21 @@
 #! /usr/bin/env python
 # Author: Sean Lisse
-# This code is designed to load in a set of fiducials from a directory tree and normalize them to the PICS system, then display the results.
+# Collection of math scripts to transform fiducials into the PICS3D system.
 
 # Built in library imports
 from numpy import arctan, sin, cos, matrix, array
 
 # Generic custom imports 
-import Utilities
 from Utilities import debug_levels, debugprint, rad_to_degrees
 
 # Domain specific custom imports
 from Fiducials import vector_from_fiducials 
-from VaginalDisplay import VaginalDisplay
 from VectorMath import magnitude, normalize, orthogonalize, get_angle_between
-from Graphing import show_all_graphs
-from PelvicPoints import create_pelvic_points_graph
 
 # Constants
 from Options import COORDS, DESIRED_SCIPP_ANGLE, AXIS_CODING, AXIS_CODING_OPTIONS
 from Options import SCALE_BY_SCIPP_LINE, SCALE_BY_IIS_LINE, SCIPP_SCALE_LENGTH, IIS_SCALE_LENGTH
 from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
-from Options import COLOR_STRAT
 
 def lisse_axes_matrix_fn(vag_props):
     ''' In "lisse" encoding, "X" increases to the patient's left, "Y" increases to the patient's posterior, and "Z" increases to the patient's superior. '''
@@ -246,7 +241,7 @@ def pics_recenter_and_reorient(vag_props):
               + ", " + SC_JOINT_NAME 
               + ", " + LEFT_ISCHIAL_SPINE_NAME 
               + ", or " + RIGHT_ISCHIAL_SPINE_NAME
-              + " in file " + filename)   
+              + " in properties list for " + vag_props._name)   
         return
 
     set_pelvic_tilt_correction_info(vag_props)
@@ -276,42 +271,3 @@ def pics_verify(vag_props):
     
     debugprint("Final SCIPP angle from horizontal is: " + str(rad_to_degrees(SCIPP_angle_from_horiz)) 
                + " degrees and should be: " + str(rad_to_degrees(DESIRED_SCIPP_ANGLE)) + " degrees", debug_levels.DETAILED_DEBUG)
-    
-
-
-#####################
-### DEFAULT MAIN PROC
-#####################  
-
-if __name__ == '__main__':
-        
-    from sys import argv
-             
-    Utilities.setdebuglevel(debug_levels.BASIC_DEBUG)
-    
-    if len(argv) < 2: 
-        print "Need to supply mrml file name argument."
-    else:
-        
-        # Use a single graph to show all inputs
-        graph = None
-        
-        for i in range(1,len(argv)):
-            filename = argv[i]
-        
-            debugprint('Now starting PICS pelvic points program',debug_levels.DETAILED_DEBUG)
-                        
-            vag_props = VaginalDisplay(filename, COLOR_STRAT)        
-            vag_props.initialize_from_MRML(filename)
-            
-            pics_recenter_and_reorient(vag_props)
-                
-            pics_verify(vag_props)
-                
-            graph = create_pelvic_points_graph(graph, vag_props, filename)
-            
-            print(vag_props.to_string())
-                            
-        show_all_graphs()
-            
-        debugprint('Now leaving pelvic points program',debug_levels.DETAILED_DEBUG)

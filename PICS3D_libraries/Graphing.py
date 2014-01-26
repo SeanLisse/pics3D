@@ -5,7 +5,8 @@
 from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projection='3d' to work!  Do NOT remove this line!
 import matplotlib.pyplot as plt
 
-from Options import DEFAULT_COLOR, COORDS, GRAPH_TITLE, REFERENCE_POINT_NAMES, SHOW_REFERENCE_POINTS
+from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES
+from PICS3D_executable.Options import DEFAULT_COLOR, GRAPH_TITLE, SHOW_REFERENCE_POINTS
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels

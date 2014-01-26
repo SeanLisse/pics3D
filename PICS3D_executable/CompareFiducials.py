@@ -3,16 +3,16 @@
 # This code is designed to load in two sets of fiducials from two files, normalize them to the PICS3D system, compare them, and display the results.
 
 # Domain specific custom imports
-from Fiducials import vector_from_fiducials, get_fiducial_list_by_row_and_column
-from VectorMath import magnitude 
-from ThreeDeePICS import pics_recenter_and_reorient, pics_verify
-from VaginalDisplay import VaginalDisplay
-from Graphing import show_all_graphs, add_line_to_graph3D
+from PICS3D_libraries.Fiducials import vector_from_fiducials, get_fiducial_list_by_row_and_column
+from PICS3D_libraries.VectorMath import magnitude 
+from PICS3D_libraries.PICSMath import pics_recenter_and_reorient, pics_verify
+from PICS3D_libraries.VaginalDisplay import VaginalDisplay
+from PICS3D_libraries.Graphing import show_all_graphs, add_line_to_graph3D
 from Options import COLORIZATION_OPTIONS, COORDS
 from PelvicPoints import create_pelvic_points_graph
 
 # Generic custom imports
-from Utilities import setdebuglevel, debug_levels, debugprint
+from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
 
 class FiducialDifference(object):
     _fiducial_point_one = None
