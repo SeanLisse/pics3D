@@ -90,11 +90,11 @@ class FiducialStatCollection():
     def __init__(self):
         self._statsdict = OrderedDict()
         
-    def add_fiducial_by_name(self, fiducialname, Fiducial):
+    def add_fiducial_by_name(self, fiducialname, fiducial):
         if (not fiducialname in self._statsdict):
             self._statsdict[fiducialname] = FiducialStatistics(fiducialname)
          
-        self._statsdict[fiducialname].add_fiducial(Fiducial)
+        self._statsdict[fiducialname].add_fiducial(fiducial)
     
     def get_all_stats(self):
         return self._statsdict
@@ -106,7 +106,7 @@ class FiducialStatCollection():
             return self._statsdict[fiducialname]
 
 class VaginalPropertyStatistics():
-    ''' This is a class that collects statistical information about a collection of vaginalproperties objects. '''
+    ''' This is a class that collects statistical information about a collection of VaginalProperties objects. '''
     
     _propslist = None # A list of [name,VaginalProperties] pairs
     
