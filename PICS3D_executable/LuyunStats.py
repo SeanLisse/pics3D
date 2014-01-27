@@ -11,7 +11,7 @@ from PICS3D_libraries.VaginalDisplay import VaginalDisplay
 from PICS3D_libraries.Graphing import show_all_graphs
 from PelvicPoints import create_pelvic_points_graph
 from PICS3D_libraries.PICSMath import pics_recenter_and_reorient, pics_verify
-from PICS3D_executable.ComputeStatistics import collate_fiducials_by_row_and_column
+from PICS3D_executable.ComputeStatistics import collate_fiducials_reference_points,collate_fiducials_by_edges,collate_fiducials_by_row_and_column
 
 # Constants
 from Options import COLOR_STRAT
@@ -42,15 +42,32 @@ if __name__ == '__main__':
                 
             pics_verify(vag_props)
                 
-            print(vag_props.to_string())
+            # print(vag_props.to_string())
             
-            print("************ Detailed fiducial list: ")
+            print("\nLandmark fiducial list: ************")
             
-            edgestats = collate_fiducials_by_row_and_column([vag_props])
-            fiddict = edgestats.get_all_stats()
+            fidstats = collate_fiducials_reference_points([vag_props])
+            fiddict = fidstats.get_all_stats()
+            
+            for fidstat in fiddict.itervalues():
+                print(fidstat._averaged_fid.to_csv())
+            
+            print("\nEdge fiducial list: ************")
+                        
+            fidstats = collate_fiducials_by_edges([vag_props])
+            fiddict = fidstats.get_all_stats()
             
             for fidstat in fiddict.itervalues():
                 print(fidstat._averaged_fid.to_csv() + " " 
                       + "Paravag Gap: " + str(fidstat._averaged_paravag_gap))
+            
+            
+            print("\nDetailed fiducial list: ************")
+            
+            fidstats = collate_fiducials_by_row_and_column([vag_props])
+            fiddict = fidstats.get_all_stats()
+            
+            for fidstat in fiddict.itervalues():
+                print(fidstat._averaged_fid.to_csv())
             
         debugprint('Now leaving pelvic points program',debug_levels.DETAILED_DEBUG)
