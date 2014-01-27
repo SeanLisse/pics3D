@@ -236,6 +236,10 @@ def collate_fiducials_by_row_and_column(propslist, allfidstats = None):
             for colindex in range(1,len(fids[rowindex])):
             
                 current_fid = fids[rowindex][colindex]
+            
+                if current_fid == None: continue
+                
+                # print("Adding fiducial " + current_fid.to_string())
                 
                 standardized_fid_name = "A" + str(rowindex) + "L" + str(colindex)
                     

@@ -23,6 +23,19 @@ class Fiducial:
         
         self.paravaginal_gap = None
         
+    def to_csv(self):
+        ''' Turn this into a computer-readable comma-separated-value representation.'''
+        if (self == None): return "[None]"
+        
+        retstring = self.name + ","
+        retstring += str(self.coords[COORDS.X])
+        retstring += ","
+        retstring += str(self.coords[COORDS.Y])
+        retstring += ","
+        retstring += str(self.coords[COORDS.Z])
+        
+        return retstring
+    
     def to_string(self):
         if (self == None): return "[None]"
         
