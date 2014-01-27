@@ -44,6 +44,7 @@ if __name__ == '__main__':
                 
             # print(vag_props.to_string())
             
+            # Print all the reference point fiducials as CSV.
             print("\nLandmark fiducial list: ************")
             
             fidstats = collate_fiducials_reference_points([vag_props])
@@ -52,6 +53,7 @@ if __name__ == '__main__':
             for fidstat in fiddict.itervalues():
                 print(fidstat._averaged_fid.to_csv())
             
+            # Print all the vaginal edge point fiducials as CSV.
             print("\nEdge fiducial list: ************")
                         
             fidstats = collate_fiducials_by_edges([vag_props])
@@ -61,7 +63,8 @@ if __name__ == '__main__':
                 print(fidstat._averaged_fid.to_csv() + " " 
                       + "Paravag Gap: " + str(fidstat._averaged_paravag_gap))
             
-            
+
+            # Print all the vaginal fiducials as CSV.
             print("\nDetailed fiducial list: ************")
             
             fidstats = collate_fiducials_by_row_and_column([vag_props])
