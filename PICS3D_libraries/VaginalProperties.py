@@ -99,7 +99,12 @@ class VaginalProperties(object):
             debugprint("Error!  Cannot find one of the points named: " 
                        + PUBIC_SYMPHYSIS_NAME 
                        + "," + LEFT_ISCHIAL_SPINE_NAME 
-                       + ", or " + RIGHT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)   
+                       + ", or " + RIGHT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)
+            
+            fidpoints = self._fiducial_points
+            if not fidpoints.has_key(PUBIC_SYMPHYSIS_NAME): debugprint("Missing " + PUBIC_SYMPHYSIS_NAME, debug_levels.ERRORS)   
+            if not fidpoints.has_key(LEFT_ISCHIAL_SPINE_NAME): debugprint("Missing " + LEFT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)
+            if not fidpoints.has_key(RIGHT_ISCHIAL_SPINE_NAME): debugprint("Missing " + RIGHT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)
         
         if (self._fiducial_points.has_key(SC_JOINT_NAME)):
             self._SC_Joint = self._fiducial_points[SC_JOINT_NAME]
@@ -209,6 +214,10 @@ class VaginalProperties(object):
            
 def get_paravaginal_gap_distance(fiducial, vagproperties):
     ''' Compute the distance from "fiducial" to the nearest Pubis->Ischial Spine line, aka the "Paravaginal Gap Distance".'''
+        
+    if (fiducial == None) or (vagproperties._Pubic_Symphysis == None): 
+        print("Error, 'None' passed to get_paravaginal_gap_distance!")
+        return -99999999
         
     fid_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, fiducial)
         

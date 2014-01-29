@@ -237,11 +237,18 @@ def pics_recenter_and_reorient(vag_props):
         and fid_points.has_key(RIGHT_ISCHIAL_SPINE_NAME)
         and fid_points.has_key(SC_JOINT_NAME)):
 
-        print("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
+        debugprint("Error!  Cannot find one of the points named: " + PUBIC_SYMPHYSIS_NAME 
               + ", " + SC_JOINT_NAME 
               + ", " + LEFT_ISCHIAL_SPINE_NAME 
               + ", or " + RIGHT_ISCHIAL_SPINE_NAME
-              + " in properties list for " + vag_props._name)   
+              + " in properties list for " + vag_props._name, debug_levels.ERRORS)
+
+        fidpoints = fid_points
+        if not fidpoints.has_key(PUBIC_SYMPHYSIS_NAME): debugprint("Missing " + PUBIC_SYMPHYSIS_NAME, debug_levels.ERRORS)   
+        if not fidpoints.has_key(LEFT_ISCHIAL_SPINE_NAME): debugprint("Missing " + LEFT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)
+        if not fidpoints.has_key(RIGHT_ISCHIAL_SPINE_NAME): debugprint("Missing " + RIGHT_ISCHIAL_SPINE_NAME, debug_levels.ERRORS)
+
+        exit()   
         return
 
     set_pelvic_tilt_correction_info(vag_props)

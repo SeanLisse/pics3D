@@ -77,6 +77,8 @@ def load_fiducials_from_mrml_slicer_v_4_3(filename, fiducial_list):
     # Run through the CSV files one at a time, read each line and parse it as a Comma Separated Value
     # list of strings.       
     for csv_file_name in csv_file_list:
+        debugprint("Opening CSV file: '" + csv_file_name + "'")
+        
         with open(csv_file_name) as openfile: contents = str(openfile.read())
         
         lines = contents.splitlines()

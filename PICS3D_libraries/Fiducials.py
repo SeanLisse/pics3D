@@ -53,6 +53,13 @@ class Fiducial:
 def vector_from_fiducials(startfiducial, endfiducial):
     ''' Takes two points, startfiducial and endfiducial, and returns the vector from start to end. '''
     
+    if (startfiducial.coords == None):
+        print("Error!  No coord for fiducial named " + startfiducial.name + "!")
+        return None
+    if endfiducial.coords == None:
+        print("Error!  No coord for fiducial named " + endfiducial.name + "!")
+        return None
+    
     startarray = startfiducial.coords
     endarray = endfiducial.coords
     result = endarray - startarray
