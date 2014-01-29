@@ -42,7 +42,7 @@ if __name__ == '__main__':
                 
             pics_verify(vag_props)
                 
-            # print(vag_props.to_string())
+            print(vag_props.to_string())
             
             # Print all the reference point fiducials as CSV.
             print("\nLandmark fiducial list: ************")
