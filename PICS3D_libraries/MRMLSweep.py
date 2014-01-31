@@ -5,7 +5,7 @@
 # Tested on /home/slisse/working/MRI_data/Reproducing_Larsen/138/Slicer4-Scene.mrml
 
 # System imports
-from os import path
+from os import path, sep
 from xml.parsers import expat
 
 # Generic custom imports 
@@ -74,12 +74,14 @@ def load_fiducials_from_mrml_slicer_v_4_3(filename, fiducial_list):
     # of CSV files that potentially contain fiducials.
     xmlparser.Parse(contents)
      
+    relative_path = path.dirname(filename)
+     
     # Run through the CSV files one at a time, read each line and parse it as a Comma Separated Value
     # list of strings.       
     for csv_file_name in csv_file_list:
         debugprint("Opening CSV file: '" + csv_file_name + "'")
         
-        with open(csv_file_name) as openfile: contents = str(openfile.read())
+        with open(relative_path + sep + csv_file_name) as openfile: contents = str(openfile.read())
         
         lines = contents.splitlines()
         

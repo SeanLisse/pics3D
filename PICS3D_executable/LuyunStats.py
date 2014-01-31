@@ -9,8 +9,6 @@ from PICS3D_libraries.Options import COORDS, AXIS_CODING, AXIS_CODING_OPTIONS
 
 # Domain specific custom imports
 from PICS3D_libraries.VaginalDisplay import VaginalDisplay
-from PICS3D_libraries.Graphing import show_all_graphs
-from PelvicPoints import create_pelvic_points_graph
 from PICS3D_libraries.PICSMath import pics_recenter_and_reorient, pics_verify
 from PICS3D_executable.ComputeStatistics import collate_fiducials_reference_points,collate_fiducials_by_edges,collate_fiducials_by_row_and_column
 
@@ -42,6 +40,8 @@ if __name__ == '__main__':
             pics_recenter_and_reorient(vag_props)
                 
             pics_verify(vag_props)
+             
+            # Done processing, now do outputs! 
                 
             print(vag_props.to_string())
             
