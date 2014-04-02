@@ -3,18 +3,19 @@
 # This code is designed to load in a set of fiducials from command-line arguments and normalize them to the PICS system, 
 # Graphically compare the *first* set of fiducials to the range of the *rest* of the sets, and display the results.
 
-# Generic custom imports 
+# Generic custom imports
+import __init__ 
 import numpy as np
 import matplotlib.pyplot as plt
 # from pylab import boxplot
-from Utilities import setdebuglevel, debug_levels, debugprint
+from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
-from Graphing import filter_vagprops_for_graphing
+from PICS3D_libraries.Graphing import filter_vagprops_for_graphing
 
 # Graph control imports
-from Graphing import show_all_graphs, generate_magic_subplot_number
+from PICS3D_libraries.Graphing import show_all_graphs, generate_magic_subplot_number
 
 from Options import SHOW_REFERENCE_POINTS 
 from Options import WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM 

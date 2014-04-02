@@ -3,6 +3,7 @@
 # This code is designed to load in a set of fiducials from command-line arguments and normalize them to the PICS system, analyze them mathematically, then display the results.
 
 # Python base library imports
+import __init__
 from collections import OrderedDict
 from numpy import std as std_dev
 from numpy import mean

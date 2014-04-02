@@ -4,18 +4,20 @@
 # Graphically compare the *first* set of fiducials to the range of the *rest* of the sets, and display the results.
 
 # Generic custom imports 
+import __init__
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Utilities import setdebuglevel, debug_levels, debugprint
+from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
 
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
-from Options import REFERENCE_POINT_NAMES, COORDS, RANGE_ONE_COLOR, RANGE_TWO_COLOR
+from Options import COORDS, RANGE_ONE_COLOR, RANGE_TWO_COLOR
+from PICS3D_libraries.Options import REFERENCE_POINT_NAMES
 
 # Graph control imports
-from Graphing import show_all_graphs, generate_magic_subplot_number, filter_vagprops_for_graphing
-from GraphColoring import set_boxplot_colors
+from PICS3D_libraries.Graphing import show_all_graphs, generate_magic_subplot_number, filter_vagprops_for_graphing
+from PICS3D_libraries.GraphColoring import set_boxplot_colors
 
 from Options import SHOW_REFERENCE_POINTS 
 from Options import COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM
@@ -49,7 +51,7 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
         for stat in stats2._fid_collated_list:
             stats2_z_list.append(stat.coords[COORDS.Z])
         
-        print("xtick_index = " + str(xtick_index))
+        # print("xtick_index = " + str(xtick_index))
         bp = graph.boxplot([stats1_z_list, stats2_z_list], 
                            sym = 'rx',
                            positions = [xtick_index, xtick_index + 1],
