@@ -19,7 +19,7 @@ from PICS3D_libraries.Graphing import show_all_graphs, generate_magic_subplot_nu
 
 from Options import SHOW_REFERENCE_POINTS 
 from Options import WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM 
-from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, COORD_TO_GRAPH
+from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, AXIS_TO_GRAPH
 from Options import GRAPH_BACKGROUND_COLOR, POINT_COLOR
 from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
 from Options import COORDS
@@ -46,7 +46,7 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
         if (key in stat_list):
             stat = stat_list[key]
             for fid in stat._fid_collated_list:
-                paravag_value_list.append(fid.coords[COORD_TO_GRAPH])
+                paravag_value_list.append(fid.coords[AXIS_TO_GRAPH])
                  
         boxplot_list.append(paravag_value_list)
         
@@ -54,7 +54,7 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
         fid = exemplar_props._fiducial_points[key]
         
         if SHOW_INDIVIDUAL_VALUES: 
-            graph.scatter(x_index, fid.coords[COORD_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
+            graph.scatter(x_index, fid.coords[AXIS_TO_GRAPH], marker='o', label=key, color=POINT_COLOR)
     
     if SHOW_RANGE_VALUES:     
         graph.boxplot(boxplot_list)

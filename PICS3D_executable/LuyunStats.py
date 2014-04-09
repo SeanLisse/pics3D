@@ -5,7 +5,7 @@
 # Generic custom imports 
 import __init__
 from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
-from PICS3D_libraries.Options import COORDS, AXIS_CODING, AXIS_CODING_OPTIONS
+from PICS3D_libraries.Options import AXIS_CODING_SI
 
 # Domain specific custom imports
 from PICS3D_libraries.VaginalDisplay import VaginalDisplay
@@ -74,23 +74,14 @@ if __name__ == '__main__':
             can_compute_lowest_height = True
             lowest_height = float("inf") #infinity
             lowest_fiducial = None
-            if (AXIS_CODING == AXIS_CODING_OPTIONS.lisse): 
-                height_coordinate_index = COORDS.Z
-            else: 
-                if (AXIS_CODING == AXIS_CODING_OPTIONS.pics3d):
-                    height_coordinate_index = COORDS.Y
-                else: 
-                    print("ERROR - CANNOT COMPUTE LOWEST HEIGHT DUE TO UNKNOWN AXIS CODING.")
-                    can_compute_lowest_height = False                
             
             for fidstat in fiddict.itervalues():
                 fid = fidstat._averaged_fid
                 
-                if (can_compute_lowest_height):
-                    if (fid.coords[height_coordinate_index] < lowest_height):
-                        lowest_fiducial = fid
-                        lowest_height = fid.coords[height_coordinate_index]
-                
+                if (fid.coords[AXIS_CODING_SI] < lowest_height):
+                    lowest_fiducial = fid
+                    lowest_height = fid.coords[AXIS_CODING_SI]
+            
                 print(fid.to_csv())
             
             # Print the lowest fiducial point (assuming it's the "worst prolapse").

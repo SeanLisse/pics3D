@@ -49,13 +49,14 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
     if PAD_GRAPH:
         # Pad the graph to keep all graphs at equal scale for comparison
         GRAPH_PADDING=100
+                
         set_graph_boundaries3D(graph,
                              PS_coords[COORDS.X] + GRAPH_PADDING, 
                              PS_coords[COORDS.X] - GRAPH_PADDING,
                              PS_coords[COORDS.Y] + GRAPH_PADDING, 
-                             PS_coords[COORDS.Y],
+                             PS_coords[COORDS.Y] - GRAPH_PADDING,
                              PS_coords[COORDS.Z] + GRAPH_PADDING,
-                             PS_coords[COORDS.Z] - GRAPH_PADDING/3)
+                             PS_coords[COORDS.Z] - GRAPH_PADDING)
         
     # Add a legend
     #    add_legend_to_graph3D(graph,
