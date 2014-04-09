@@ -88,4 +88,4 @@ IIS_SCALE_LENGTH=100
 # 
 # In ALL of the above, we adjust the anterior-posterior axis to attempt to correct pelvic inclination to true "standing" position.
 AXIS_CODING_OPTIONS = enum('lisse','pics3d')
-AXIS_CODING = AXIS_CODING_OPTIONS.lisse
+AXIS_CODING = AXIS_CODING_OPTIONS.pics3d
