@@ -88,4 +88,25 @@ IIS_SCALE_LENGTH=100
 # 
 # In ALL of the above, we adjust the anterior-posterior axis to attempt to correct pelvic inclination to true "standing" position.
 AXIS_CODING_OPTIONS = enum('lisse','pics3d')
+
+# SET WHICH AXIS CODING YOU WANT *HERE*
 AXIS_CODING = AXIS_CODING_OPTIONS.pics3d
+
+# Which axis is left-right?
+AXIS_CODING_LR = None
+
+# Which axis is superior-inferior?
+AXIS_CODING_SI = None
+
+# Which axis is front-back (antero-posterior)?
+AXIS_CODING_AP = None  
+
+if (AXIS_CODING == AXIS_CODING_OPTIONS.lisse):
+    AXIS_CODING_LR = COORDS.X
+    AXIS_CODING_SI = COORDS.Z
+    AXIS_CODING_AP = COORDS.Y
+
+if (AXIS_CODING == AXIS_CODING_OPTIONS.pics3d):
+    AXIS_CODING_LR = COORDS.Z
+    AXIS_CODING_SI = COORDS.Y
+    AXIS_CODING_AP = COORDS.X
