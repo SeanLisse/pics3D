@@ -26,7 +26,7 @@ STD_DEV_GRAPH_MULTIPLIER = 2
 
 # Set the size of the graph in inches
 GRAPH_HEIGHT = 10
-GRAPH_WIDTH = 5
+GRAPH_WIDTH = 10
 rcParams['figure.figsize'] = GRAPH_HEIGHT, GRAPH_WIDTH
 
 COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH', 'SEQUENTIAL')
@@ -65,6 +65,9 @@ PARAVAG_GRAPH_MIN_MM = -50
 WIDTH_GRAPH_MIN_MM = 0
 WIDTH_GRAPH_MAX_MM = 70
 
+# Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
+PAD_GRAPH = False
+
 # Which graphs should we generate?
 SHOW_COORDINATE_GRAPH = True
 SHOW_PARAVAG_GRAPH = True
@@ -75,7 +78,7 @@ SHOW_INDIVIDUAL_VALUES = False
 SHOW_RANGE_VALUES = True
 
 # Should we draw P_IS lines?
-SHOW_P_IS = False
+SHOW_P_IS = True
 
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = True
