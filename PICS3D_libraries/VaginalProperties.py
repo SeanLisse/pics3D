@@ -3,7 +3,7 @@
 
 # Built in library imports
 import collections
-from numpy import Infinity, abs
+from numpy import Infinity, abs, dot
 
 # Basic utilities
 from Utilities import debug_levels, debugprint, rad_to_degrees
@@ -11,10 +11,10 @@ from Utilities import debug_levels, debugprint, rad_to_degrees
 # My custom function imports
 from Fiducials import Fiducial, vector_from_fiducials, get_fiducial_row_and_column
 from MRMLSweep import load_fiducials_from_mrml_slicer_v_4_2, load_fiducials_from_mrml_slicer_v_4_3
-from VectorMath import vector_magnitude_sum, magnitude, perpendicular_component
+from VectorMath import vector_magnitude_sum, magnitude, perpendicular_component, parallel_component, NEGLIGABLY_SMALL_NUMBER
 
 # Constants
-from Options import COORDS, CREATE_IIS
+from Options import COORDS, CREATE_IIS, AXIS_CODING_IS
 from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, INTER_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
 
 class VaginalProperties(object):
@@ -115,7 +115,9 @@ class VaginalProperties(object):
         # Compute paravaginal gap distances
         for key in self._fiducial_points.iterkeys():
             fid= self._fiducial_points[key]
-            fid.paravaginal_gap = get_paravaginal_gap_distance(fid, self)
+            fid.paravaginal_gap = magnitude(get_paravaginal_gap_vector(fid, self))
+            fid.paravaginal_gap_is = get_paravaginal_gap_distance_is(fid, self)
+            fid.paravaginal_gap_horiz = get_paravaginal_gap_distance_horiz(fid, self)
               
         # Iterate through the Fiducial points and gather those that have a row and column number into "rows"
         for key in self._fiducial_points.iterkeys():
@@ -211,22 +213,92 @@ class VaginalProperties(object):
         
         return retstring
  
-           
-def get_paravaginal_gap_distance(fiducial, vagproperties):
-    ''' Compute the distance from "fiducial" to the nearest Pubis->Ischial Spine line, aka the "Paravaginal Gap Distance".'''
+
+def get_paravaginal_gap_vector(fiducial, vagproperties):
+    ''' Compute the vector from "fiducial" to the nearest Pubis->Ischial Spine line, aka the "Paravaginal Gap" '''
+     
+    if (fiducial == None) or (vagproperties._Pubic_Symphysis == None): 
+        print("Error, 'None' passed to get_paravaginal_gap_vector!")
+        return None
+
+    debugprint("*****************", debug_levels.DETAILED_DEBUG)      
+    debugprint("Fiducial: " + fiducial.to_string(), debug_levels.DETAILED_DEBUG)    
+    debugprint("Pubic symphysis: " + vagproperties._Pubic_Symphysis.to_string(), debug_levels.DETAILED_DEBUG)
+
+    fid_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, fiducial)
+    debugprint("Fiducial Vector: " + str(fid_vector) + " with magnitude " + str(magnitude(fid_vector)), debug_levels.DETAILED_DEBUG)
+    
+    L_PIS_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, vagproperties._Left_IS)
+    R_PIS_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, vagproperties._Right_IS)
+   
+    debugprint("L PIS Vector: " + str(L_PIS_vector), debug_levels.DETAILED_DEBUG)
+    debugprint("R PIS Vector: " + str(R_PIS_vector), debug_levels.DETAILED_DEBUG)
+     
+    L_PIS_perp_vec = perpendicular_component(L_PIS_vector, fid_vector)
+    R_PIS_perp_vec = perpendicular_component(R_PIS_vector, fid_vector)
+    
+    debugprint("L PIS Perpendicular: " + str(L_PIS_vector), debug_levels.DETAILED_DEBUG)
+    debugprint("R PIS Perpendicular: " + str(R_PIS_vector), debug_levels.DETAILED_DEBUG)    
+    
+    debugprint("*****************", debug_levels.DETAILED_DEBUG)
+
+    gap_vec = [None,None,None]
+
+    # Verify that the perpendicular vector is indeed perpendicular to the PIS_Vector
+    if (dot(L_PIS_vector, L_PIS_perp_vec) > NEGLIGABLY_SMALL_NUMBER):
+        debugprint("ERROR!  Perpendicular vector code is returning a non-perpendicular vector when comparing to left PIS line!", debug_levels.ERRORS)
+        
+    if (dot(R_PIS_vector, R_PIS_perp_vec) > NEGLIGABLY_SMALL_NUMBER):
+        debugprint("ERROR!  Perpendicular vector code is returning a non-perpendicular vector when comparing to right PIS line!", debug_levels.ERRORS)
+ 
+    if (magnitude(L_PIS_perp_vec) <= magnitude(R_PIS_perp_vec)):
+        gap_vec = L_PIS_perp_vec
+    else:
+        gap_vec = R_PIS_perp_vec
+
+    ## Detect and repair the special case wherein the shortest distance to the IS lines is actually *in front of* the pubic symphysis.
+    ## We repair it by replacing this anatomically infeasible vector with the vector from the fiducial to the pubic symphysis.
+    L_dot = dot(vector_from_fiducials(vagproperties._Pubic_Symphysis, vagproperties._Left_IS), fid_vector)
+    if (L_dot < (-1 * NEGLIGABLY_SMALL_NUMBER)):
+        debugprint("Choosing to connect fiducial " + fiducial.name + " to the Pubic Symphysis as the origin of the Left P->IS line.", debug_levels.BASIC_DEBUG)
+        for index in {0,1,2}:
+            gap_vec[index] = fid_vector[index]
+
+    R_dot = dot(vector_from_fiducials(vagproperties._Pubic_Symphysis, vagproperties._Right_IS), fid_vector)
+    if (R_dot < (-1 * NEGLIGABLY_SMALL_NUMBER)):
+        debugprint("Choosing to connect fiducial " + fiducial.name + " to the Pubic Symphysis as the origin of the Right P->IS line.", debug_levels.BASIC_DEBUG)
+
+        for index in {0,1,2}:
+            gap_vec[index] = fid_vector[index]
+
+    return gap_vec
+        
+def get_paravaginal_gap_distance_is(fiducial, vagproperties):
+    ''' Compute the distance from "fiducial" to the nearest Pubis->Ischial Spine line, aka the "Paravaginal Gap Distance", 
+        along the Superior-Inferior Axis.'''
         
     if (fiducial == None) or (vagproperties._Pubic_Symphysis == None): 
-        print("Error, 'None' passed to get_paravaginal_gap_distance!")
-        return -99999999
+        print("Error, 'None' passed to get_paravaginal_gap_distance_is!")
+        return None
+
+    gap_vec = get_paravaginal_gap_vector(fiducial, vagproperties)
         
-    fid_vector = vector_from_fiducials(vagproperties._Pubic_Symphysis, fiducial)
+    IS_distance = gap_vec[AXIS_CODING_IS]
         
-    L_PIS_distance = abs(magnitude(perpendicular_component(vagproperties._Left_PIS_Vector, fid_vector)))
-    R_PIS_distance = abs(magnitude(perpendicular_component(vagproperties._Right_PIS_Vector, fid_vector)))
+    return IS_distance
+
+def get_paravaginal_gap_distance_horiz(fiducial, vagproperties):
+    ''' Compute the distance from "fiducial" to the nearest Pubis->Ischial Spine line, aka the "Paravaginal Gap Distance", 
+        along the AP/LR Plane.'''
     
-    if (L_PIS_distance <= R_PIS_distance):
-        chosen_PIS_distance = L_PIS_distance
-    else:
-        chosen_PIS_distance = R_PIS_distance
+    if (fiducial == None) or (vagproperties._Pubic_Symphysis == None): 
+        print("Error, 'None' passed to get_paravaginal_gap_distance_is!")
+        return None
+
+    gap_vec = get_paravaginal_gap_vector(fiducial, vagproperties)
+    
+    gap_vec[AXIS_CODING_IS] = 0
+    
+    AP_LR_distance = magnitude(gap_vec)
         
-    return chosen_PIS_distance
+    return AP_LR_distance

@@ -22,6 +22,8 @@ class Fiducial:
         self.coords[COORDS.Z] = float(_z)
         
         self.paravaginal_gap = None
+        self.paravaginal_gap_is = None
+        self.paravaginal_gap_horiz = None
         
     def to_csv(self):
         ''' Turn this into a computer-readable comma-separated-value representation.'''
@@ -62,7 +64,10 @@ def vector_from_fiducials(startfiducial, endfiducial):
     
     startarray = startfiducial.coords
     endarray = endfiducial.coords
-    result = endarray - startarray
+
+    result = [0,0,0]
+    for index in {0,1,2}:    
+        result[index] = endarray[index] - startarray[index]
     return result
 
 def print_all_fiducials(fiducial_list):

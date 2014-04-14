@@ -13,7 +13,7 @@ from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
 from Options import RANGE_ONE_COLOR, RANGE_TWO_COLOR
-from PICS3D_libraries.Options import AXIS_CODING_SI, REFERENCE_POINT_NAMES
+from PICS3D_libraries.Options import AXIS_CODING_IS, REFERENCE_POINT_NAMES
 
 # Graph control imports
 from PICS3D_libraries.Graphing import show_all_graphs, generate_magic_subplot_number, filter_vagprops_for_graphing
@@ -46,10 +46,10 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
         stats2_z_list = []
         
         for stat in stats1._fid_collated_list:
-            stats1_height_list.append(stat.coords[AXIS_CODING_SI])
+            stats1_height_list.append(stat.coords[AXIS_CODING_IS])
             
         for stat in stats2._fid_collated_list:
-            stats2_z_list.append(stat.coords[AXIS_CODING_SI])
+            stats2_z_list.append(stat.coords[AXIS_CODING_IS])
         
         # print("xtick_index = " + str(xtick_index))
         bp = graph.boxplot([stats1_height_list, stats2_z_list], 
@@ -99,7 +99,7 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
 #             stats1_dev_list.append(0)
 #         else: 
 #             # Grab the height value and its stddev
-#             stats1_value = stats1._averaged_fid.coords[AXIS_CODING_SI]
+#             stats1_value = stats1._averaged_fid.coords[AXIS_CODING_IS]
 #             stats1_value_list.append(stats1_value)
 #             stats1_dev_list.append(stats1._fid_std_dev_z)
 #               
@@ -110,7 +110,7 @@ def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1,
 #             stats2_dev_list.append(0)
 #         else: 
 #             # Grab the height value and its stddev
-#             stats2_value = stats2._averaged_fid.coords[AXIS_CODING_SI]
+#             stats2_value = stats2._averaged_fid.coords[AXIS_CODING_IS]
 #             stats2_value_list.append(stats2_value)
 #             stats2_dev_list.append(stats2._fid_std_dev_z)
 

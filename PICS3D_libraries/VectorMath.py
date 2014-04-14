@@ -4,7 +4,9 @@
 # It assumes that each 3D point is a numpy array with 3 components, ordered as 'X', 'Y', 'Z'.
 
 import numpy
-# import scipy
+
+# How small an error are we willing to write off?
+NEGLIGABLY_SMALL_NUMBER = 0.000000001
 
 def magnitude(vector):
     ''' Given a 3D vector, computes and returns the scalar magnitude of the vector'''
@@ -55,18 +57,39 @@ def parallel_component(reference_vector, comparison_vector):
     ''' Given a reference vector and a comparison vector, projects the comparison onto the reference and returns
     only the component of the comparison vector that is parallel to the reference vector.'''
     
+    if ((magnitude(reference_vector) < NEGLIGABLY_SMALL_NUMBER) or magnitude(comparison_vector) < NEGLIGABLY_SMALL_NUMBER):
+        return [0,0,0]
+        
     ref_vector_normal = normalize(reference_vector)
-    parallel_magnitude= numpy.dot(ref_vector_normal, comparison_vector)
+    parallel_magnitude = numpy.dot(ref_vector_normal, comparison_vector)
     result = magnify(ref_vector_normal, parallel_magnitude)
     
     return result
 
 def perpendicular_component(reference_vector, comparison_vector):
     ''' Given a reference vector and a comparison vector, projects the comparison onto the reference and returns
-    only the component of the comparison vector that is perpindicular to the reference vector.'''
+    only the component of the comparison vector that is perpendicular to the reference vector.'''
+
+    if ((magnitude(reference_vector) < NEGLIGABLY_SMALL_NUMBER) or magnitude(comparison_vector) < NEGLIGABLY_SMALL_NUMBER):
+        return [0,0,0]
+       
+    parallel_vec =  parallel_component(reference_vector, comparison_vector)
     
-    result = comparison_vector - parallel_component(reference_vector, comparison_vector)
+    result = [None,None,None]
     
+    for index in {0, 1, 2}:
+        result[index] = (comparison_vector[index] - parallel_vec[index])
+    
+#     print('RefV ' + str(reference_vector))
+#     print('CompV ' + str(comparison_vector))
+#     print('||V ' + str(parallel_vec) + ' magnitude ' + str(magnitude(parallel_vec)))
+#     print('+V ' + str(result) + ' magnitude ' + str(magnitude(result)))
+#     print('+ double check ' + str(magnitude(parallel_component(parallel_vec, result))))
+    
+    if (magnitude(parallel_component(parallel_vec, result)) > NEGLIGABLY_SMALL_NUMBER):
+        print("ERROR IN PERPENDICULAR VECTOR COMPONENT CALCULATION ")
+        return None
+        
     return result
 
 def orthogonalize(reference_vector, comparison_vector):

@@ -13,7 +13,7 @@ from Fiducials import vector_from_fiducials
 from VectorMath import magnitude, normalize, orthogonalize, get_angle_between
 
 # Constants
-from Options import COORDS, DESIRED_SCIPP_ANGLE, AXIS_CODING, AXIS_CODING_OPTIONS, AXIS_CODING_AP, AXIS_CODING_SI
+from Options import COORDS, DESIRED_SCIPP_ANGLE, AXIS_CODING, AXIS_CODING_OPTIONS, AXIS_CODING_AP, AXIS_CODING_IS
 from Options import SCALE_BY_SCIPP_LINE, SCALE_BY_IIS_LINE, SCIPP_SCALE_LENGTH, IIS_SCALE_LENGTH
 from Options import LEFT_ISCHIAL_SPINE_NAME, RIGHT_ISCHIAL_SPINE_NAME, PUBIC_SYMPHYSIS_NAME, SC_JOINT_NAME
 
@@ -263,6 +263,8 @@ def pics_recenter_and_reorient(vag_props):
         
     if SCALE_BY_IIS_LINE:
         pics_normalize_to_ischial_spine_width(vag_props)
+    
+    vag_props.compute_properties()
         
 
 def pics_verify(vag_props):
@@ -274,7 +276,7 @@ def pics_verify(vag_props):
     
     # Determine the current angle of the SCIPP line from the horizontal
     # Do that by taking the SCIPP angle from the Y axis in the 'old' YZ plane
-    SCIPP_angle_from_horiz = arctan(SCIPP_line[AXIS_CODING_SI]/SCIPP_line[AXIS_CODING_AP])
+    SCIPP_angle_from_horiz = arctan(SCIPP_line[AXIS_CODING_IS]/SCIPP_line[AXIS_CODING_AP])
     
     debugprint("Final SCIPP angle from horizontal is: " + str(rad_to_degrees(SCIPP_angle_from_horiz)) 
                + " degrees and should be: " + str(-1 * rad_to_degrees(DESIRED_SCIPP_ANGLE)) + " degrees", debug_levels.BASIC_DEBUG)

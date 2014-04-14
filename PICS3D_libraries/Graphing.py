@@ -6,11 +6,14 @@ from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projec
 import matplotlib.pyplot as plt
 
 from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES
-from PICS3D_executable.Options import DEFAULT_COLOR, GRAPH_TITLE, SHOW_REFERENCE_POINTS
+from PICS3D_executable.Options import DEFAULT_COLOR, GRAPH_TITLE, SHOW_REFERENCE_POINTS, DRAW_PARAVAG_GAP_LINES
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
 import numpy as np
+
+# Used when and if we want to draw paravaginal gap lines.
+from VaginalProperties import get_paravaginal_gap_vector
 
 class PelvicGraph2D(object):
     def __init__(self, name="Fiducials", x_axis_name='X', y_axis_name='Y'):
@@ -96,6 +99,13 @@ def add_fiducials_to_graph3D(graph, vagprops, color_fn = default_color_fn):
         fid = fid_list[key]
         debugprint("Adding Fiducial to graph: " + fid.to_string(), debug_levels.DETAILED_DEBUG)
         add_scatterpoint_to_graph3D(graph, fid.name, fid.coords[COORDS.X], fid.coords[COORDS.Y], fid.coords[COORDS.Z], color_fn(fid, vagprops))
+        
+        if (DRAW_PARAVAG_GAP_LINES):
+            gap_vec = get_paravaginal_gap_vector(fid, vagprops)
+            add_line_to_graph3D(graph, fid.coords, fid.coords - gap_vec, 'black')
+            # add_line_to_graph3D(graph, fid.coords, fid.coords - [0,0,gap_vec[COORDS.Z]], 'pink')
+            # add_line_to_graph3D(graph, fid.coords - [0,0,gap_vec[COORDS.Z]], fid.coords - gap_vec, 'green')
+            # add_line_to_graph3D(graph, [0,0,0], fid.coords, 'grey')
         
 def add_legend_to_graph3D(graph, minlabel, maxlabel, mincolor, maxcolor):
     ''' Create a legend for the graph, using matched tuples of labels and colors (e.g. labels[0] gets colors[0]'''

@@ -13,7 +13,7 @@ from Utilities import debug_levels, debugprint
 # My custom function imports
 from Fiducials import vector_from_fiducials, get_fiducial_row_and_column
 from VectorMath import perpendicular_component, magnitude
-from VaginalProperties import get_paravaginal_gap_distance
+from VaginalProperties import get_paravaginal_gap_distance_is
 
 # Constants
 from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES
@@ -137,7 +137,7 @@ def PIS_color_calibration(vagdisplay):
     
 
 def PIS_color_fn(Fiducial, vagdisplay):
-    ''' determine where on the red-green spectrum our chosen point distance lies (based on minimum distance from the nearest PIS line) '''
+    ''' determine where on the red-green spectrum our chosen point distance lies (based on minimum vertical distance from the nearest PIS line) '''
     
     # read-only vars so don't need to be declared global - this is a reminder.
     # global PIS_distance_min, PIS_distance_max 
@@ -145,7 +145,7 @@ def PIS_color_fn(Fiducial, vagdisplay):
     if (Fiducial.name in REFERENCE_POINT_NAMES): 
         return REFERENCE_POINT_COLOR
 
-    chosen_PIS_distance = get_paravaginal_gap_distance(Fiducial, vagdisplay)
+    chosen_PIS_distance = get_paravaginal_gap_distance_is(Fiducial, vagdisplay)
         
     debugprint("Fiducial named " + Fiducial.name + " has min PIS distance " + str(chosen_PIS_distance))
     

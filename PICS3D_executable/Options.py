@@ -2,7 +2,7 @@
 # Author: Sean Lisse
 # This code contains all user-editable options for the PICS3D code.
 
-from PICS3D_libraries.Options import enum, AXIS_CODING_SI
+from PICS3D_libraries.Options import enum, AXIS_CODING_IS
 from pylab import rcParams
 
 # *****************************************************************
@@ -51,7 +51,7 @@ GRAPH_TITLE = "PICS3D Graphing"
 GRAPH_BACKGROUND_COLOR="#DDDDDD"
 
 POINT_COLOR = "#000000"
-AXIS_TO_GRAPH=AXIS_CODING_SI
+AXIS_TO_GRAPH=AXIS_CODING_IS
 
 # Maximum and minimum Y axis values on our coordinates graph
 COORDINATE_GRAPH_MAX_MM = 100
@@ -78,7 +78,8 @@ SHOW_INDIVIDUAL_VALUES = False
 SHOW_RANGE_VALUES = True
 
 # Should we draw P_IS lines?
-SHOW_P_IS = True
+DRAW_PS_IS_LINES = True
+DRAW_PARAVAG_GAP_LINES = True
 
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = True

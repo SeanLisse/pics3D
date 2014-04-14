@@ -22,7 +22,7 @@ from Options import WIDTH_GRAPH_MIN_MM, WIDTH_GRAPH_MAX_MM
 from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, AXIS_TO_GRAPH
 from Options import GRAPH_BACKGROUND_COLOR, POINT_COLOR
 from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
-from Options import COORDS
+
 
 def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangestats):
     ''' Add all fiducials in key_list to the graph.  Info from rangestats appears as bars,  Info from exemplar_props as points.'''
@@ -73,7 +73,7 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
     return graph        
       
 def create_2D_paravaginal_graph(graph, exemplar_key_list, exemplar_props, rangestats):
-    ''' Create a graph that displays the "paravaginal gap" distance (i.e. the distance from that point to the closest P-> IS line) 
+    ''' Create a graph that displays the "paravaginal gap" vertical distance (i.e. the distance from that point to the closest P-> IS line) 
     for each fiducial in exemplarlist, and compares that distance to the computed range from rangestats. '''
     
     if (graph == None):

@@ -5,7 +5,7 @@
 # Generic custom imports 
 import __init__
 from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
-from PICS3D_libraries.Options import AXIS_CODING_SI
+from PICS3D_libraries.Options import AXIS_CODING_IS
 
 # Domain specific custom imports
 from PICS3D_libraries.VaginalDisplay import VaginalDisplay
@@ -62,7 +62,10 @@ if __name__ == '__main__':
             
             for fidstat in fiddict.itervalues():
                 print(fidstat._averaged_fid.to_csv() + " " 
-                      + "Paravag Gap: " + str(fidstat._averaged_paravag_gap))
+                      + " Paravag Gap (Total, IS, LR/AP): " 
+                      + str(fidstat._averaged_paravag_gap) + ","
+                      + str(fidstat._averaged_paravag_gap_is) + ","
+                      + str(fidstat._averaged_paravag_gap_horiz))
             
 
             # Print all the vaginal fiducials as CSV.
@@ -78,9 +81,9 @@ if __name__ == '__main__':
             for fidstat in fiddict.itervalues():
                 fid = fidstat._averaged_fid
                 
-                if (fid.coords[AXIS_CODING_SI] < lowest_height):
+                if (fid.coords[AXIS_CODING_IS] < lowest_height):
                     lowest_fiducial = fid
-                    lowest_height = fid.coords[AXIS_CODING_SI]
+                    lowest_height = fid.coords[AXIS_CODING_IS]
             
                 print(fid.to_csv())
             

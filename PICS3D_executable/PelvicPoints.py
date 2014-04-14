@@ -15,7 +15,7 @@ from PICS3D_libraries.GraphColoring import calibrate_colorization_strategy_fn
 
 # Constants
 from PICS3D_libraries.Options import COORDS, INTER_ISCHIAL_SPINE_NAME, CREATE_IIS
-from PICS3D_executable.Options import SHOW_P_IS
+from PICS3D_executable.Options import DRAW_PS_IS_LINES
 
 from Options import COLOR_STRAT, PAD_GRAPH
 
@@ -33,7 +33,7 @@ def create_pelvic_points_graph(graph, vagdisplay, graphname):
     R_IS_coords = vagdisplay._Right_IS.coords
     
     # Display the P_IS lines on the graph as well
-    if SHOW_P_IS:
+    if DRAW_PS_IS_LINES:
         add_line_to_graph3D(graph, PS_coords, L_IS_coords , "grey")
         add_line_to_graph3D(graph, PS_coords, R_IS_coords, "grey")
     

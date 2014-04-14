@@ -40,6 +40,12 @@ class FiducialStatistics():
         self._averaged_paravag_gap=None
         self._fid_paravag_gap_std_dev=None
         
+        self._averaged_paravag_gap_is=None
+        self._fid_paravag_gap_is_std_dev=None
+        
+        self._averaged_paravag_gap_horiz=None
+        self._fid_paravag_gap_horiz_std_dev=None
+        
     def add_fiducial(self, Fiducial):
         self._fid_collated_list.append(Fiducial)
         self.update_statistics()
@@ -55,6 +61,8 @@ class FiducialStatistics():
             zlist = []
             
             paravaginal_gap_list = []
+            paravaginal_gap_is_list = []
+            paravaginal_gap_horiz_list = []
             
             # Sum the values of X, Y, and Z for over the list
             for current_fid_index in range(0, len(self._fid_collated_list)):
@@ -68,6 +76,12 @@ class FiducialStatistics():
                 
                 if (current_fid.paravaginal_gap != None): 
                     paravaginal_gap_list.append(current_fid.paravaginal_gap)
+                
+                if (current_fid.paravaginal_gap_is != None): 
+                    paravaginal_gap_is_list.append(current_fid.paravaginal_gap_is)
+                    
+                if (current_fid.paravaginal_gap_horiz != None): 
+                    paravaginal_gap_horiz_list.append(current_fid.paravaginal_gap_horiz)
 
             x_avg = mean(xlist)
             y_avg = mean(ylist)
@@ -79,12 +93,27 @@ class FiducialStatistics():
             self._fid_std_dev_y = std_dev(ylist)
             self._fid_std_dev_z = std_dev(zlist)
             
+            # Update the three paravaginal gap stats (total, inferosuperior "is", horizontal component "horiz"
             if (len(paravaginal_gap_list) == 0):
                 self._averaged_paravag_gap = 0
                 self._fid_paravag_gap_std_dev = 0
             else:
                 self._averaged_paravag_gap = mean(paravaginal_gap_list)
                 self._fid_paravag_gap_std_dev = std_dev(paravaginal_gap_list)
+            
+            if (len(paravaginal_gap_is_list) == 0):
+                self._averaged_paravag_gap_is = 0
+                self._fid_paravag_gap_is_std_dev = 0
+            else:
+                self._averaged_paravag_gap_is = mean(paravaginal_gap_is_list)
+                self._fid_paravag_gap_is_std_dev = std_dev(paravaginal_gap_is_list)
+                
+            if (len(paravaginal_gap_horiz_list) == 0):
+                self._averaged_paravag_gap_horiz = 0
+                self._fid_paravag_gap_horiz_std_dev = 0
+            else:
+                self._averaged_paravag_gap_horiz = mean(paravaginal_gap_horiz_list)
+                self._fid_paravag_gap_horiz_std_dev = std_dev(paravaginal_gap_horiz_list)
 
 class FiducialStatCollection():
     ''' A self-maintaining list of FiducialStatistics '''
@@ -372,8 +401,12 @@ def print_results(propstats, allfidstats):
         print("X std dev: " + str(stat._fid_std_dev_x))
         print("Y std dev: " + str(stat._fid_std_dev_y))
         print("Z std dev: " + str(stat._fid_std_dev_z))
-        print("Mean paravaginal gap: " + str(stat._averaged_paravag_gap))
-        print("Paravaginal gap std dev: " + str(stat._fid_paravag_gap_std_dev)) 
+        print("Mean paravaginal gap (diagonal): " + str(stat._averaged_paravag_gap))
+        print("Paravaginal gap std dev (diagonal): " + str(stat._fid_paravag_gap_std_dev)) 
+        print("Mean paravaginal gap (vertical): " + str(stat._averaged_paravag_gap_is))
+        print("Paravaginal gap std dev (vertical): " + str(stat._fid_paravag_gap_is_std_dev)) 
+        print("Mean paravaginal gap (horizontal): " + str(stat._averaged_paravag_gap_horiz))
+        print("Paravaginal gap std dev (horizontal): " + str(stat._fid_paravag_gap_horiz_std_dev)) 
         print("================")
      
     print("================")
