@@ -10,24 +10,19 @@ from PICS3D_libraries.VaginalDisplay import VaginalDisplay
 
 # Graphing custom imports
 from PICS3D_libraries.Graphing import add_fiducials_to_graph3D, add_line_to_graph3D, add_scatterpoint_to_graph3D
-from PICS3D_libraries.Graphing import add_legend_to_graph3D, set_graph_boundaries3D, show_all_graphs, PelvicGraph3D
-from PICS3D_libraries.GraphColoring import calibrate_colorization_strategy_fn, fraction_color
+from PICS3D_libraries.Graphing import set_graph_boundaries3D, show_all_graphs, PelvicGraph3D
+from PICS3D_libraries.GraphColoring import calibrate_colorization_strategy_fn
 
 # Constants
-from PICS3D_libraries.Options import COORDS, SC_JOINT_NAME, INTER_ISCHIAL_SPINE_NAME, CREATE_IIS
+from PICS3D_libraries.Options import COORDS, INTER_ISCHIAL_SPINE_NAME, CREATE_IIS
 from PICS3D_executable.Options import SHOW_P_IS
 
-from Options import COLOR_STRAT
-
-# Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
-PAD_GRAPH=False
+from Options import COLOR_STRAT, PAD_GRAPH
 
 def create_pelvic_points_graph(graph, vagdisplay, graphname):
 
     if (graph == None):
         graph = PelvicGraph3D(graphname)
-    
-    fid_points = vagdisplay._fiducial_points
     
     [color_fn, minmax_distances] = calibrate_colorization_strategy_fn(vagdisplay)
     
