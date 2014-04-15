@@ -280,3 +280,7 @@ def pics_verify(vag_props):
     
     debugprint("Final SCIPP angle from horizontal is: " + str(rad_to_degrees(SCIPP_angle_from_horiz)) 
                + " degrees and should be: " + str(-1 * rad_to_degrees(DESIRED_SCIPP_ANGLE)) + " degrees", debug_levels.BASIC_DEBUG)
+
+def pics_correct_and_verify(vag_props):
+    pics_recenter_and_reorient(vag_props)
+    pics_verify(vag_props)
