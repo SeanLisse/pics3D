@@ -2,6 +2,8 @@
 # Author: Sean Lisse
 # This code is designed to load in a set of fiducials from a directory tree and perform some math upon them, then display the results.
 
+import __init__
+
 # Nonspecific imports
 from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
 
