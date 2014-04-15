@@ -302,3 +302,17 @@ def get_paravaginal_gap_distance_horiz(fiducial, vagproperties):
     AP_LR_distance = magnitude(gap_vec)
         
     return AP_LR_distance
+
+def load_vaginal_properties(filenames):
+    ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
+    
+    propslist = []
+    for i in range(0,len(filenames)):
+        filename = filenames[i]
+                    
+        vag_props = VaginalProperties(filename)        
+        vag_props.initialize_from_MRML(filename)
+                    
+        propslist.append(vag_props) 
+        
+    return propslist
