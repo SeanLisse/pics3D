@@ -17,5 +17,24 @@ class VaginalDisplay(VaginalProperties):
         VaginalProperties.__init__(self, name)
         
         self._color_strategy = color_strat
-        
         self._vagrowcolors=[]
+        
+    def to_string(self):
+        result = VaginalProperties.to_string(self) # + "\n COLOR STRAT: " + str(self._color_strategy) + "\n"
+            
+        print(result)
+        return result
+    
+def load_vaginal_displays(filenames, color_strat = DEFAULT_COLORIZATION_STRATEGY ):
+    ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
+    
+    displaylist = []
+    for i in range(0,len(filenames)):
+        filename = filenames[i]
+                    
+        display = VaginalDisplay(filename, color_strat)        
+        display.initialize_from_MRML(filename)
+                    
+        displaylist.append(display) 
+        
+    return displaylist
