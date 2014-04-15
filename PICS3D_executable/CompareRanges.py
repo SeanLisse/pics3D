@@ -5,25 +5,22 @@
 
 # Generic custom imports 
 import __init__
-import numpy as np
 import matplotlib.pyplot as plt
 
-from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint
+from PICS3D_libraries.Utilities import setdebuglevel, debug_levels
 
 # Domain specific custom imports
 from ComputeStatistics import load_vaginal_properties, get_stats_and_display_from_properties
 from Options import RANGE_ONE_COLOR, RANGE_TWO_COLOR
-from PICS3D_libraries.Options import AXIS_CODING_IS, REFERENCE_POINT_NAMES
+from PICS3D_libraries.Options import AXIS_CODING_IS
+from PICS3D_libraries.PICSMath import pics_correct_and_verify
 
 # Graph control imports
 from PICS3D_libraries.Graphing import show_all_graphs, generate_magic_subplot_number, filter_vagprops_for_graphing
 from PICS3D_libraries.GraphColoring import set_boxplot_colors
 
-from Options import SHOW_REFERENCE_POINTS 
 from Options import COORDINATE_GRAPH_MIN_MM, COORDINATE_GRAPH_MAX_MM
-from Options import SHOW_PARAVAG_GRAPH, SHOW_WIDTH_GRAPH, SHOW_COORDINATE_GRAPH, AXIS_TO_GRAPH
-from Options import GRAPH_BACKGROUND_COLOR, POINT_COLOR
-from Options import SHOW_INDIVIDUAL_VALUES, SHOW_RANGE_VALUES
+from Options import GRAPH_BACKGROUND_COLOR
 
 def create_2D_height_range_comparison_graph(graph, key_list, stats_collection_1, stats_collection_2):
     ''' Add all fiducials in key_list to the graph. Plot their heights against each other.
@@ -142,7 +139,7 @@ if __name__ == '__main__':
         
     from sys import argv
      
-    setdebuglevel(debug_levels.BASIC_DEBUG) 
+    setdebuglevel(debug_levels.ERRORS) 
     
     ARGUMENT_LIST_SEPARATOR = ':'
     
@@ -154,16 +151,19 @@ if __name__ == '__main__':
         print("Need to supply at two sets of mrml file names as arguments, separated by a single ':'")
         exit()
     
-    # Get the two argument lists of file names.  Ignore argv[0], as it's just the filename of this python file.
-
+    # Get the two argument lists of file names. 
     separator_index = argv.index(ARGUMENT_LIST_SEPARATOR)
 
-    # List of fiducial stats representing a single vagina, to be compared to the range.
+    # List of fiducial stats representing a single vagina, to be compared to the range. Ignore argv[0], as it's just the filename of this python file.
     range1propslist = load_vaginal_properties(argv[1:separator_index])
+    for props in range1propslist:
+        pics_correct_and_verify(props)
     [range1propstats, range1fidstats, range1propsdisplay] = get_stats_and_display_from_properties("Range 1", range1propslist)
     
     # List of fiducial stats representing a range to compare that single one against. 
-    range2propslist = load_vaginal_properties(argv[separator_index + 1:])
+    range2propslist = load_vaginal_properties(argv[(separator_index + 1):])
+    for props in range2propslist:
+        pics_correct_and_verify(props)
     [range2propstats, range2fidstats, range2propsdisplay] = get_stats_and_display_from_properties("Range 2", range2propslist)
  
     fig = plt.figure(facecolor = GRAPH_BACKGROUND_COLOR)
