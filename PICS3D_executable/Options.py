@@ -79,7 +79,7 @@ SHOW_RANGE_VALUES = True
 
 # Should we draw P_IS lines?
 DRAW_PS_IS_LINES = True
-DRAW_PARAVAG_GAP_LINES = True
+DRAW_PARAVAG_GAP_LINES = False
 
 # Which points should we include in our graphed display?
 SHOW_REFERENCE_POINTS = True

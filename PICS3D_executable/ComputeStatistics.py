@@ -12,9 +12,9 @@ from numpy import mean
 from PICS3D_libraries.Utilities import setdebuglevel, debug_levels, debugprint, rad_to_degrees
 
 # Domain specific custom imports
-from PICS3D_libraries.VaginalProperties import VaginalProperties
+from PICS3D_libraries.VaginalProperties import load_vaginal_properties
 from PICS3D_libraries.Fiducials import Fiducial, get_fiducial_list_by_row_and_column
-from PICS3D_libraries.PICSMath import pics_recenter_and_reorient, pics_verify
+from PICS3D_libraries.PICSMath import pics_correct_and_verify
 from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES, LEFT_EDGE_PREFIX, RIGHT_EDGE_PREFIX, CENTER_PREFIX
 
 # Executable options
@@ -208,24 +208,6 @@ class VaginalPropertyStatistics():
     def add_vaginalproperties_from_list(self, propslist):
         for item in propslist:
             self.add_vaginalproperties(item)
-
-def load_vaginal_properties(filenames):
-    ''' Gather sets of vaginal properties from the filenames provided as arguments, and run them through the PICS standardization process. '''
-    
-    propslist = []
-    for i in range(0,len(filenames)):
-        filename = filenames[i]
-                    
-        vag_props = VaginalProperties(filename)        
-        vag_props.initialize_from_MRML(filename)
-        
-        pics_recenter_and_reorient(vag_props)
-            
-        pics_verify(vag_props)
-            
-        propslist.append(vag_props) 
-        
-    return propslist
 
 
 def collate_fiducials_reference_points(propslist, allfidstats = None):
@@ -462,6 +444,8 @@ if __name__ == '__main__':
     else:
         # ignore the argv[0], as it's just the filename of this python file.
         propslist = load_vaginal_properties(argv[1:])
+        for props in propslist:
+            pics_correct_and_verify(props)
 
         [propstats, allfidstats, averagedisplay] = get_stats_and_display_from_properties("Computed fiducials", propslist)
 

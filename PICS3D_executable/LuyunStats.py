@@ -38,7 +38,6 @@ if __name__ == '__main__':
             vag_props.initialize_from_MRML(filename)
             
             pics_recenter_and_reorient(vag_props)
-                
             pics_verify(vag_props)
              
             # Done processing, now do outputs! 

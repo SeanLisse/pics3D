@@ -3,12 +3,13 @@
 # This code is designed to load in two sets of fiducials from two files, normalize them to the PICS3D system, compare them, and display the results.
 
 # Domain specific custom imports
+import __init__
 from PICS3D_libraries.Fiducials import vector_from_fiducials, get_fiducial_list_by_row_and_column
 from PICS3D_libraries.VectorMath import magnitude 
-from PICS3D_libraries.PICSMath import pics_recenter_and_reorient, pics_verify
-from PICS3D_libraries.VaginalDisplay import VaginalDisplay
+from PICS3D_libraries.PICSMath import pics_correct_and_verify
+from PICS3D_libraries.VaginalDisplay import load_vaginal_displays
 from PICS3D_libraries.Graphing import show_all_graphs, add_line_to_graph3D
-from Options import COLORIZATION_OPTIONS, COORDS
+from PICS3D_libraries.Options import  COORDS
 from PelvicPoints import create_pelvic_points_graph
 
 # Generic custom imports
@@ -23,8 +24,6 @@ class FiducialDifference(object):
         self._fiducial_point_one = fiducial_point_one
         self._fiducial_point_two = fiducial_point_two
         self._difference_vector = vector_from_fiducials(fiducial_point_one, fiducial_point_two) 
-    
-            
         
 def compare_fiducials(fids1, fids2):
     ''' Given two sets of fiducials, fids1 and fids2, compare the two and compile a list of computable differences between them. '''
@@ -114,7 +113,7 @@ if __name__ == '__main__':
         
     from sys import argv
      
-    setdebuglevel(debug_levels.ERRORS) 
+    setdebuglevel(debug_levels.DETAILED_DEBUG) 
     
     if len(argv) <> 3: 
         print "Need to supply TWO mrml file names, and we will compare fiducials from the second to the first."
@@ -126,33 +125,17 @@ if __name__ == '__main__':
         
         debugprint('Now starting fiducial comparison program',debug_levels.BASIC_DEBUG)
  
-        # Load vaginal coordinates from MRML file #1.
-        filename = argv[1]                       
-        vag_display1 = VaginalDisplay(filename, COLORIZATION_OPTIONS.SEQUENTIAL)        
-        vag_display1.initialize_from_MRML(filename)
+        # Load both MRML files...
+        displays = load_vaginal_displays(argv[1:3])
         
-        # Normalize to pics.        
-        pics_recenter_and_reorient(vag_display1)
-        pics_verify(vag_display1)
+        for index in {0,1}:
+            filename = argv[index + 1]
+            display=displays[index]
+            print(display.to_string()) 
+            pics_correct_and_verify(display)
+            graph = create_pelvic_points_graph(graph, display, filename)
         
-        # Display it.
-        print(vag_display1.to_string())    
-        graph = create_pelvic_points_graph(graph, vag_display1, filename)
-        
-        # Load vaginal coordinates from MRML file #2.
-        filename = argv[2]
-        vag_display2 = VaginalDisplay(filename, COLORIZATION_OPTIONS.SEQUENTIAL)        
-        vag_display2.initialize_from_MRML(filename)
-        
-        # Normalize to pics.        
-        pics_recenter_and_reorient(vag_display2)
-        pics_verify(vag_display2)
-
-        # Display it.
-        graph = create_pelvic_points_graph(graph, vag_display2, filename)
-        print(vag_display2.to_string())
-    
-        difflist = compare_fiducials(vag_display1._fiducial_points, vag_display2._fiducial_points)
+        difflist = compare_fiducials(displays[0]._fiducial_points, displays[1]._fiducial_points)
         draw_differences(graph, difflist)
                                               
         show_all_graphs()
