@@ -199,9 +199,12 @@ class VaginalPropertyStatistics():
             
             self._fidstatcollection.add_fiducial_by_name(key, fid)
             
-        self._pitch_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_LR_axis))
-        self._roll_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_AP_axis))
-        self._yaw_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_IS_axis))
+        if (vagprops._pelvic_tilt_correction_angle_about_LR_axis != None):
+            self._pitch_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_LR_axis))
+        if (vagprops._pelvic_tilt_correction_angle_about_AP_axis != None):
+            self._roll_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_AP_axis))
+        if (vagprops._pelvic_tilt_correction_angle_about_IS_axis != None):
+            self._yaw_correction_list.append(rad_to_degrees(vagprops._pelvic_tilt_correction_angle_about_IS_axis))
             
         self.update_statistics()
     
