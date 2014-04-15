@@ -59,7 +59,7 @@ def create_2D_coordinate_graph(graph, exemplar_key_list, exemplar_props, rangest
     if SHOW_RANGE_VALUES:     
         graph.boxplot(boxplot_list)
     
-    # graph.set_ylabel("Height (mm)")
+    graph.set_ylabel("Superior-Inferior Location (mm)")
     
     # graph.grid(True)
     
@@ -164,7 +164,7 @@ if __name__ == '__main__':
         
     from sys import argv
      
-    setdebuglevel(debug_levels.BASIC_DEBUG) 
+    setdebuglevel(debug_levels.ERRORS)
     
     if len(argv) < 3: 
         print("Need to supply at least one mrml file name argument and at least one to compare it against.")

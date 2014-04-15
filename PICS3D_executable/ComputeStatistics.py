@@ -440,7 +440,7 @@ if __name__ == '__main__':
         
     from sys import argv
      
-    setdebuglevel(debug_levels.BASIC_DEBUG) 
+    setdebuglevel(debug_levels.ERRORS) 
     
     if len(argv) < 2: 
         debugprint("Need to supply at least one mrml file name argument.",debug_levels.ERROR)
