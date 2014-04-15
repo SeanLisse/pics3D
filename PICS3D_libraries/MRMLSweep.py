@@ -110,4 +110,3 @@ def load_fiducials_from_mrml_slicer_v_4_3(filename, fiducial_list):
         
             debugprint("Creating Fiducial from CSV: " + name + "," + x + "," + y + "," + z, debug_levels.DETAILED_DEBUG)
             fiducial_list[name] = Fiducial(name,float(x),float(y),float(z))
-    
