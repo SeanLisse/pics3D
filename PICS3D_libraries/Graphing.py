@@ -102,7 +102,12 @@ def add_fiducials_to_graph3D(graph, vagprops, color_fn = default_color_fn):
         
         if (DRAW_PARAVAG_GAP_LINES):
             gap_vec = get_paravaginal_gap_vector(fid, vagprops)
-            add_line_to_graph3D(graph, fid.coords, fid.coords - gap_vec, 'black')
+            
+            # Recenter the gap vector so it starts at the fiducial and heads toward the PIS lines.
+            for i in {0,1,2}:
+                gap_vec[i] = fid.coords[i] - gap_vec[i]
+            
+            add_line_to_graph3D(graph, fid.coords, gap_vec, 'black')
             # add_line_to_graph3D(graph, fid.coords, fid.coords - [0,0,gap_vec[COORDS.Z]], 'pink')
             # add_line_to_graph3D(graph, fid.coords - [0,0,gap_vec[COORDS.Z]], fid.coords - gap_vec, 'green')
             # add_line_to_graph3D(graph, [0,0,0], fid.coords, 'grey')
