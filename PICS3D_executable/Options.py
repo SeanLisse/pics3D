@@ -12,12 +12,14 @@ from pylab import rcParams
 # Should we compute statistics for points on the edges of the structure?
 COMPUTE_LEFT_EDGES = True
 COMPUTE_RIGHT_EDGES =  True
+
 # What about statistics for the mid-sagittal section?
 COMPUTE_CENTER = False
+
 # Should we compute statistics for all points by name?
 COMPUTE_ALL_INDIVIDUAL_POINTS = False
 
-# How long should they be?  length = std_dev * graph_multiplier.
+# How long should the std dev whiskers be?  (length = std_dev * STD_DEV_GRAPH_MULTIPLIER)
 STD_DEV_GRAPH_MULTIPLIER = 2
 
 # *****************************************************************
@@ -32,6 +34,22 @@ rcParams['figure.figsize'] = GRAPH_HEIGHT, GRAPH_WIDTH
 COLORIZATION_OPTIONS = enum('XYZ', 'Z', 'PIS_DISTANCE', 'WIDTH', 'SEQUENTIAL')
 DEFAULT_COLORIZATION_STRATEGY = COLORIZATION_OPTIONS.SEQUENTIAL
 
+# Set the view direction (in degrees)
+## "elevation stores the elevation angle in the z plane. azimuth stores the azimuth angle in the x,y plane."
+
+## 0,0 = Side view
+GRAPH_VIEW_ELEVATION = 0
+GRAPH_VIEW_AZIMUTH = 0
+
+## 90,0 = Top view
+# GRAPH_VIEW_ELEVATION = 90
+# GRAPH_VIEW_AZIMUTH = 0
+
+# ## 45,-45 = Oblique View
+# GRAPH_VIEW_ELEVATION = 45
+# GRAPH_VIEW_AZIMUTH = -45
+
+
 # Default color for pelvic points
 DEFAULT_COLOR=[0.5,0.5,0.75]
 
@@ -41,7 +59,7 @@ REFERENCE_POINT_COLOR = [0,0,0]
 SEQ_COLOR_FN_STEP_SIZE = 0.1
 
 # CONSTANTS
-COLOR_STRAT = COLORIZATION_OPTIONS.Z
+COLOR_STRAT = COLORIZATION_OPTIONS.SEQUENTIAL
 
 # *****************************************************************
 # Detailed Graphing options
@@ -68,21 +86,24 @@ WIDTH_GRAPH_MAX_MM = 70
 # Add 8 artificial cube corners to the graph to force the same scaling on all graphs.  Set to False to not draw.
 PAD_GRAPH = False
 
-# Which graphs should we generate?
+# Which summary graphs should we generate?
 SHOW_COORDINATE_GRAPH = True
 SHOW_PARAVAG_GRAPH = True
 SHOW_WIDTH_GRAPH = True
 
-# Which data should we show on the graphs?
+# Which data should we show on the summary graphs?
 SHOW_INDIVIDUAL_VALUES = True
 SHOW_RANGE_VALUES = True
 
 # Should we draw P_IS lines?
-DRAW_PS_IS_LINES = True
-DRAW_PARAVAG_GAP_LINES = True
+DRAW_PS_IS_LINES = False
+DRAW_PARAVAG_GAP_LINES = False
 
 # Which points should we include in our graphed display?
-SHOW_REFERENCE_POINTS = True
+SHOW_REFERENCE_POINTS = False
+
+# Should we show the graph axes?
+DRAW_AXIS_LABELS = True
 
 # *****************************************************************
 #  Additional Range Comparison Graphing Options

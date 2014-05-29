@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D #Seemingly meaningless but forces projec
 import matplotlib.pyplot as plt
 
 from PICS3D_libraries.Options import COORDS, REFERENCE_POINT_NAMES
-from PICS3D_executable.Options import DEFAULT_COLOR, GRAPH_TITLE, SHOW_REFERENCE_POINTS, DRAW_PARAVAG_GAP_LINES
+from PICS3D_executable.Options import DEFAULT_COLOR, GRAPH_TITLE, SHOW_REFERENCE_POINTS, DRAW_PARAVAG_GAP_LINES, GRAPH_VIEW_ELEVATION, GRAPH_VIEW_AZIMUTH, DRAW_AXIS_LABELS
 
 # Our generic libraries
 from Utilities import debugprint, debug_levels
@@ -32,11 +32,18 @@ class PelvicGraph3D(object):
         self._fig = plt.figure()
         self._ax = self._fig.add_subplot('111',projection='3d')
         
-        self._ax.set_xlabel('X')
-        self._ax.set_ylabel('Y')
-        self._ax.set_zlabel('Z')
+        if (DRAW_AXIS_LABELS): 
+            self._ax.set_xlabel('X')
+            self._ax.set_ylabel('Y')
+            self._ax.set_zlabel('Z')
+            self._ax.axis('on')
+        else: 
+            self._ax.axis('off')
+        
+        self._ax.view_init(GRAPH_VIEW_ELEVATION, GRAPH_VIEW_AZIMUTH)
         
         plt.title(name)
+        
 
 def filter_vagprops_for_graphing(exemplardisplay):
     ''' Given a VaginalProperties object, returns a subset of keys for its fiducial points that we will want to graph. '''
@@ -82,7 +89,7 @@ def show_all_graphs():
 
 def add_scatterpoint_to_graph3D(graph, name, x, y, z, newcolor="black"):
     ''' Add a new scatterpoint to the graph.  Name is currently ignored. '''
-    graph._ax.scatter(x,y,z, marker='o', label=name, color=newcolor)
+    graph._ax.scatter(x,y,z, marker='.', label=name, color=newcolor)
 
 def add_line_to_graph3D(graph, pt1,pt2, newcolor):
     ''' Draws a line from [x1,y1,z1] to [x2,y2,z2] of color newcolor.'''
